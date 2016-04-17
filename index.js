@@ -95,9 +95,6 @@ domReady(function(){
       side: THREE.DoubleSide
   });
 
-  console.log(shaderMaterial);
-  console.log(shaderMaterial);
-
   var material = new THREE.MeshLambertMaterial({
                   color: 0xFF333FF,
                   side: THREE.DoubleSide,
@@ -123,7 +120,6 @@ domReady(function(){
     var rotationAmount = j * layers;
     //curveAmount = 0.1 + (Math.pow(j, 2.0) * 1.000001);
     curveAmountA = Math.abs(curveAmountC + (Math.log(j) * curveAmountB));
-    console.log(curveAmountA);
     var petalMesh = createPetalMesh();
 
     petalMesh.rotation.y = THREE.Math.degToRad(rotationAmount * 360);
@@ -159,19 +155,4 @@ domReady(function(){
     shaderMaterial.uniforms.iGlobalTime.value = tickCounter;
     //light.position.set( 0, params.lightYPosition, 0);
   });
-
-
-  // params GUI
-
-  //datgui.add(params, "speed", 10, 2000);
-  //datgui.add(params, 'opacity', 0.1, 1);
-  //datgui.add(params, 'width', 0.001, 10);
-  //datgui.add(params, 'height', 0.02, 3).step(0.01);
-  //datgui.add(params, 'boxThickness', 0.01, 10);
-  //datgui.add(params, 'hueRange', 0.0, 1);
-  //datgui.add(params, 'hueOffset', 0, 1).step(0.01);
-  //datgui.add(params, 'twistSpeed', 0.0, 0.08);
-  //datgui.add(params, 'rotationSpeed', 0.0, 0.1).step(0.01);
-  //datgui.add(params, 'lightYPosition', 0.01, 60);
-
 });
