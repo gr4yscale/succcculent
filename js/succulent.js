@@ -42,9 +42,7 @@ module.exports = function(THREE) {
 
     var petalFunc = function (u, v) {
       var curve = Math.pow(u * 4.0, curveAmountD) * curveAmountA; // * (Math.pow(u, 0.9));
-
       // var curve = Math.pow(u * 4.0, curveAmountD) * curveAmountA; // * (Math.pow(u, 0.9));
-
       var petalOutline = (Math.sin((u - 1.5) * 2.0) * Math.sin((v - 0.5) * Math.sin((u + 2.14))) * 2.0);
       return new THREE.Vector3(petalOutline * petalWidth, u * petalLength, curve);
     };
@@ -55,21 +53,20 @@ module.exports = function(THREE) {
       return mesh;
     }
 
-    var sphereGeom = new THREE.SphereGeometry(0.01, 10, 10);
-    var sphereMesh = new THREE.Mesh(sphereGeom, material);
+    var boxGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+    var boxMesh = new THREE.Mesh(boxGeometry, material);
+    var singleGeometry = new THREE.Geometry();
 
     for (var i = 0; i < petalCount; i++) {
       var j = i / petalCount;
       var rotationAmount = j * layers;
-      //curveAmount = 0.1 + (Math.pow(j, 2.0) * 1.000001);
 
       // this is responsible for the weird "blow out" effect of a strange huge leaf off the side
       curveAmountA = Math.abs(curveAmountC + (Math.log(j) * curveAmountB));
       // curveAmountA = Math.abs(curveAmountC + Math.log(j) * 0.08); // 0.08 is a sane-ish value
+      //curveAmount = 0.1 + (Math.pow(j, 2.0) * 1.000001);
 
       var petalMesh = createPetalMesh();
-
-      // console.log(curveAmountA);
 
       petalMesh.rotation.y = THREE.Math.degToRad(rotationAmount * 360);
 
@@ -77,11 +74,16 @@ module.exports = function(THREE) {
       petalMesh.scale.x = scale;
       petalMesh.scale.y = scale;
       petalMesh.scale.z = scale;
-
       petals.push();
-      sphereMesh.add(petalMesh);
+
+      petalMesh.updateMatrix();
+      singleGeometry.merge(petalMesh.geometry, petalMesh.matrix);
+
+      // sphereMesh.add(petalMesh);
     }
 
-    return sphereMesh;
+    singleMesh = new THREE.Mesh(singleGeometry, material);
+
+    return singleMesh;
   }
 }
