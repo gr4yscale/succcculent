@@ -36,12 +36,21 @@ domReady(function(){
   var sphereMesh = new THREE.Mesh(sphereGeom, material);
   app.scene.add(sphereMesh);
 
-  var succulentA = Succulent();
-  app.scene.add(succulentA);
+  function getRandomArbitrary(min, max) {
+    return Math.random() * (max - min) + min;
+  }
 
-  var helper = new THREE.BoundingBoxHelper(succulentA, 0xff0000);
-  helper.update();
-  app.scene.add(helper);
+  for (var i = 0; i < 16; i++) {
+    var succulent = Succulent();
+
+    succulent.position.x = getRandomArbitrary(-3, 3);
+    succulent.position.z = getRandomArbitrary(-3, 3);
+    app.scene.add(succulent);
+
+    var helper = new THREE.BoundingBoxHelper(succulent, 0xff0000);
+    helper.update();
+    app.scene.add(helper);
+  }
 
   // render loop
   var tickCounter = 0;
