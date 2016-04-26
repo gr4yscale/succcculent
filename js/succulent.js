@@ -8,14 +8,14 @@ module.exports = function(THREE) {
 
   return function() {
     var petals = [];
-    var petalCount = Math.floor(getRandomArbitrary(20, 60));
+    var petalCount = Math.floor(getRandomArbitrary(20, 40));
     var curveAmountA;
-    var curveAmountB = getRandomArbitrary(0.08, 0.3); // multiplier for log curvature
-    var curveAmountC = getRandomArbitrary(0.1, 1.0); // initial curve amount
-    var curveAmountD = getRandomArbitrary(0.05, 0.4);;
-    var layers = Math.floor(getRandomArbitrary(4, 10));
-    var petalLength = getRandomArbitrary(0.25, 0.75);
-    var petalWidth = getRandomArbitrary(0.2, 0.9);
+    var curveAmountB = getRandomArbitrary(0.08, 0.20); // multiplier for log curvature
+    var curveAmountC = getRandomArbitrary(0.2, 0.6); // initial curve amount
+    var curveAmountD = getRandomArbitrary(0.2, 0.5);
+    var layers = Math.floor(getRandomArbitrary(6, 10));
+    var petalLength = getRandomArbitrary(0.1, 0.7);
+    var petalWidth = getRandomArbitrary(0.4, 0.6);
 
     // shader
     var shaderMaterial = new THREE.ShaderMaterial({
@@ -54,7 +54,7 @@ module.exports = function(THREE) {
     }
 
     var boxGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-    var boxMesh = new THREE.Mesh(boxGeometry, material);
+    var boxMesh = new THREE.Mesh(boxGeometry, shaderMaterial);
     var singleGeometry = new THREE.Geometry();
 
     for (var i = 0; i < petalCount; i++) {
@@ -82,7 +82,7 @@ module.exports = function(THREE) {
       // sphereMesh.add(petalMesh);
     }
 
-    singleMesh = new THREE.Mesh(singleGeometry, material);
+    singleMesh = new THREE.Mesh(singleGeometry, shaderMaterial);
 
     return singleMesh;
   }

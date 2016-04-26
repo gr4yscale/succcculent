@@ -40,16 +40,16 @@ domReady(function(){
     return Math.random() * (max - min) + min;
   }
 
-  for (var i = 0; i < 16; i++) {
+  for (var i = 0; i < 10; i++) {
     var succulent = Succulent();
 
     succulent.position.x = getRandomArbitrary(-3, 3);
     succulent.position.z = getRandomArbitrary(-3, 3);
     app.scene.add(succulent);
 
-    var helper = new THREE.BoundingBoxHelper(succulent, 0xff0000);
-    helper.update();
-    app.scene.add(helper);
+    // var helper = new THREE.BoundingBoxHelper(succulent, 0xff0000);
+    // helper.update();
+    // app.scene.add(helper);
   }
 
   // render loop
