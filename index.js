@@ -7,6 +7,32 @@ domReady(function(){
     speed: 1000,
   };
 
+  var boxes = [];
+
+  function getRandomArbitrary(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+
+  function findRandomUnusedSucculentPosition(offsetMin, offsetMax, box) {
+    var newBox = box.clone();
+    var offsetX = getRandomArbitrary(offsetMin, offsetMax);
+    var offsetZ = getRandomArbitrary(offsetMin, offsetMax);
+    var offsetVec3 = new THREE.Vector3(offsetX, 0, offsetZ);
+    newBox.translate(offsetVec3);
+
+    for (var i = 0; i < boxes.length; i++) {
+      var aBox = boxes[i];
+      if (newBox.intersectsBox(aBox)) {
+        // console.log('There was an intersection: ' + offsetX + ' ' + offsetZ);
+        var newOffsetMin = offsetMin - 0.02;
+        var newOffsetMax = offsetMax + 0.02;
+        return findRandomUnusedSucculentPosition(newOffsetMin, newOffsetMax, box);
+      }
+    }
+    // console.log('Found the offset that i want to work with: ' + newBox.center().x + ' ' + newBox.center().y + ' ' + boxes.length);
+    return newBox;
+  }
+
   var OrbitViewer = require('three-orbit-viewer')(THREE);
   var app = OrbitViewer({
     clearColor: 'rgb(50,50,50)',
@@ -25,31 +51,24 @@ domReady(function(){
   var setupLights = require('./js/lights')(THREE, app.scene);
   setupLights();
 
-  var material = new THREE.MeshLambertMaterial({
-    color: 0xFF333FF,
-    side: THREE.DoubleSide,
-    shading: THREE.SmoothShading,
-    //wireframe: true
-  });
-
-  var sphereGeom = new THREE.SphereGeometry(0.01, 10, 10);
-  var sphereMesh = new THREE.Mesh(sphereGeom, material);
-  app.scene.add(sphereMesh);
-
-  function getRandomArbitrary(min, max) {
-    return Math.random() * (max - min) + min;
-  }
-
-  for (var i = 0; i < 10; i++) {
+  for (var i = 0; i < 40; i++) {
     var succulent = Succulent();
 
-    succulent.position.x = getRandomArbitrary(-3, 3);
-    succulent.position.z = getRandomArbitrary(-3, 3);
-    app.scene.add(succulent);
+    var bbox = new THREE.Box3().setFromObject(succulent);
+    var newBox = findRandomUnusedSucculentPosition(-0.02, 0.02, bbox);
 
-    // var helper = new THREE.BoundingBoxHelper(succulent, 0xff0000);
-    // helper.update();
+    succulent.position.x = newBox.center().x;
+    succulent.position.y = 0;
+    succulent.position.z = newBox.center().z;
+    succulent.updateMatrix();
+
+    var helper = new THREE.BoundingBoxHelper(succulent);
+    helper.update();
+    // helper.visible = true;
     // app.scene.add(helper);
+
+    app.scene.add(succulent);
+    boxes.push(helper.box);
   }
 
   // render loop
