@@ -47,7 +47,7 @@ module.exports = function(THREE) {
     };
 
     var createPetalMesh = function() {
-      var geom = new THREE.ParametricGeometry(petalFunc, 20, 20);
+      var geom = new THREE.ParametricGeometry(petalFunc, 10, 10);
       var mesh = new THREE.Mesh(geom, shaderMaterial);
       return mesh;
     }
