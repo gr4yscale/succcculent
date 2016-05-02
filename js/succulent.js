@@ -57,7 +57,7 @@ module.exports = function(THREE) {
     var boxMesh = new THREE.Mesh(boxGeometry, shaderMaterial);
     var singleGeometry = new THREE.Geometry();
 
-    for (var i = 0; i < petalCount; i++) {
+    for (var i = 1; i < petalCount; i++) {
       var j = i / petalCount;
       var rotationAmount = j * layers;
 
