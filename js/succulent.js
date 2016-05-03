@@ -1,43 +1,19 @@
-var glslify = require('glslify');
-
 module.exports = function(THREE) {
 
   function getRandomArbitrary(min, max) {
     return Math.random() * (max - min) + min;
   }
 
-  return function() {
+  return function(shaderMaterial) {
     var petalCount = Math.floor(getRandomArbitrary(20, 40));
     var curveAmountA;
     var curveAmountB = getRandomArbitrary(0.08, 0.20); // multiplier for log curvature
     var curveAmountC = getRandomArbitrary(0.2, 0.6); // initial curve amount
     var curveAmountD = getRandomArbitrary(0.2, 0.5);
-    var layers = Math.floor(getRandomArbitrary(6, 10));
+    var layers = Math.floor(getRandomArbitrary(4, 10));
     var petalLength = getRandomArbitrary(0.1, 0.7);
     var petalWidth = getRandomArbitrary(0.4, 0.6);
 
-    // shader
-    var shaderMaterial = new THREE.ShaderMaterial({
-      uniforms : {
-        iGlobalTime: { type: 'f', value: 0 }
-      },
-      defines: {
-        USE_MAP: ''
-      },
-      vertexShader : glslify('../shaders/sketch.vert'),
-      fragmentShader : glslify('../shaders/sketch.frag'),
-      side: THREE.DoubleSide
-    });
-
-    // console.log(shaderMaterial);
-    // console.log(shaderMaterial);
-
-    var material = new THREE.MeshLambertMaterial({
-      color: 0xFF333FF,
-      side: THREE.DoubleSide,
-      shading: THREE.SmoothShading,
-      //wireframe: true
-    });
 
     var petalFunc = function (u, v) {
       var curve = Math.pow(u * 4.0, curveAmountD) * curveAmountA; // * (Math.pow(u, 0.9));
@@ -47,7 +23,7 @@ module.exports = function(THREE) {
     };
 
     var createPetalMesh = function() {
-      var geom = new THREE.ParametricGeometry(petalFunc, 10, 10);
+      var geom = new THREE.ParametricGeometry(petalFunc, 8, 8);
       var mesh = new THREE.Mesh(geom, shaderMaterial);
       return mesh;
     }
