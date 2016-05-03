@@ -143,6 +143,9 @@ domReady(function(){
 
   // params GUI
   // datgui.add(params, "speed", 10, 2000);
-//datgui.add(params, 'height', 0.02, 3).step(0.01);
+  //datgui.add(params, 'height', 0.02, 3).step(0.01);
 
+  document.body.addEventListener('keypress', function(e) {
+    addSucculent();
+  });
 });
