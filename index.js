@@ -115,7 +115,7 @@ domReady(function(){
   setupLights();
   loadShaderMaterials();
 
-  for (var i = 0; i < 200; i++) {
+  for (var i = 0; i < 100; i++) {
     addSucculent()
   }
 
