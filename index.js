@@ -98,7 +98,7 @@ domReady(function(){
     }
   }
 
-  var datgui = new dat.GUI();
+  // var datgui = new dat.GUI();
   var OrbitViewer = require('three-orbit-viewer')(THREE);
   var app = OrbitViewer({
     clearColor: 'rgb(50,50,50)',
@@ -115,7 +115,7 @@ domReady(function(){
   setupLights();
   loadShaderMaterials();
 
-  for (var i = 0; i < 100; i++) {
+  for (var i = 0; i < 200; i++) {
     addSucculent()
   }
 
@@ -142,7 +142,7 @@ domReady(function(){
   });
 
   // params GUI
-  datgui.add(params, "speed", 10, 2000);
+  // datgui.add(params, "speed", 10, 2000);
 //datgui.add(params, 'height', 0.02, 3).step(0.01);
 
 });

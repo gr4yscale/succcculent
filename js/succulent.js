@@ -10,7 +10,7 @@ module.exports = function(THREE) {
     var curveAmountB = getRandomArbitrary(0.08, 0.20); // multiplier for log curvature
     var curveAmountC = getRandomArbitrary(0.2, 0.6); // initial curve amount
     var curveAmountD = getRandomArbitrary(0.2, 0.5);
-    var layers = Math.floor(getRandomArbitrary(4, 10));
+    var layers = Math.floor(getRandomArbitrary(6, 10));
     var petalLength = getRandomArbitrary(0.1, 0.7);
     var petalWidth = getRandomArbitrary(0.4, 0.6);
 
@@ -23,7 +23,7 @@ module.exports = function(THREE) {
     };
 
     var createPetalMesh = function() {
-      var geom = new THREE.ParametricGeometry(petalFunc, 8, 8);
+      var geom = new THREE.ParametricGeometry(petalFunc, 7, 7);
       var mesh = new THREE.Mesh(geom, shaderMaterial);
       return mesh;
     }
@@ -36,8 +36,8 @@ module.exports = function(THREE) {
 
       // this is responsible for the weird "blow out" effect of a strange huge leaf off the side
       curveAmountA = Math.abs(curveAmountC + (Math.log(j) * curveAmountB));
-      // curveAmountA = Math.abs(curveAmountC + Math.log(j) * 0.08); // 0.08 is a sane-ish value
-      //curveAmount = 0.1 + (Math.pow(j, 2.0) * 1.000001);
+      curveAmountA = Math.abs(curveAmountC + Math.log(j) * 0.08); // 0.08 is a sane-ish value
+      // curveAmount = 0.1 + (Math.pow(j, 2.0) * 1.000001);
 
       var petalMesh = createPetalMesh();
       petalMesh.rotation.y = THREE.Math.degToRad(rotationAmount * 360);
