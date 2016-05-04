@@ -15,6 +15,7 @@ var params = {
 var boxes = [];
 var shaders = [];
 var fragShaders = [];
+var useVR = false;
 
 function getRandomArbitrary(min, max) {
   return Math.random() * (max - min) + min;
@@ -105,15 +106,20 @@ function setupTapGestureRecognizer() {
   var mc = new Hammer.Manager(document.body);
   // Tap recognizer with minimal 2 taps
   mc.add( new Hammer.Tap({ event: 'doubletap', taps: 2 }) );
-  // Single tap recognizer
   mc.add( new Hammer.Tap({ event: 'singletap' }) );
   // we want to recognize this simulatenous, so a quadrupletap will be detected even while a tap has been recognized.
   mc.get('doubletap').recognizeWith('singletap');
+  // mc.get('tripletap').recognizeWith('doubletap');
   // we only want to trigger a tap, when we don't have detected a doubletap
   mc.get('singletap').requireFailure('doubletap');
+// mc.get('doubletap').requireFailure('tripletap');
+
+  mc.on("singletap", function(ev) {
+      addSucculent();
+  });
 
   mc.on("doubletap", function(ev) {
-      addSucculent();
+      useVR = !useVR;
   });
 }
 
@@ -218,8 +224,11 @@ function update(t) {
 }
 
 function render(dt) {
-  effect.render(scene, camera);
-  // renderer.render(scene, camera);
+  if (useVR) {
+    effect.render(scene, camera);
+  } else {
+    renderer.render(scene, camera);
+  }
 }
 
 function animate(t) {
