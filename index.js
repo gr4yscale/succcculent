@@ -13,9 +13,15 @@ var params = {
 };
 
 var boxes = [];
+var succulents = [];
 var shaders = [];
 var fragShaders = [];
 var useVR = false;
+// disable device orientation when VR is off
+var timeOffsets = [];
+var initialScaleMultipliers = [];
+var succulentScaleFactors = [];
+
 
 function getRandomArbitrary(min, max) {
   return Math.random() * (max - min) + min;
@@ -62,6 +68,7 @@ function addSucculent() {
   // scene.add(helper);
   scene.add(succulent);
   boxes.push(helper.box);
+  succulents.push(succulent);
 }
 
 function loadShaderMaterials() {
@@ -130,6 +137,13 @@ domReady(function(){
 
   setupTapGestureRecognizer();
   initThree();
+
+  for (var i = 0; i < succulents.length; i++) {
+    initialScaleMultipliers[i] = getRandomArbitrary(0.1, 1.0);
+    // console.log(initialScaleMultipliers[i]);
+    timeOffsets[i] = getRandomArbitrary(1.0, 30000.0);
+  }
+
   animate();
 });
 
@@ -184,7 +198,7 @@ function initThree() {
   setupLights();
   loadShaderMaterials();
 
-  for (var i = 0; i < 100; i++) {
+  for (var i = 0; i < 150; i++) {
     addSucculent()
   }
 
@@ -217,6 +231,24 @@ function update(t) {
   shaders[11].uniforms.iGlobalTime.value = tickCounter;
   shaders[12].uniforms.iGlobalTime.value = tickCounter;
   shaders[13].uniforms.iGlobalTime.value = tickCounter;
+
+  for (var i = 0; i < succulents.length; i++) {
+    var succulent = succulents[i];
+    //var scale = (Math.sin(timeOffsets[i] + tickCounter * 1.0) + 1.0) * initialScaleMultipliers[i];
+
+    var scaleTickCounter = (t / (params.speed * 2.0));
+    // var scaleX = (Math.sin(timeOffsets[i] + scaleTickCounter * 1.0) + 1.0) * initialScaleMultipliers[i];
+    // var scaleY = 0.55 + (Math.cos(timeOffsets[i] + scaleTickCounter * 1.0) + 1.0) * initialScaleMultipliers[i];
+    // var scaleZ = (Math.sin(timeOffsets[i] + scaleTickCounter * 1.0) + 1.0) * initialScaleMultipliers[i];
+
+    var scaleX = (Math.sin(timeOffsets[i] + scaleTickCounter * 2.0) + 1.05) * initialScaleMultipliers[i];
+    var scaleY = 0.5 + (Math.cos(timeOffsets[i] + scaleTickCounter * 2.0) + 1.0) * initialScaleMultipliers[i];
+    var scaleZ = (Math.sin(timeOffsets[i] + scaleTickCounter * 1.0)) * initialScaleMultipliers[i];
+
+    // console.log(scale);
+    // succulent.scale.set(scaleX, scaleY, scaleZ);
+    succulent.scale.set(scaleX, scaleY, scaleX);
+  }
 
   camera.updateProjectionMatrix();
   controls.update(t);
