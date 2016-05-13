@@ -21,7 +21,9 @@ var useVR = false;
 var timeOffsets = [];
 var initialScaleMultipliers = [];
 var succulentScaleFactors = [];
-
+var randomPoints = [];
+var spline;
+var camPosIndex = 0;
 
 function getRandomArbitrary(min, max) {
   return Math.random() * (max - min) + min;
@@ -69,6 +71,8 @@ function addSucculent() {
   scene.add(succulent);
   boxes.push(helper.box);
   succulents.push(succulent);
+
+  //randomPoints.push(new THREE.Vector3(succulent.position.x + getRandomArbitrary(-0.1, 0.1), 3.0, succulent.position.z + getRandomArbitrary(-0.1, 0.1)));
 }
 
 function loadShaderMaterials() {
@@ -198,6 +202,11 @@ function initThree() {
   setupLights();
   loadShaderMaterials();
 
+  for ( var i = 0; i < 100; i ++ ) {
+      randomPoints.push(new THREE.Vector3(Math.random() * 15 - 7, getRandomArbitrary(0.5, 1.0), 12-i));
+  }
+  spline = new THREE.SplineCurve3(randomPoints);
+
   for (var i = 0; i < 150; i++) {
     addSucculent()
   }
@@ -236,7 +245,7 @@ function update(t) {
     var succulent = succulents[i];
     //var scale = (Math.sin(timeOffsets[i] + tickCounter * 1.0) + 1.0) * initialScaleMultipliers[i];
 
-    var scaleTickCounter = (t / (params.speed * 2.0));
+    var scaleTickCounter = (t / (params.speed * 3.0));
     // var scaleX = (Math.sin(timeOffsets[i] + scaleTickCounter * 1.0) + 1.0) * initialScaleMultipliers[i];
     // var scaleY = 0.55 + (Math.cos(timeOffsets[i] + scaleTickCounter * 1.0) + 1.0) * initialScaleMultipliers[i];
     // var scaleZ = (Math.sin(timeOffsets[i] + scaleTickCounter * 1.0) + 1.0) * initialScaleMultipliers[i];
@@ -246,12 +255,25 @@ function update(t) {
     var scaleZ = (Math.sin(timeOffsets[i] + scaleTickCounter * 1.0)) * initialScaleMultipliers[i];
 
     // console.log(scale);
-    // succulent.scale.set(scaleX, scaleY, scaleZ);
+    //succulent.scale.set(scaleX, scaleY, scaleZ);
     succulent.scale.set(scaleX, scaleY, scaleX);
   }
 
-  camera.updateProjectionMatrix();
+  camPosIndex++;
+  if (camPosIndex > 20000) {
+    camPosIndex = 0;
+  }
+  var camPos = spline.getPoint(camPosIndex / 20000);
+  //var camRot = spline.getTangent(camPosIndex / 1000);
+
+  //camera.position.x = camPos.x;
+  camera.position.y = camPos.y;
+  camera.position.z = camPos.z;
+
   controls.update(t);
+
+  //camera.updateProjectionMatrix();
+
   resize();
 }
 
