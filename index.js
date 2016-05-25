@@ -103,7 +103,7 @@ function loadShaderMaterials() {
       defines: {
         USE_MAP: ''
       },
-      vertexShader : glslify(__dirname + '/shaders/passthrough.vert'),
+      vertexShader : glslify(__dirname + '/shaders/spiral.vert'),
       fragmentShader : fragShaders[i],
       // fragmentShader : glslify(__dirname + '/shaders/1.frag'),
       side: THREE.DoubleSide,
@@ -256,7 +256,7 @@ function update(t) {
 
     // console.log(scale);
     //succulent.scale.set(scaleX, scaleY, scaleZ);
-    succulent.scale.set(scaleX, scaleY, scaleX);
+    // succulent.scale.set(scaleX, scaleY, scaleX);
   }
 
   camPosIndex++;
@@ -267,12 +267,17 @@ function update(t) {
   //var camRot = spline.getTangent(camPosIndex / 1000);
 
   //camera.position.x = camPos.x;
-  camera.position.y = camPos.y;
-  camera.position.z = camPos.z;
+  // camera.position.y = camPos.y;
+  // camera.position.z = camPos.z;
+
+
+  //camera.position.x = Math.sin(t / 10000) * 3.0;
+  //camera.position.y = 0.5;
+  //camera.position.z = Math.cos(t / 10000) * 3.0;
 
   controls.update(t);
 
-  //camera.updateProjectionMatrix();
+  camera.updateProjectionMatrix();
 
   resize();
 }
