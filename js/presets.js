@@ -56,7 +56,10 @@ Presets.prototype.generatePlantParams = function(numberOfPlants, numberOfShaders
       layers: layers,
       petalLength: petalLength,
       petalWidth: petalWidth,
-      shaderIndex: shaderIndex
+      shaderIndex: shaderIndex,
+      positionX: 'not_placed',
+      positionY: 'not_placed',
+      positionZ: 'not_placed',
     }
     this.plantParams.push(preset)
   }

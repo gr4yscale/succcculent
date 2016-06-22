@@ -45,15 +45,7 @@ function findRandomUnusedSucculentPosition(offsetMin, offsetMax, box) {
   return newBox;
 }
 
-function addSucculent(plantParams) {
-  // var randomShaderIndex = Math.floor(getRandomArbitrary(0, shaders.length));
-  // var shaderMaterial = shaders[randomShaderIndex];
-
-  var shaderIndex = plantParams['shaderIndex']
-  var shaderMaterial = shaders[shaderIndex];
-
-  var succulent = Succulent(shaderMaterial, plantParams);
-
+function positionSucculentRandomly(index, plantParams, succulent) {
   var bboxHelperA = new THREE.BoundingBoxHelper(succulent);
   bboxHelperA.update();
   // var bbox = new THREE.Box3().setFromObject(succulent);
@@ -65,13 +57,37 @@ function addSucculent(plantParams) {
 
   var helper = new THREE.BoundingBoxHelper(succulent);
   helper.update();
+  boxes.push(helper.box);
   // helper.visible = true;
   // scene.add(helper);
-  scene.add(succulent);
-  boxes.push(helper.box);
-  succulents.push(succulent);
 
-  // UPDATE position of succulent preset here
+  plantParams['positionX'] = succulent.position.x
+  plantParams['positionY'] = succulent.position.y
+  plantParams['positionZ'] = succulent.position.z
+
+  presets.plantParams[index] = plantParams
+}
+
+function addSucculent(index, plantParams) {
+  // var randomShaderIndex = Math.floor(getRandomArbitrary(0, shaders.length));
+  // var shaderMaterial = shaders[randomShaderIndex];
+
+  var shaderIndex = plantParams['shaderIndex']
+  var shaderMaterial = shaders[shaderIndex];
+
+  var succulent = Succulent(shaderMaterial, plantParams);
+
+  // load position from our preset if it exists, otherwise find a position for the succulent
+  if (plantParams['positionX'] !== 'not_placed' && plantParams['positionY'] !== 'not_placed' && plantParams['positionZ'] !== 'not_placed') {
+    succulent.position.x = plantParams['positionX']
+    succulent.position.y = plantParams['positionY']
+    succulent.position.z = plantParams['positionZ']
+  } else {
+    positionSucculentRandomly(index, plantParams, succulent)
+  }
+
+  scene.add(succulent);
+  succulents.push(succulent);
 }
 
 function loadShaderMaterials() {
@@ -171,7 +187,7 @@ function loadGardenFromPresetFile() {
   clearSucculents()
   presets.load(function(plantParams) {
     for (var i=0; i < numPlants; i++) {
-      addSucculent(plantParams[i])
+      addSucculent(i, plantParams[i])
     }
   })
 }
@@ -180,7 +196,7 @@ function generateNewRandomGarden() {
   clearSucculents()
   presets.generatePlantParams(numPlants, shaders.length)
   for (var i=0; i < numPlants; i++) {
-    addSucculent(presets.plantParams[i])
+    addSucculent(i, presets.plantParams[i])
   }
 }
 
