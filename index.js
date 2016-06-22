@@ -12,23 +12,14 @@ var clock = new THREE.Clock();
 
 var presets = new Presets()
 
-var params = {
-  speed: 1000,
-};
-
 var numPlants = 150;
+var speed = 1000;
 var boxes = [];
 var succulents = [];
 var shaders = [];
 var fragShaders = [];
-var useVR = false;
-// disable device orientation when VR is off
-var timeOffsets = [];
-var initialScaleMultipliers = [];
-var succulentScaleFactors = [];
+var useVR = false; // disable device orientation when VR is off
 var randomPoints = [];
-var spline;
-var camPosIndex = 0;
 
 function getRandomArbitrary(min, max) {
   return Math.random() * (max - min) + min;
@@ -80,11 +71,12 @@ function addSucculent(plantParams) {
   boxes.push(helper.box);
   succulents.push(succulent);
 
-  //randomPoints.push(new THREE.Vector3(succulent.position.x + getRandomArbitrary(-0.1, 0.1), 3.0, succulent.position.z + getRandomArbitrary(-0.1, 0.1)));
   // UPDATE position of succulent preset here
 }
 
 function loadShaderMaterials() {
+  // this makes use of the browserify transform (it's a preprocessor)
+  // so can't clean this up with a loop
   fragShaders.push(glslify(__dirname + '/shaders/1.frag'))
   fragShaders.push(glslify(__dirname + '/shaders/2.frag'))
   fragShaders.push(glslify(__dirname + '/shaders/3.frag'))
@@ -101,10 +93,7 @@ function loadShaderMaterials() {
   fragShaders.push(glslify(__dirname + '/shaders/14.frag'))
 
   for (var i = 0; i < fragShaders.length; i++) {
-
     var fragShaderString = __dirname + '/shaders/1.frag';
-    // console.log(fragShaderString);
-
     var shaderMaterial = new THREE.ShaderMaterial({
       uniforms : {
         iGlobalTime: { type: 'f', value: 0 }
@@ -112,9 +101,8 @@ function loadShaderMaterials() {
       defines: {
         USE_MAP: ''
       },
-      vertexShader : glslify(__dirname + '/shaders/spiral.vert'),
+      vertexShader : glslify(__dirname + '/shaders/passthrough.vert'),
       fragmentShader : fragShaders[i],
-      // fragmentShader : glslify(__dirname + '/shaders/1.frag'),
       side: THREE.DoubleSide,
       // wireframe: true
     });
@@ -147,7 +135,6 @@ function setupTapGestureRecognizer() {
 // APP ENTRY POINT (LOVE THE MESSINESS, who has time for refactoring?)
 
 domReady(function(){
-
   document.body.addEventListener('keypress', function(e) {
     switch (e.key) {
       case '+':
@@ -169,13 +156,6 @@ domReady(function(){
   setupTapGestureRecognizer();
   initThree()
   generateNewRandomGarden();
-
-  // for (var i = 0; i < succulents.length; i++) {
-  //   initialScaleMultipliers[i] = getRandomArbitrary(0.1, 1.0);
-  //   // console.log(initialScaleMultipliers[i]);
-  //   timeOffsets[i] = getRandomArbitrary(1.0, 30000.0);
-  // }
-
   animate()
 })
 
@@ -212,8 +192,6 @@ function initThree() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setClearColor(new THREE.Color(0x333333, 1.0));
 
-  console.log(renderer.getPrecision())
-
   element = renderer.domElement;
   container = document.getElementById('webglrender');
   container.appendChild(element);
@@ -225,45 +203,17 @@ function initThree() {
   camera.position.set(0, 2.0, 0);
   scene.add(camera);
 
-  // setup orbit controls
   controls = new THREE.OrbitControls(camera, element);
   controls.target.set(
     camera.position.x + 0.1,
     camera.position.y - 0.1,
     camera.position.z
-  );
-  // controls.noZoom = true;
-  // controls.noPan = true;
-
-  // setup orientation controls
-  function setOrientationControls(e) {
-    if (!e.alpha) {
-      return;
-    }
-
-    controls = new THREE.DeviceOrientationControls(camera, true);
-    controls.connect();
-    controls.update();
-
-    element.addEventListener('click', fullscreen, false);
-
-    window.removeEventListener('deviceorientation', setOrientationControls, true);
-  }
-  window.addEventListener('deviceorientation', setOrientationControls, true);
+  )
 
   // setup the scene
   var setupLights = require('./js/lights')(THREE, scene);
   setupLights();
   loadShaderMaterials();
-
-  for ( var i = 0; i < 100; i ++ ) {
-      randomPoints.push(new THREE.Vector3(Math.random() * 15 - 7, getRandomArbitrary(0.5, 1.0), 12-i));
-  }
-  spline = new THREE.SplineCurve3(randomPoints);
-
-  for (var i = 0; i < 150; i++) {
-    addSucculent()
-  }
 
   window.addEventListener('resize', resize, false);
   setTimeout(resize, 1);
@@ -279,49 +229,14 @@ function resize() {
 }
 
 function update(t) {
-  var tickCounter = (t / params.speed);
+  var tickCounter = (t / speed);
 
-  for (var i = 0; i < succulents.length; i++) {
-    var succulent = succulents[i];
   for (var j = 0; j < shaders.length; j++) {
     shaders[j].uniforms.iGlobalTime.value = tickCounter;
   }
-    //var scale = (Math.sin(timeOffsets[i] + tickCounter * 1.0) + 1.0) * initialScaleMultipliers[i];
-
-    var scaleTickCounter = (t / (params.speed * 3.0));
-    // var scaleX = (Math.sin(timeOffsets[i] + scaleTickCounter * 1.0) + 1.0) * initialScaleMultipliers[i];
-    // var scaleY = 0.55 + (Math.cos(timeOffsets[i] + scaleTickCounter * 1.0) + 1.0) * initialScaleMultipliers[i];
-    // var scaleZ = (Math.sin(timeOffsets[i] + scaleTickCounter * 1.0) + 1.0) * initialScaleMultipliers[i];
-
-    var scaleX = (Math.sin(timeOffsets[i] + scaleTickCounter * 2.0) + 1.05) * initialScaleMultipliers[i];
-    var scaleY = 0.5 + (Math.cos(timeOffsets[i] + scaleTickCounter * 2.0) + 1.0) * initialScaleMultipliers[i];
-    var scaleZ = (Math.sin(timeOffsets[i] + scaleTickCounter * 1.0)) * initialScaleMultipliers[i];
-
-    // console.log(scale);
-    //succulent.scale.set(scaleX, scaleY, scaleZ);
-    // succulent.scale.set(scaleX, scaleY, scaleX);
-  }
-
-  camPosIndex++;
-  if (camPosIndex > 20000) {
-    camPosIndex = 0;
-  }
-  var camPos = spline.getPoint(camPosIndex / 20000);
-  //var camRot = spline.getTangent(camPosIndex / 1000);
-
-  //camera.position.x = camPos.x;
-  // camera.position.y = camPos.y;
-  // camera.position.z = camPos.z;
-
-
-  //camera.position.x = Math.sin(t / 10000) * 3.0;
-  //camera.position.y = 0.5;
-  //camera.position.z = Math.cos(t / 10000) * 3.0;
 
   controls.update(t);
-
   camera.updateProjectionMatrix();
-
   resize();
 }
 
