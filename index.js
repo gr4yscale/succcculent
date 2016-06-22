@@ -2,16 +2,21 @@ var domReady = require('domready');
 var dat = require('dat-gui');
 var glslify = require('glslify');
 var Succulent = require('./js/succulent')(THREE);
+var Presets = require('./js/presets')
+
 
 var camera, scene, renderer;
 var effect, controls;
 var element, container;
 var clock = new THREE.Clock();
 
+var presets = new Presets()
+
 var params = {
   speed: 1000,
 };
 
+var numPlants = 150;
 var boxes = [];
 var succulents = [];
 var shaders = [];
@@ -49,11 +54,14 @@ function findRandomUnusedSucculentPosition(offsetMin, offsetMax, box) {
   return newBox;
 }
 
-function addSucculent() {
-  var randomShaderIndex = Math.floor(getRandomArbitrary(0, shaders.length));
-  var shaderMaterial = shaders[randomShaderIndex];
+function addSucculent(plantParams) {
+  // var randomShaderIndex = Math.floor(getRandomArbitrary(0, shaders.length));
+  // var shaderMaterial = shaders[randomShaderIndex];
 
-  var succulent = Succulent(shaderMaterial);
+  var shaderIndex = plantParams['shaderIndex']
+  var shaderMaterial = shaders[shaderIndex];
+
+  var succulent = Succulent(shaderMaterial, plantParams);
 
   var bboxHelperA = new THREE.BoundingBoxHelper(succulent);
   bboxHelperA.update();
@@ -73,6 +81,7 @@ function addSucculent() {
   succulents.push(succulent);
 
   //randomPoints.push(new THREE.Vector3(succulent.position.x + getRandomArbitrary(-0.1, 0.1), 3.0, succulent.position.z + getRandomArbitrary(-0.1, 0.1)));
+  // UPDATE position of succulent preset here
 }
 
 function loadShaderMaterials() {
@@ -126,7 +135,8 @@ function setupTapGestureRecognizer() {
 // mc.get('doubletap').requireFailure('tripletap');
 
   mc.on("singletap", function(ev) {
-      addSucculent();
+      // addSucculent()
+      // ^^ this is for mobile devices - won't work anymore since we're loading/saving garden params...probably need to put this on another branch
   });
 
   mc.on("doubletap", function(ev) {
@@ -134,25 +144,69 @@ function setupTapGestureRecognizer() {
   });
 }
 
+// APP ENTRY POINT (LOVE THE MESSINESS, who has time for refactoring?)
+
 domReady(function(){
+
   document.body.addEventListener('keypress', function(e) {
-    addSucculent();
-  });
+    switch (e.key) {
+      case '+':
+        console.log('add a succulent randomly (outside of the normal parameter loading/saving)')
+        console.log('will have to get random params, deal with this later....')
+        break
+      case 's':
+        presets.save('plants.json')
+        break
+      case 'l': // load or generate/save plant params
+        loadGardenFromPresetFile()
+        break
+      case 'g': // generate new random garden
+        generateNewRandomGarden()
+        break
+    }
+  })
 
   setupTapGestureRecognizer();
-  initThree();
+  initThree()
+  generateNewRandomGarden();
 
-  for (var i = 0; i < succulents.length; i++) {
-    initialScaleMultipliers[i] = getRandomArbitrary(0.1, 1.0);
-    // console.log(initialScaleMultipliers[i]);
-    timeOffsets[i] = getRandomArbitrary(1.0, 30000.0);
+  // for (var i = 0; i < succulents.length; i++) {
+  //   initialScaleMultipliers[i] = getRandomArbitrary(0.1, 1.0);
+  //   // console.log(initialScaleMultipliers[i]);
+  //   timeOffsets[i] = getRandomArbitrary(1.0, 30000.0);
+  // }
+
+  animate()
+})
+
+function clearSucculents() {
+  for (var i=0; i < succulents.length; i++) {
+    scene.remove(succulents[i])
   }
+  succulents = []
+  boxes = []
+}
 
-  animate();
-});
+function loadGardenFromPresetFile() {
+  clearSucculents()
+  presets.load(function(plantParams) {
+    for (var i=0; i < numPlants; i++) {
+      addSucculent(plantParams[i])
+    }
+  })
+}
+
+function generateNewRandomGarden() {
+  clearSucculents()
+  presets.generatePlantParams(numPlants, shaders.length)
+  for (var i=0; i < numPlants; i++) {
+    addSucculent(presets.plantParams[i])
+  }
+}
+
+// THREE STUFF
 
 function initThree() {
-  // three boilerplate junk
   renderer = new THREE.WebGLRenderer({'antialias': true, alpha: false, precision: 'highp'});
   renderer.setPixelRatio( window.devicePixelRatio );
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -226,23 +280,12 @@ function resize() {
 
 function update(t) {
   var tickCounter = (t / params.speed);
-  shaders[0].uniforms.iGlobalTime.value = tickCounter;
-  shaders[1].uniforms.iGlobalTime.value = tickCounter;
-  shaders[2].uniforms.iGlobalTime.value = tickCounter;
-  shaders[3].uniforms.iGlobalTime.value = tickCounter;
-  shaders[4].uniforms.iGlobalTime.value = tickCounter;
-  shaders[5].uniforms.iGlobalTime.value = tickCounter;
-  shaders[6].uniforms.iGlobalTime.value = tickCounter;
-  shaders[7].uniforms.iGlobalTime.value = tickCounter;
-  shaders[8].uniforms.iGlobalTime.value = tickCounter;
-  shaders[9].uniforms.iGlobalTime.value = tickCounter;
-  shaders[10].uniforms.iGlobalTime.value = tickCounter;
-  shaders[11].uniforms.iGlobalTime.value = tickCounter;
-  shaders[12].uniforms.iGlobalTime.value = tickCounter;
-  shaders[13].uniforms.iGlobalTime.value = tickCounter;
 
   for (var i = 0; i < succulents.length; i++) {
     var succulent = succulents[i];
+  for (var j = 0; j < shaders.length; j++) {
+    shaders[j].uniforms.iGlobalTime.value = tickCounter;
+  }
     //var scale = (Math.sin(timeOffsets[i] + tickCounter * 1.0) + 1.0) * initialScaleMultipliers[i];
 
     var scaleTickCounter = (t / (params.speed * 3.0));
