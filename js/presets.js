@@ -2,6 +2,7 @@ let fileReader = new FileReader()
 
 var Presets = function() {
   this.plantParams = []
+  this.cameraMap = {}
 }
 
 function getRandomArbitrary(min, max) {
@@ -28,7 +29,8 @@ Presets.prototype.load = function(callback) {
   console.log(selectedFile)
 
   fileReader.onload = function(e) {
-    this.plantParams = JSON.parse(fileReader.result);
+    let data = JSON.parse(fileReader.result);
+    this.plantParams = data.plantParams;
     // console.log(fileReader.result)
     callback(this.plantParams)
   }
@@ -67,7 +69,18 @@ Presets.prototype.generatePlantParams = function(numberOfPlants, numberOfShaders
 }
 
 Presets.prototype.save = function(fileName) {
-  saveData(this.plantParams, fileName)
+  let data = {
+    plantParams: this.plantParams,
+    cameraMap: this.cameraMap
+  }
+  saveData(data, fileName)
+}
+
+Presets.prototype.updateCameraMap = function(key, controls, camera) {
+  this.cameraMap[key] = {
+    cameraMatrix: JSON.stringify(camera.matrix.toArray()),
+    controlsTarget: controls.target.clone()
+  }
 }
 
 module.exports = Presets

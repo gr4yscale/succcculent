@@ -20,6 +20,7 @@ var shaders = [];
 var fragShaders = [];
 var useVR = false; // disable device orientation when VR is off
 var randomPoints = [];
+var cameraRecordMode = false
 
 function getRandomArbitrary(min, max) {
   return Math.random() * (max - min) + min;
@@ -166,6 +167,23 @@ domReady(function(){
       case 'g': // generate new random garden
         generateNewRandomGarden()
         break
+      case '/':
+        cameraRecordMode = !cameraRecordMode
+        break
+      default:
+        if (cameraRecordMode) {
+          presets.updateCameraMap(e.key, controls, camera)
+        } else {
+          let map = presets.cameraMap[e.key]
+          let cameraMatrix = map['cameraMatrix']
+          // apply the position, quaternion, and scale from serialized matrix to the camera using decompose()
+          var m = new THREE.Matrix4();
+          m.fromArray(JSON.parse(cameraMatrix));
+          m.decompose(camera.position, camera.quaternion, camera.scale)
+          // orbit controls needed the center property to be updated to properly position the camera after a pan
+          controls.target.set(map.controlsTarget.x, map.controlsTarget.y, map.controlsTarget.z)
+        }
+        break
     }
   })
 
@@ -220,11 +238,6 @@ function initThree() {
   scene.add(camera);
 
   controls = new THREE.OrbitControls(camera, element);
-  controls.target.set(
-    camera.position.x + 0.1,
-    camera.position.y - 0.1,
-    camera.position.z
-  )
 
   // setup the scene
   var setupLights = require('./js/lights')(THREE, scene);
@@ -251,8 +264,7 @@ function update(t) {
     shaders[j].uniforms.iGlobalTime.value = tickCounter;
   }
 
-  controls.update(t);
-  camera.updateProjectionMatrix();
+  controls.update();
   resize();
 }
 
