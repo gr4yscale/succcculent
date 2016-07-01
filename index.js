@@ -1,9 +1,10 @@
 var domReady = require('domready');
 var dat = require('dat-gui');
 var glslify = require('glslify');
+var WebMidi = require('webmidi');
+
 var Succulent = require('./js/succulent')(THREE);
 var Presets = require('./js/presets')
-
 
 var camera, scene, renderer;
 var effect, controls;
@@ -21,6 +22,12 @@ var fragShaders = [];
 var useVR = false; // disable device orientation when VR is off
 var randomPoints = [];
 var cameraRecordMode = false
+var cameraKnobControlsEnabled = false
+
+var cameraPositionUpdateX = 0
+var cameraPositionUpdateY = 0
+var cameraPositionUpdateZ = 0
+var cameraDolly = 2500
 
 function getRandomArbitrary(min, max) {
   return Math.random() * (max - min) + min;
@@ -152,44 +159,11 @@ function setupTapGestureRecognizer() {
 // APP ENTRY POINT (LOVE THE MESSINESS, who has time for refactoring?)
 
 domReady(function(){
-  document.body.addEventListener('keypress', function(e) {
-    switch (e.key) {
-      case '+':
-        console.log('add a succulent randomly (outside of the normal parameter loading/saving)')
-        console.log('will have to get random params, deal with this later....')
-        break
-      case 's':
-        presets.save('plants.json')
-        break
-      case 'l': // load or generate/save plant params
-        loadGardenFromPresetFile()
-        break
-      case 'g': // generate new random garden
-        generateNewRandomGarden()
-        break
-      case '/':
-        cameraRecordMode = !cameraRecordMode
-        break
-      default:
-        if (cameraRecordMode) {
-          presets.updateCameraMap(e.key, controls, camera)
-        } else {
-          let map = presets.cameraMap[e.key]
-          let cameraMatrix = map['cameraMatrix']
-          // apply the position, quaternion, and scale from serialized matrix to the camera using decompose()
-          var m = new THREE.Matrix4();
-          m.fromArray(JSON.parse(cameraMatrix));
-          m.decompose(camera.position, camera.quaternion, camera.scale)
-          // orbit controls needed the center property to be updated to properly position the camera after a pan
-          controls.target.set(map.controlsTarget.x, map.controlsTarget.y, map.controlsTarget.z)
-        }
-        break
-    }
-  })
-
-  setupTapGestureRecognizer();
+  document.body.addEventListener('keypress', handleKeyPress)
+  setupMidi()
+  setupTapGestureRecognizer()
   initThree()
-  generateNewRandomGarden();
+  generateNewRandomGarden()
   animate()
 })
 
@@ -248,6 +222,47 @@ function initThree() {
   setTimeout(resize, 1);
 }
 
+function setupMidi() {
+  WebMidi.enable((err) => {
+    if (err) {
+      console.log('WebMidi could not be enabled.', err)
+    } else {
+      console.log('WebMidi enabled!')
+      console.log(WebMidi.inputs)
+    }
+
+    let input = WebMidi.getInputByName("Akai APC40")
+
+    input.addListener('controlchange', "all",
+      (e) => {
+        handleKnobChange(e.controller.number, e.value)
+        // console.log("Received 'controlchange' message.", e);
+      }
+    )
+
+    input.addListener('noteon', "all",
+      (e) => {
+        let uniqueKey = cameraHotKeyFromMidiEvent(e)
+        console.log('noteon | midi key: ' + uniqueKey)
+        // console.log(e)
+
+        switch (uniqueKey) {
+          case 'A#1':
+            cameraRecordMode = !cameraRecordMode
+            console.log('cameraRecordMode: ' + cameraRecordMode)
+            break
+          case 'D1':
+            cameraKnobControlsEnabled = !cameraKnobControlsEnabled
+            console.log('cameraKnobControlsEnabled: ' + cameraKnobControlsEnabled)
+            break
+          default:
+            handleCameraHotkeyPress(uniqueKey)
+        }
+      }
+    )
+  })
+}
+
 function resize() {
   var width = container.offsetWidth;
   var height = container.offsetHeight;
@@ -264,8 +279,13 @@ function update(t) {
     shaders[j].uniforms.iGlobalTime.value = tickCounter;
   }
 
-  controls.update();
-  resize();
+  if (cameraKnobControlsEnabled) {
+    camera.position.add(new THREE.Vector3(cameraPositionUpdateX, cameraPositionUpdateY, cameraPositionUpdateZ))
+    controls.handleMouseMoveDolly({clientX : 0, clientY: cameraDolly})
+  }
+
+  controls.update()
+  resize()
 }
 
 function render(dt) {
@@ -291,5 +311,79 @@ function fullscreen() {
     container.mozRequestFullScreen();
   } else if (container.webkitRequestFullscreen) {
     container.webkitRequestFullscreen();
+  }
+}
+
+function handleCameraHotkeyPress(key) {
+  console.log('handleCameraHotkeyPress: cameraRecordMode - ' + cameraRecordMode)
+  if (cameraRecordMode) {
+    presets.updateCameraMap(key, controls, camera)
+  } else {
+    let map = presets.cameraMap[key]
+    let cameraMatrix = map['cameraMatrix']
+
+    console.log(presets.cameraMap)
+
+    // apply the position, quaternion, and scale from serialized matrix to the camera using decompose()
+    var m = new THREE.Matrix4();
+    m.fromArray(JSON.parse(cameraMatrix));
+    m.decompose(camera.position, camera.quaternion, camera.scale)
+    // orbit controls needed the center property to be updated to properly position the camera after a pan
+    controls.target.set(map.controlsTarget.x, map.controlsTarget.y, map.controlsTarget.z)
+  }
+}
+
+function cameraHotKeyFromMidiEvent(e) {
+  return e.note.name + e.channel.toString()
+}
+
+function handleKeyPress(e) {
+  switch (e.key) {
+    case '+':
+      console.log('add a succulent randomly (outside of the normal parameter loading/saving)')
+      console.log('will have to get random params, deal with this later....')
+      break
+    case 's':
+      presets.save('plants.json')
+      break
+    case 'l': // load or generate/save plant params
+      loadGardenFromPresetFile()
+      break
+    case 'g': // generate new random garden
+      generateNewRandomGarden()
+      break
+    case '/':
+      cameraRecordMode = !cameraRecordMode
+      break
+    case 'p':
+      debugger
+      break
+    default:
+      handleCameraHotkeyPress(e.key)
+      break
+  }
+}
+
+function lerp(v0, v1, t) {
+    return v0*(1-t)+v1*t
+}
+
+function handleKnobChange(knobNumber, value) {
+  let v = value / 127.0
+  switch (knobNumber) {
+    case 48:
+      cameraPositionUpdateX = lerp(-0.01, 0.01, v)
+      break
+    case 49:
+      cameraPositionUpdateY = lerp(-0.01, 0.01, v)
+      break
+    case 50:
+      cameraPositionUpdateZ = lerp(-0.01, 0.01, v)
+      break
+    case 51:
+      cameraDolly = lerp(-5000, 5000, v)
+      console.log(cameraDolly)
+      break
+
   }
 }

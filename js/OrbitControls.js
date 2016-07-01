@@ -451,7 +451,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 	}
 
-	function handleMouseMoveDolly( event ) {
+	this.handleMouseMoveDolly = function ( event ) {
 
 		//console.log( 'handleMouseMoveDolly' );
 
@@ -531,7 +531,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 	}
 
-	function handleKeyDown( event ) {
+	this.handleKeyDown = function ( event ) {
 
 		//console.log( 'handleKeyDown' );
 
@@ -726,7 +726,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 			if ( scope.enableZoom === false ) return;
 
-			handleMouseMoveDolly( event );
+			scope.handleMouseMoveDolly( event );
 
 		} else if ( state === STATE.PAN ) {
 
@@ -772,7 +772,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		if ( scope.enabled === false || scope.enableKeys === false || scope.enablePan === false ) return;
 
-		handleKeyDown( event );
+		scope.handleKeyDown( event );
 
 	}
 
