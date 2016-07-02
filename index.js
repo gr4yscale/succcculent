@@ -24,10 +24,16 @@ var randomPoints = [];
 var cameraRecordMode = false
 var cameraKnobControlsEnabled = false
 
-var cameraPositionUpdateX = 0
-var cameraPositionUpdateY = 0
-var cameraPositionUpdateZ = 0
-var cameraDolly = 2500
+var cameraPositionUpdateX = 0.0
+var cameraPositionUpdateY = 0.0
+var cameraPositionUpdateZ = 0.0
+// var cameraDolly = 2500
+var cameraRotationDeltaX = 0.0
+var cameraRotationDeltaY = 0.0
+var cameraPositionDeltaX = 0.0
+var cameraPositionDeltaY = 0.0
+var joystickSensitivity = 1.0
+var cameraDollyDelta = 1.0
 
 function getRandomArbitrary(min, max) {
   return Math.random() * (max - min) + min;
@@ -227,39 +233,94 @@ function setupMidi() {
     if (err) {
       console.log('WebMidi could not be enabled.', err)
     } else {
-      console.log('WebMidi enabled!')
+      console.log('WebMidi enabled! Inputs found:')
       console.log(WebMidi.inputs)
     }
 
-    let input = WebMidi.getInputByName("Akai APC40")
+    let inputAPC40 = WebMidi.getInputByName("Akai APC40")
+    let inputTouchOSC = WebMidi.getInputByName("TouchOSC Bridge")
 
-    input.addListener('controlchange', "all",
-      (e) => {
-        handleKnobChange(e.controller.number, e.value)
-        // console.log("Received 'controlchange' message.", e);
-      }
-    )
-
-    input.addListener('noteon', "all",
-      (e) => {
-        let uniqueKey = cameraHotKeyFromMidiEvent(e)
-        console.log('noteon | midi key: ' + uniqueKey)
-        // console.log(e)
-
-        switch (uniqueKey) {
-          case 'A#1':
-            cameraRecordMode = !cameraRecordMode
-            console.log('cameraRecordMode: ' + cameraRecordMode)
-            break
-          case 'D1':
-            cameraKnobControlsEnabled = !cameraKnobControlsEnabled
-            console.log('cameraKnobControlsEnabled: ' + cameraKnobControlsEnabled)
-            break
-          default:
-            handleCameraHotkeyPress(uniqueKey)
+    if (inputAPC40) {
+      inputAPC40.addListener('controlchange', "all", (e) => {
+          handleKnobChange(e.controller.number, e.value)
+          // console.log("Received 'controlchange' message.", e);
         }
-      }
-    )
+      )
+
+      inputAPC40.addListener('noteon', "all",
+        (e) => {
+          let uniqueKey = cameraHotKeyFromMidiEvent(e)
+          console.log('noteon | midi key: ' + uniqueKey)
+          // console.log(e)
+          switch (uniqueKey) {
+            case 'A#1':
+              cameraRecordMode = !cameraRecordMode
+              console.log('cameraRecordMode: ' + cameraRecordMode)
+              break
+            case 'D1':
+              cameraKnobControlsEnabled = !cameraKnobControlsEnabled
+              console.log('cameraKnobControlsEnabled: ' + cameraKnobControlsEnabled)
+              break
+            default:
+              handleCameraHotkeyPress(uniqueKey)
+          }
+        }
+      )
+    }
+
+    if (inputTouchOSC) {
+      inputTouchOSC.addListener('noteoff', "all", (e) => {
+        console.log(e)
+      })
+
+      inputTouchOSC.addListener('pitchbend', "all", (e) => {
+        console.log(e)
+      })
+
+
+      inputTouchOSC.addListener('channelaftertouch', "all", (e) => {
+        console.log(e)
+      })
+
+
+      inputTouchOSC.addListener('programchange', "all", (e) => {
+        console.log(e)
+      })
+
+
+      inputTouchOSC.addListener('controlchange', "all", (e) => {
+        console.log(e)
+      })
+
+
+      inputTouchOSC.addListener('channelmode', "all", (e) => {
+          // for now all we use TouchOSC for is camera control
+          handleKnobChange(e.controller.number, e.value)
+          // console.log(e)
+          // console.log(e.controller.number + '   ' + e.value)
+        }
+      )
+
+      inputTouchOSC.addListener('noteon', "all",
+        (e) => {
+          let uniqueKey = cameraHotKeyFromMidiEvent(e)
+          console.log('noteon | midi key: ' + uniqueKey)
+          // console.log(e)
+          switch (uniqueKey) {
+            case 'A#1':
+              // cameraRecordMode = !cameraRecordMode
+              // console.log('cameraRecordMode: ' + cameraRecordMode)
+              break
+            case 'D1':
+              // cameraKnobControlsEnabled = !cameraKnobControlsEnabled
+              // console.log('cameraKnobControlsEnabled: ' + cameraKnobControlsEnabled)
+              break
+            default:
+              // handleCameraHotkeyPress(uniqueKey)
+          }
+        }
+      )
+    }
   })
 }
 
@@ -280,9 +341,14 @@ function update(t) {
   }
 
   if (cameraKnobControlsEnabled) {
-    camera.position.add(new THREE.Vector3(cameraPositionUpdateX, cameraPositionUpdateY, cameraPositionUpdateZ))
-    controls.handleMouseMoveDolly({clientX : 0, clientY: cameraDolly})
+    camera.position.set(cameraPositionUpdateX, cameraPositionUpdateY, cameraPositionUpdateZ)
+    // controls.handleMouseMoveDolly({clientX : 0, clientY: cameraDolly})
   }
+
+  controls.handleJoystickRotate(cameraRotationDeltaX * joystickSensitivity, cameraRotationDeltaY * joystickSensitivity)
+  // controls.scale += cameraDollyDelta
+  controls.handleJoystickDolly(cameraDollyDelta)
+  controls.handleJoystickPan(cameraPositionDeltaX * joystickSensitivity, cameraPositionDeltaY * joystickSensitivity)
 
   controls.update()
   resize()
@@ -318,18 +384,17 @@ function handleCameraHotkeyPress(key) {
   console.log('handleCameraHotkeyPress: cameraRecordMode - ' + cameraRecordMode)
   if (cameraRecordMode) {
     presets.updateCameraMap(key, controls, camera)
+    console.log('Updated camera presets hotkey: ' + key)
   } else {
     let map = presets.cameraMap[key]
     let cameraMatrix = map['cameraMatrix']
-
-    console.log(presets.cameraMap)
-
     // apply the position, quaternion, and scale from serialized matrix to the camera using decompose()
     var m = new THREE.Matrix4();
     m.fromArray(JSON.parse(cameraMatrix));
     m.decompose(camera.position, camera.quaternion, camera.scale)
     // orbit controls needed the center property to be updated to properly position the camera after a pan
     controls.target.set(map.controlsTarget.x, map.controlsTarget.y, map.controlsTarget.z)
+    console.log('Resetting camera with preset from hotkey: ' + key)
   }
 }
 
@@ -385,5 +450,23 @@ function handleKnobChange(knobNumber, value) {
       console.log(cameraDolly)
       break
 
+    // handle MIDI from TouchOSC
+
+    case 120:
+      cameraRotationDeltaY = lerp(-0.5, 0.5, v)
+      break
+    case 121:
+      cameraRotationDeltaX = lerp(0.5, -0.5, v)
+      break;
+    case 122:
+      cameraPositionDeltaY = lerp(-2.0, 2.0, v)
+      break;
+    case 123:
+      cameraPositionDeltaX = lerp(2.0, -2.0, v)
+      break;
+    case 124:
+      cameraDollyDelta = lerp(1.01, 0.99, v)
+    case 125:
+      joystickSensitivity = lerp(0, 8.0, v)
   }
 }

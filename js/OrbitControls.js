@@ -888,6 +888,32 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 	}
 
+	this.handleJoystickPan = function(deltaX, deltaY) {
+		pan(deltaX, deltaY)
+	}
+
+	this.handleJoystickRotate = function(deltaX, deltaY) {
+		// console.log( 'handleJoystickRotate' );
+		rotateDelta.set(deltaX, deltaY)
+
+		var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
+		// rotating across whole screen goes 360 degrees around
+		rotateLeft( 2 * Math.PI * rotateDelta.x / element.clientWidth * scope.rotateSpeed );
+		// rotating up and down along whole screen attempts to go 360, but limited to 180
+		rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight * scope.rotateSpeed );
+	}
+
+	this.handleJoystickDolly = function(zoomScale) {
+		// console.log(zoomScale)
+		if ( zoomScale > 1.0 ) {
+			scale = zoomScale
+			// dollyOut( zoomScale );
+		} else if ( zoomScale < 1.0 ) {
+			scale = zoomScale
+			// dollyIn( zoomScale );
+		}
+	}
+
 	//
 
 	scope.domElement.addEventListener( 'contextmenu', onContextMenu, false );
