@@ -76,10 +76,10 @@ Presets.prototype.save = function(fileName) {
   saveData(data, fileName)
 }
 
-Presets.prototype.updateCameraMap = function(key, controls, camera) {
+Presets.prototype.updateCameraMap = function(key, target, camera) {
   this.cameraMap[key] = {
     cameraMatrix: JSON.stringify(camera.matrix.toArray()),
-    controlsTarget: controls.target.clone()
+    controlsTarget: target.clone()
   }
 }
 
