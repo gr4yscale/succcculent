@@ -149,6 +149,18 @@ function setupTapGestureRecognizer() {
   mc.on("doubletap", function(ev) {
       useVR = !useVR;
   });
+function setSameShaderForAllPlants(shaderIndex) {
+  for (var i = 0; i < numPlants; i++) {
+    succulents[i].material.fragmentShader = fragShaders[shaderIndex]
+    succulents[i].material.needsUpdate = true
+  }
+}
+
+function resetShadersForAllPlants() {
+  for (var i=0; i < numPlants; i++) {
+    succulents[i].material.fragmentShader = fragShaders[presets.plantParams[i].shaderIndex]
+    succulents[i].material.needsUpdate = true
+  }
 }
 
 // APP ENTRY POINT (LOVE THE MESSINESS, who has time for refactoring?)
@@ -301,6 +313,13 @@ function handleControlsEvent(e) {
       }
       break
     }
+    case 'SET_SAME_SHADER_FOR_ALL_PLANTS': {
+      setSameShaderForAllPlants(e.data.shaderIndex)
+      break
+    }
+    case 'RESET_SHADERS_TO_INITIAL_SHADER_FOR_ALL_PLANTS':
+      resetShadersForAllPlants()
+      break
     default:
       console.log('Received unknown control type! *******')
       break

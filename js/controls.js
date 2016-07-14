@@ -3,6 +3,8 @@ function Controls(midi, camera, elementForOrbitControls, controlsEventCallback) 
   let self = this // fucking ES5 =\
   let lerp = require('./util.js').lerp
   let logControlSurfaceEvents = false
+
+  // camera
   let cameraPresetsLearn = false
   let cameraPositionUpdateX = 0.0
   let cameraPositionUpdateY = 0.0
@@ -13,6 +15,10 @@ function Controls(midi, camera, elementForOrbitControls, controlsEventCallback) 
   let cameraPositionDeltaY = 0.0
   let joystickSensitivity = 1.0
   let cameraDollyDelta = 1.0
+
+  // misc modes
+  let sameShaderForAllPlants = false
+  let sameShaderForAllPlantsIndex = 0
 
   this.orbitControls = new THREE.OrbitControls(camera, elementForOrbitControls)
 
@@ -47,7 +53,7 @@ function Controls(midi, camera, elementForOrbitControls, controlsEventCallback) 
         inputAPC40.addListener('programchange', "all", handleUnhandledMidiEvent)
         inputAPC40.addListener('channelmode', "all", handleUnhandledMidiEvent)
         inputAPC40.addListener('noteon', "all", handleMidiNoteOn.bind(self))
-        inputAPC40.addListener('controlchange', "all", handleMidiControlChange)
+        inputAPC40.addListener('controlchange', "all", handleMidiControlChangeAPC)
       }
 
       if (inputTouchOSC) {
@@ -57,7 +63,7 @@ function Controls(midi, camera, elementForOrbitControls, controlsEventCallback) 
         inputTouchOSC.addListener('programchange', "all", handleUnhandledMidiEvent)
         inputTouchOSC.addListener('controlchange', "all", handleUnhandledMidiEvent)
         inputTouchOSC.addListener('noteon', "all", handleMidiNoteOn.bind(self))
-        inputTouchOSC.addListener('channelmode', "all", handleMidiChannelMode)
+        inputTouchOSC.addListener('controlchange', "all", handleMidiControlChangeTouchOSC)
       }
     })
   }
@@ -96,8 +102,14 @@ function Controls(midi, camera, elementForOrbitControls, controlsEventCallback) 
         callbackForControlEvent('GENERATE_NEW_RANDOM_GARDEN')
         break
       case '/':
+      case 'E2': // TouchOSC
         cameraPresetsLearn = !cameraPresetsLearn
         break
+      case 'A4': { // TouchOSC
+        sameShaderForAllPlants = !sameShaderForAllPlants
+        callbackToUpdatePlantShaders(0)
+        break
+      }
       case 'p':
         debugger
         break
@@ -132,33 +144,42 @@ function Controls(midi, camera, elementForOrbitControls, controlsEventCallback) 
   }
 
   // MIDI - camera controls (TouchOSC)
-  function handleMidiChannelMode(e) {
+  function handleMidiControlChangeTouchOSC(e) {
     console.log('Knob #: ' + e.controller.number + ' | Value: ' + e.value) // TOFIX: replace this with generic MIDI log function?
     let v = e.value / 127.0
 
     switch (e.controller.number) {
-      case 120:
+      case 0:
         cameraRotationDeltaY = lerp(-0.5, 0.5, v)
         break
-      case 121:
+      case 1:
         cameraRotationDeltaX = lerp(0.5, -0.5, v)
         break;
-      case 122:
+      case 2:
         cameraPositionDeltaY = lerp(-2.0, 2.0, v)
         break;
-      case 123:
+      case 3:
         cameraPositionDeltaX = lerp(2.0, -2.0, v)
         break;
-      case 124:
-        cameraDollyDelta = lerp(1.01, 0.99, v)
-      case 125:
+      case 4:
         joystickSensitivity = lerp(0, 8.0, v)
+        break
+      case 5:
+        cameraDollyDelta = lerp(1.01, 0.99, v)
+        break
+      case 9: {
+        sameShaderForAllPlantsIndex = Math.floor(lerp(0, 14, v)) //TOFIX: keep this within bounds, pass in the shaders array length
+        if (sameShaderForAllPlants) {
+          callbackToUpdatePlantShaders(sameShaderForAllPlantsIndex)
+        }
+        break
+      }
       default:
     }
   }
 
   // MIDI - camera controls (APC40)
-  function handleMidiControlChange(e) {
+  function handleMidiControlChangeAPC(e) {
     console.log('Knob #: ' + e.controller.number + ' | Value: ' + e.value) // TOFIX: replace this with generic MIDI log function?
     let v = e.value / 127.0
 
@@ -180,8 +201,21 @@ function Controls(midi, camera, elementForOrbitControls, controlsEventCallback) 
   }
 
   function handleUnhandledMidiEvent(e) {
-    console.log('Unhandled MIDI event fired!')
-    console.log(e)
+    // console.log('Unhandled MIDI event fired!')
+    // console.log(e)
+  }
+
+
+  //////////////////////////////////////////
+  // CALLBACK HELPERS
+
+  function callbackToUpdatePlantShaders(shaderIndex) {
+    if (sameShaderForAllPlants) {
+      let data = {shaderIndex: shaderIndex}
+      callbackForControlEvent('SET_SAME_SHADER_FOR_ALL_PLANTS', data)
+    } else {
+      callbackForControlEvent('RESET_SHADERS_TO_INITIAL_SHADER_FOR_ALL_PLANTS')
+    }
   }
 
   // GOOOOOOOOOOOO!
