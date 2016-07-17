@@ -1,11 +1,14 @@
-function Controls(midi, camera, elementForOrbitControls, controlsEventCallback) {
+function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCallback) {
 
   let self = this // fucking ES5 =\
   let lerp = require('./util.js').lerp
+  let FirstPersonControls = require('./controls_first_person.js')
   let logControlSurfaceEvents = false
 
   // camera
   let cameraPresetsLearn = false
+
+  // TOFIX: make these Vector3's probably
   let cameraPositionUpdateX = 0.0
   let cameraPositionUpdateY = 0.0
   let cameraPositionUpdateZ = 0.0
@@ -16,19 +19,58 @@ function Controls(midi, camera, elementForOrbitControls, controlsEventCallback) 
   let joystickSensitivity = 1.0
   let cameraDollyDelta = 1.0
 
+  let firstPersonEnabled = true
+  let firstPersonDirection = 0
+  let xboxLeftJoystickButtonLastState = false
+
   // misc modes
   let sameShaderForAllPlants = false
   let sameShaderForAllPlantsIndex = 0
 
-  this.orbitControls = new THREE.OrbitControls(camera, elementForOrbitControls)
 
   // This is only a member function because I don't want this references everywhere on the camera controls and etc variables
-  this.updateCameraAndOrbitControlsState = function() {
+  this.updateCameraWithOrbitControls = function() {
+    // if (firstPersonEnabled) return
+
     this.orbitControls.handleJoystickRotate(cameraRotationDeltaX * joystickSensitivity, cameraRotationDeltaY * joystickSensitivity)
     // this.orbitControls.scale += cameraDollyDelta
     this.orbitControls.handleJoystickDolly(cameraDollyDelta)
     this.orbitControls.handleJoystickPan(cameraPositionDeltaX * joystickSensitivity, cameraPositionDeltaY * joystickSensitivity)
     this.orbitControls.update()
+  }
+
+  this.updateCameraFromGamepadState = function() {
+    // if (!firstPersonEnabled) return
+
+    if (navigator.webkitGetGamepads) {
+      var gamepad = navigator.webkitGetGamepads()[0]
+    } else {
+      var gamepad = navigator.getGamepads()[0]
+    }
+
+    if (gamepad) {
+      if (gamepad.buttons[6].pressed == true) { // left trigger button
+        firstPersonDirection = -1
+      } else if (gamepad.buttons[7].pressed == true) { // right trigger button
+        firstPersonDirection = 1
+      } else {
+        firstPersonDirection = 0
+      }
+
+      xboxLeftJoystickButtonState = gamepad.buttons[10].pressed
+      if (xboxLeftJoystickButtonState != xboxLeftJoystickButtonLastState) {
+        if (xboxLeftJoystickButtonState) {
+          buttonPressed('xbox10')
+        }
+        xboxLeftJoystickButtonLastState = xboxLeftJoystickButtonState
+      }
+
+      this.firstPersonControls.update(gamepad.axes[0],
+                                      gamepad.axes[1],
+                                      firstPersonDirection,
+                                      gamepad.axes[2],
+                                      gamepad.axes[3])
+    }
   }
 
   ////////////////////////////////////////////
@@ -101,15 +143,21 @@ function Controls(midi, camera, elementForOrbitControls, controlsEventCallback) 
       case 'g':
         callbackForControlEvent('GENERATE_NEW_RANDOM_GARDEN')
         break
-      case '/':
+      case 'A1': //APC40
       case 'E2': // TouchOSC
+      case '/':
+      case 'xbox10':
         cameraPresetsLearn = !cameraPresetsLearn
+        log('Updated camera presets learn state: ' + cameraPresetsLearn)
         break
       case 'A4': { // TouchOSC
         sameShaderForAllPlants = !sameShaderForAllPlants
         callbackToUpdatePlantShaders(0)
         break
       }
+      case 'D#2':
+        firstPersonEnabled = !firstPersonEnabled
+        break
       case 'p':
         debugger
         break
@@ -221,6 +269,10 @@ function Controls(midi, camera, elementForOrbitControls, controlsEventCallback) 
   // GOOOOOOOOOOOO!
   initializeMidi()
   document.body.addEventListener('keypress', handleKeyPress.bind(this))
+  // TOFIX: remove the this. reference
+  this.orbitControls = new THREE.OrbitControls(camera, elementForOrbitControls)
+  this.firstPersonControls = new FirstPersonControls(camera)
+  scene.add(this.firstPersonControls.getObject())
 }
 
 
@@ -228,8 +280,8 @@ function Controls(midi, camera, elementForOrbitControls, controlsEventCallback) 
 // Public methods
 
 Controls.prototype.update = function() {
-  // TOFIX: update gamepad state
-  this.updateCameraAndOrbitControlsState()
+    this.updateCameraFromGamepadState()
+    this.updateCameraWithOrbitControls()
 }
 
 module.exports = Controls
