@@ -26,13 +26,14 @@ function saveData(data, fileName) {
 Presets.prototype.load = function(callback) {
   // hacky, assumes there's a dom element with id of filepicker. good thing that there is! ;p
   let selectedFile = document.getElementById('filepicker').files[0]
-  console.log(selectedFile)
+  let self = this // TOFIX: fucking ES5!
+  console.log('Loading presets file: ' + selectedFile)
 
   fileReader.onload = function(e) {
     let data = JSON.parse(fileReader.result);
-    this.plantParams = data.plantParams;
-    // console.log(fileReader.result)
-    callback(this.plantParams)
+    self.plantParams = data.plantParams;
+    self.cameraMap = data.cameraMap
+    callback(self.plantParams)
   }
   fileReader.readAsText(selectedFile)
 }
