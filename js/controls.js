@@ -3,6 +3,7 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
   let self = this // fucking ES5 =\
   let lerp = require('./util.js').lerp
   let FirstPersonControls = require('./controls_first_person.js')
+  let outputAPC40
   let logControlSurfaceEvents = false
 
   // camera
@@ -86,6 +87,7 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
       }
 
       let inputAPC40 = midi.getInputByName("Akai APC40")
+      outputAPC40 = midi.getOutputByName("Akai APC40")
       let inputTouchOSC = midi.getInputByName("TouchOSC Bridge")
 
       if (inputAPC40) {
@@ -95,6 +97,7 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
         inputAPC40.addListener('programchange', "all", handleUnhandledMidiEvent)
         inputAPC40.addListener('channelmode', "all", handleUnhandledMidiEvent)
         inputAPC40.addListener('noteon', "all", handleMidiNoteOn.bind(self))
+        inputAPC40.addListener('noteoff', "all", handleMidiNoteOff)
         inputAPC40.addListener('controlchange', "all", handleMidiControlChangeAPC)
       }
 
@@ -105,7 +108,12 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
         inputTouchOSC.addListener('programchange', "all", handleUnhandledMidiEvent)
         inputTouchOSC.addListener('controlchange', "all", handleUnhandledMidiEvent)
         inputTouchOSC.addListener('noteon', "all", handleMidiNoteOn.bind(self))
+        inputTouchOSC.addListener('noteoff', "all", handleMidiNoteOff)
         inputTouchOSC.addListener('controlchange', "all", handleMidiControlChangeTouchOSC)
+      }
+
+      if (outputAPC40) {
+        updateAPC40ToggleButtonLEDs() // update LED state on init to make sure they properly represent current state
       }
     })
   }
@@ -126,6 +134,26 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
     return e.note.name + e.channel.toString()
   }
 
+  function updateAPC40Button(buttonIdentifier, illuminate) {
+    console.log('updateAPC40Button: ' + buttonIdentifier)
+
+    let buttonIdentifierToAPC40Packet = {
+      'F8' : {0: 0x97, 1: 0x35},
+      'F#8' :  {0: 0x97, 1: 0x36}
+    }
+
+    let map = buttonIdentifierToAPC40Packet[buttonIdentifier]
+
+    let lastByte = illuminate ? 0x01 : 0x00
+    let packet = [map[0],map[1],lastByte]
+    outputAPC40.send(0xFF, packet)
+  }
+
+  function updateAPC40ToggleButtonLEDs() {
+    updateAPC40Button('F8', cameraPresetsLearn)
+    updateAPC40Button('F#8', firstPersonEnabled)
+  }
+
   function buttonPressed(buttonIdentifier) {
     console.log('Handling button press: ' + buttonIdentifier)
 
@@ -143,21 +171,28 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
       case 'g':
         callbackForControlEvent('GENERATE_NEW_RANDOM_GARDEN')
         break
-      case 'A1': //APC40
+      case 'F8': // APC40
       case 'E2': // TouchOSC
       case '/':
-      case 'xbox10':
+      case 'xbox10': {
         cameraPresetsLearn = !cameraPresetsLearn
         callbackForControlEvent('CAMERA_PRESETS_LEARN_TOGGLED', {cameraPresetsLearn: cameraPresetsLearn})
+        updateAPC40ToggleButtonLEDs()
         break
+      }
       case 'A4': { // TouchOSC
         sameShaderForAllPlants = !sameShaderForAllPlants
         callbackToUpdatePlantShaders(0)
         break
       }
-      case 'D#2':
+      case 'F#8': // APC40
+      case 'D#2': // TouchOSC
+      case '.': {
         firstPersonEnabled = !firstPersonEnabled
+        callbackForControlEvent('FIRST_PERSON_CAMERA_CONTROLS_TOGGLED')
+        updateAPC40ToggleButtonLEDs()
         break
+      }
       case 'p':
         debugger
         break
@@ -246,6 +281,10 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
         break
       default:
     }
+  }
+
+  function handleMidiNoteOff(e) {
+    updateAPC40ToggleButtonLEDs()
   }
 
   function handleUnhandledMidiEvent(e) {

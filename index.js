@@ -311,6 +311,9 @@ function handleControlsEvent(e) {
     case 'RESET_SHADERS_TO_INITIAL_SHADER_FOR_ALL_PLANTS':
       resetShadersForAllPlants()
       break
+    case 'FIRST_PERSON_CAMERA_CONTROLS_TOGGLED':
+      // TOFIX: indicator here?
+      break
     default:
       console.log('Received unknown control type! *******')
       break
