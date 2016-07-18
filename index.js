@@ -129,26 +129,6 @@ function loadShaderMaterials() {
   }
 }
 
-function setupTapGestureRecognizer() {
-  var mc = new Hammer.Manager(document.body);
-  // Tap recognizer with minimal 2 taps
-  mc.add( new Hammer.Tap({ event: 'doubletap', taps: 2 }) );
-  mc.add( new Hammer.Tap({ event: 'singletap' }) );
-  // we want to recognize this simulatenous, so a quadrupletap will be detected even while a tap has been recognized.
-  mc.get('doubletap').recognizeWith('singletap');
-  // mc.get('tripletap').recognizeWith('doubletap');
-  // we only want to trigger a tap, when we don't have detected a doubletap
-  mc.get('singletap').requireFailure('doubletap');
-// mc.get('doubletap').requireFailure('tripletap');
-
-  mc.on("singletap", function(ev) {
-      // addSucculent()
-      // ^^ this is for mobile devices - won't work anymore since we're loading/saving garden params...probably need to put this on another branch
-  });
-
-  mc.on("doubletap", function(ev) {
-      useVR = !useVR;
-  });
 function setSameShaderForAllPlants(shaderIndex) {
   for (var i = 0; i < numPlants; i++) {
     succulents[i].material.fragmentShader = fragShaders[shaderIndex]
