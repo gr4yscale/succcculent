@@ -271,6 +271,17 @@ function handleControlsEvent(e) {
     case 'DEBUGGER_PAUSE':
       debugger
       break
+    case 'CAMERA_PRESETS_LEARN_TOGGLED': {
+      let cameraPresetsLearn = e.data.cameraPresetsLearn
+      let learnIndicatorElement = document.getElementById('presetsLearnIndicator')
+      if (cameraPresetsLearn) {
+        learnIndicatorElement.style.display = 'block'
+      } else {
+        learnIndicatorElement.style.display = 'none'
+      }
+      console.log('Updated camera presets learn state: ' + cameraPresetsLearn)
+      break
+    }
     case 'CAMERA_PRESET_LEARN': {
       let presetIdentifier = e.data.presetIdentifier
       presets.updateCameraMap(presetIdentifier, controls.orbitControls.target, camera) // TOFIX: get orbitControls target from my controls wrapper

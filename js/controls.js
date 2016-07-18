@@ -148,7 +148,7 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
       case '/':
       case 'xbox10':
         cameraPresetsLearn = !cameraPresetsLearn
-        log('Updated camera presets learn state: ' + cameraPresetsLearn)
+        callbackForControlEvent('CAMERA_PRESETS_LEARN_TOGGLED', {cameraPresetsLearn: cameraPresetsLearn})
         break
       case 'A4': { // TouchOSC
         sameShaderForAllPlants = !sameShaderForAllPlants
