@@ -176,7 +176,7 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
       case '/':
       case 'xbox10': {
         cameraPresetsLearn = !cameraPresetsLearn
-        callbackForControlEvent('CAMERA_PRESETS_LEARN_TOGGLED', {cameraPresetsLearn: cameraPresetsLearn})
+        callbackForControlEvent('CAMERA_PRESETS_LEARN_TOGGLED', {key: 'cameraPresetsLearn', value: cameraPresetsLearn})
         updateAPC40ToggleButtonLEDs()
         break
       }
@@ -189,7 +189,7 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
       case 'D#2': // TouchOSC
       case '.': {
         firstPersonEnabled = !firstPersonEnabled
-        callbackForControlEvent('FIRST_PERSON_CAMERA_CONTROLS_TOGGLED')
+        callbackForControlEvent('FIRST_PERSON_CAMERA_CONTROLS_TOGGLED', {key: 'firstPersonEnabled', value: firstPersonEnabled})
         updateAPC40ToggleButtonLEDs()
         break
       }

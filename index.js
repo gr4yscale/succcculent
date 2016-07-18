@@ -249,6 +249,16 @@ function fullscreen() {
   }
 }
 
+function updateIndicators(data) {
+  let el = document.getElementById(data.key)
+  if (data.value) {
+    el.style.display = 'block'
+  } else {
+    el.style.display = 'none'
+  }
+  console.log('Updated indicator view for ' + data.key + ': ' + data.value)
+}
+
 function handleControlsEvent(e) {
   console.log('Handling control event of type: ' + e.type)
   switch (e.type) {
@@ -272,14 +282,7 @@ function handleControlsEvent(e) {
       debugger
       break
     case 'CAMERA_PRESETS_LEARN_TOGGLED': {
-      let cameraPresetsLearn = e.data.cameraPresetsLearn
-      let learnIndicatorElement = document.getElementById('presetsLearnIndicator')
-      if (cameraPresetsLearn) {
-        learnIndicatorElement.style.display = 'block'
-      } else {
-        learnIndicatorElement.style.display = 'none'
-      }
-      console.log('Updated camera presets learn state: ' + cameraPresetsLearn)
+      updateIndicators(e.data)
       break
     }
     case 'CAMERA_PRESET_LEARN': {
@@ -311,9 +314,10 @@ function handleControlsEvent(e) {
     case 'RESET_SHADERS_TO_INITIAL_SHADER_FOR_ALL_PLANTS':
       resetShadersForAllPlants()
       break
-    case 'FIRST_PERSON_CAMERA_CONTROLS_TOGGLED':
-      // TOFIX: indicator here?
+    case 'FIRST_PERSON_CAMERA_CONTROLS_TOGGLED': {
+      updateIndicators(e.data)
       break
+    }
     default:
       console.log('Received unknown control type! *******')
       break
