@@ -3,8 +3,9 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
   let self = this // fucking ES5 =\
   let lerp = require('./util.js').lerp
   let FirstPersonControls = require('./controls_first_person.js')
+  let firstPersonControls
   let outputAPC40
-  let logControlSurfaceEvents = false
+  let logControlSurfaceEvents = true
 
   // camera
   let cameraPresetsLearn = false
@@ -20,7 +21,7 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
   let joystickSensitivity = 1.0
   let cameraDollyDelta = 1.0
 
-  let firstPersonEnabled = true
+  let firstPersonEnabled = false
   let firstPersonDirection = 0
   let xboxLeftJoystickButtonLastState = false
 
@@ -34,7 +35,6 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
     // if (firstPersonEnabled) return
 
     this.orbitControls.handleJoystickRotate(cameraRotationDeltaX * joystickSensitivity, cameraRotationDeltaY * joystickSensitivity)
-    // this.orbitControls.scale += cameraDollyDelta
     this.orbitControls.handleJoystickDolly(cameraDollyDelta)
     this.orbitControls.handleJoystickPan(cameraPositionDeltaX * joystickSensitivity, cameraPositionDeltaY * joystickSensitivity)
     this.orbitControls.update()
@@ -66,13 +66,23 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
         xboxLeftJoystickButtonLastState = xboxLeftJoystickButtonState
       }
 
-      this.firstPersonControls.update(gamepad.axes[0],
-                                      gamepad.axes[1],
-                                      firstPersonDirection,
-                                      gamepad.axes[2],
-                                      gamepad.axes[3])
+      firstPersonControls.update(gamepad.axes[0],
+                                  gamepad.axes[1],
+                                  firstPersonDirection,
+                                  gamepad.axes[2],
+                                  gamepad.axes[3])
     }
   }
+
+  this.cameraReset = function() {
+    camera.position.set(0, 0.35, 0.75)
+    this.orbitControls.target.set(0,0,0)
+
+    scene.add(firstPersonControls.getObject())
+    firstPersonControls = new FirstPersonControls(camera)
+    scene.add(firstPersonControls.getObject())
+  }
+
 
   ////////////////////////////////////////////
   // Private methods
@@ -191,8 +201,13 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
         firstPersonEnabled = !firstPersonEnabled
         callbackForControlEvent('FIRST_PERSON_CAMERA_CONTROLS_TOGGLED', {key: 'firstPersonEnabled', value: firstPersonEnabled})
         updateAPC40ToggleButtonLEDs()
+        this.cameraReset.bind(this)()
         break
       }
+      case 'D1': // APC40
+      case 'D2': // TouchOSC
+        this.cameraReset.bind(this)()
+        break
       case 'p':
         debugger
         break
@@ -308,15 +323,15 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
   // GOOOOOOOOOOOO!
   initializeMidi()
   document.body.addEventListener('keypress', handleKeyPress.bind(this))
-  // TOFIX: remove the this. reference
   this.orbitControls = new THREE.OrbitControls(camera, elementForOrbitControls)
-  this.firstPersonControls = new FirstPersonControls(camera)
-  scene.add(this.firstPersonControls.getObject())
+  firstPersonControls = new FirstPersonControls(camera)
+  scene.add(firstPersonControls.getObject())
 }
 
 
 /////////////////////////////
 // Public methods
+// TOFIX: this reference
 
 Controls.prototype.update = function() {
     this.updateCameraFromGamepadState()
