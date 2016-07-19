@@ -217,6 +217,7 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
   }
 
   function updateAPC40Button(buttonIdentifier, illuminate, blink) {
+    if (!outputAPC40) return
     console.log('updateAPC40Button: ' + buttonIdentifier)
     let map = buttonIdentifierToAPC40Packet[buttonIdentifier]
     let lastByte = illuminate ? 0x01 : 0x00
