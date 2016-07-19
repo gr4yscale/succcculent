@@ -1,3 +1,5 @@
+// TOFIX: This needs refactoring!
+
 function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCallback) {
 
   let self = this // fucking ES5 =\
@@ -22,7 +24,7 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
   let joystickSensitivity = 1.0
   let cameraDollyDelta = 1.0
 
-  let firstPersonEnabled = false
+  let firstPersonEnabled = true
   let firstPersonDirection = 0
   let xboxLeftJoystickButtonLastState = false
 
@@ -36,6 +38,17 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
     '/' :  {0: 0x97, 1: 0x35}, // TOFIX: DRY this up later
     'F#8' :  {0: 0x97, 1: 0x36}
   }
+
+  // Audio Analysis data in from VDMX
+  this.audioAnalysisFilter1 = 0.5
+  this.audioAnalysisFilter2 = 0.5
+  this.audioAnalysisFilter3 = 0.5
+  this.audioAnalysisFilter1Gain = 0.1
+  this.audioAnalysisFilter2Gain = 0.1
+  this.audioAnalysisFilter3Gain = 0.1
+  this.audioAnalaysiFilter1TriggerThreshold = 1.0
+  this.audioAnalaysiFilter2TriggerThreshold = 1.0
+  this.audioAnalaysiFilter2TriggerThreshold = 1.0
 
   // This is only a member function because I don't want this references everywhere on the camera controls and etc variables
   this.updateCameraWithOrbitControls = function() {
@@ -105,6 +118,7 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
       let inputAPC40 = midi.getInputByName("Akai APC40")
       outputAPC40 = midi.getOutputByName("Akai APC40")
       let inputTouchOSC = midi.getInputByName("TouchOSC Bridge")
+      let inputAudioAnalysis = midi.getInputByName("From VDMX")
 
       if (inputAPC40) {
         inputAPC40.addListener('noteoff', "all", handleUnhandledMidiEvent)
@@ -130,6 +144,36 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
 
       if (outputAPC40) {
         updateAPC40ToggleButtonLEDs() // update LED state on init to make sure they properly represent current state
+      }
+
+      if (inputAudioAnalysis) {
+        inputAudioAnalysis.addListener('controlchange', "all", (e) => {
+          if (e.value && this.audioAnalysisEnabled) {
+            let v = e.value / 127.0
+            switch(e.controller.number) {
+              case 0:
+                this.audioAnalysisFilter1 = v
+                break
+              case 1:
+                this.audioAnalysisFilter2 = v
+                break
+              case 2:
+                this.audioAnalysisFilter3 = v
+                break
+            }
+
+            let data = {
+              filter1Value: this.audioAnalysisFilter1,
+              filter2Value: this.audioAnalysisFilter2,
+              filter3Value: this.audioAnalysisFilter3,
+              filter1Gain: this.audioAnalysisFilter1Gain,
+              filter2Gain: this.audioAnalysisFilter2Gain,
+              filter3Gain: this.audioAnalysisFilter3Gain
+            }
+
+            callbackForControlEvent('AUDIO_ANALYSIS_FILTER_UPDATE', data)
+          }
+        })
       }
     })
   }
@@ -178,6 +222,9 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
       case 'g':
         callbackForControlEvent('GENERATE_NEW_RANDOM_GARDEN')
         break
+      case ',':
+        self.audioAnalysisEnabled = !self.audioAnalysisEnabled // TOFIX:
+        break
       case 'F8': // APC40
       case 'E2': // TouchOSC
       case '/':
@@ -223,7 +270,6 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
               controlsOrbitMatrix: this.orbitControls.object.matrix.toArray(),
               controlsOrbitTarget: this.orbitControls.target.clone()
             })
-            console.log(this.orbitControls)
           }
           console.log(data)
           callbackForControlEvent('CAMERA_PRESET_LEARN', data)
@@ -332,11 +378,12 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
   }
 
   // GOOOOOOOOOOOO!
-  initializeMidi()
+  initializeMidi.bind(this)()
   document.body.addEventListener('keypress', handleKeyPress.bind(this))
   this.orbitControls = new THREE.OrbitControls(camera, elementForOrbitControls)
   this.firstPersonControls = new FirstPersonControls(camera)
   scene.add(this.firstPersonControls.getObject())
+  this.audioAnalysisEnabled = true
 }
 
 
@@ -347,6 +394,13 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
 Controls.prototype.update = function() {
     this.updateCameraFromGamepadState()
     this.updateCameraWithOrbitControls()
+
+    if (this.audioAnalysisEnabled) {
+      this.camera.position.set(this.camera.position.x, this.audioAnalysisFilter1 * this.audioAnalysisFilter1Gain,this.camera.position.z)
+      // Update rotation with FFT MIDI data
+      // let v = this.camera.rotation
+      // this.camera.rotation.set(this.audioAnalysisFilter1 * this.audioAnalysisFilter1Gain, this.camera.rotation.y, this.camera.rotation.z)
+    }
 }
 
 Controls.prototype.updateFromPresetData = function(data) {

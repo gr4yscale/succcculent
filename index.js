@@ -315,6 +315,9 @@ function handleControlsEvent(e) {
       updateIndicators(e.data)
       break
     }
+    case 'AUDIO_ANALYSIS_FILTER_UPDATE':
+      console.log(e.data.filter1Value + ' | ' + e.data.filter2Value + ' | ' + e.data.filter3Value)
+      break
     default:
       console.log('Received unknown control type! *******')
       break
