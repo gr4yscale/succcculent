@@ -3,12 +3,13 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
   let self = this // fucking ES5 =\
   let lerp = require('./util.js').lerp
   let FirstPersonControls = require('./controls_first_person.js')
-  let firstPersonControls
   let outputAPC40
   let logControlSurfaceEvents = true
 
   // camera
+  this.camera = camera
   let cameraPresetsLearn = false
+  let orbitControlsEnabled = true
 
   // TOFIX: make these Vector3's probably
   let cameraPositionUpdateX = 0.0
@@ -29,10 +30,16 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
   let sameShaderForAllPlants = false
   let sameShaderForAllPlantsIndex = 0
 
+  let lastCameraPresetIdentifierPressed
+  const buttonIdentifierToAPC40Packet = {
+    'F8' : {0: 0x97, 1: 0x35},
+    '/' :  {0: 0x97, 1: 0x35}, // TOFIX: DRY this up later
+    'F#8' :  {0: 0x97, 1: 0x36}
+  }
 
   // This is only a member function because I don't want this references everywhere on the camera controls and etc variables
   this.updateCameraWithOrbitControls = function() {
-    // if (firstPersonEnabled) return
+    if (!orbitControlsEnabled) return
 
     this.orbitControls.handleJoystickRotate(cameraRotationDeltaX * joystickSensitivity, cameraRotationDeltaY * joystickSensitivity)
     this.orbitControls.handleJoystickDolly(cameraDollyDelta)
@@ -41,7 +48,7 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
   }
 
   this.updateCameraFromGamepadState = function() {
-    // if (!firstPersonEnabled) return
+    if (!firstPersonEnabled) return
 
     if (navigator.webkitGetGamepads) {
       var gamepad = navigator.webkitGetGamepads()[0]
@@ -66,21 +73,20 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
         xboxLeftJoystickButtonLastState = xboxLeftJoystickButtonState
       }
 
-      firstPersonControls.update(gamepad.axes[0],
-                                  gamepad.axes[1],
-                                  firstPersonDirection,
-                                  gamepad.axes[2],
-                                  gamepad.axes[3])
+      this.firstPersonControls.update(gamepad.axes[0],
+                                      gamepad.axes[1],
+                                      firstPersonDirection,
+                                      gamepad.axes[2],
+                                      gamepad.axes[3])
     }
   }
 
   this.cameraReset = function() {
-    camera.position.set(0, 0.35, 0.75)
+    this.camera.position.set(0, 0.35, 0.75)
     this.orbitControls.target.set(0,0,0)
-
-    scene.add(firstPersonControls.getObject())
-    firstPersonControls = new FirstPersonControls(camera)
-    scene.add(firstPersonControls.getObject())
+    // scene.remove(this.firstPersonControls.getObject())
+    // firstPersonControls = new FirstPersonControls(this.camera)
+    // scene.add(this.firstPersonControls.getObject())
   }
 
 
@@ -128,13 +134,6 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
     })
   }
 
-  function presetDataAcquiredCallback(matrix, target) {
-    // apply position, quaternion, and scale from the matrix coming from presets to the camera using decompose()
-    matrix.decompose(camera.position, camera.quaternion, camera.scale)
-    // orbit controls needed the center property to be updated to properly position the camera after a pan, argh
-    this.orbitControls.target.set(target.x, target.y, target.z)
-  }
-
   function callbackForControlEvent(type, data) {
     let event = { type: type, data: data}
     controlsEventCallback(event)
@@ -144,24 +143,22 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
     return e.note.name + e.channel.toString()
   }
 
-  function updateAPC40Button(buttonIdentifier, illuminate) {
+  function updateAPC40Button(buttonIdentifier, illuminate, blink) {
     console.log('updateAPC40Button: ' + buttonIdentifier)
-
-    let buttonIdentifierToAPC40Packet = {
-      'F8' : {0: 0x97, 1: 0x35},
-      'F#8' :  {0: 0x97, 1: 0x36}
-    }
-
     let map = buttonIdentifierToAPC40Packet[buttonIdentifier]
-
     let lastByte = illuminate ? 0x01 : 0x00
+    if (blink) lastByte = 0x02
     let packet = [map[0],map[1],lastByte]
     outputAPC40.send(0xFF, packet)
   }
 
   function updateAPC40ToggleButtonLEDs() {
-    updateAPC40Button('F8', cameraPresetsLearn)
-    updateAPC40Button('F#8', firstPersonEnabled)
+    updateAPC40Button('F8', cameraPresetsLearn, false)
+    updateAPC40Button('F#8', firstPersonEnabled, false)
+    let button = buttonIdentifierToAPC40Packet[lastCameraPresetIdentifierPressed]
+    if (button) {
+      updateAPC40Button(button, true, true)
+    }
   }
 
   function buttonPressed(buttonIdentifier) {
@@ -214,10 +211,24 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
       default: {
         if (cameraPresetsLearn) {
           let data = {presetIdentifier: buttonIdentifier}
+
+          if (firstPersonEnabled) {
+            data = Object.assign({}, data, {
+              controlsType: 'firstPerson',
+              controlsFirstPersonMatrix: this.firstPersonControls.getObject().matrix.toArray()
+            })
+          } else {
+            data = Object.assign({}, data, {
+              controlsType: 'orbit',
+              controlsOrbitMatrix: this.orbitControls.object.matrix.toArray(),
+              controlsOrbitTarget: this.orbitControls.target.clone()
+            })
+            console.log(this.orbitControls)
+          }
+          console.log(data)
           callbackForControlEvent('CAMERA_PRESET_LEARN', data)
         } else {
           let data = {
-            callback: presetDataAcquiredCallback.bind(this),
             presetIdentifier: buttonIdentifier
           }
           callbackForControlEvent('CAMERA_PRESET_TRIGGER', data)
@@ -324,8 +335,8 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
   initializeMidi()
   document.body.addEventListener('keypress', handleKeyPress.bind(this))
   this.orbitControls = new THREE.OrbitControls(camera, elementForOrbitControls)
-  firstPersonControls = new FirstPersonControls(camera)
-  scene.add(firstPersonControls.getObject())
+  this.firstPersonControls = new FirstPersonControls(camera)
+  scene.add(this.firstPersonControls.getObject())
 }
 
 
@@ -336,6 +347,25 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
 Controls.prototype.update = function() {
     this.updateCameraFromGamepadState()
     this.updateCameraWithOrbitControls()
+}
+
+Controls.prototype.updateFromPresetData = function(data) {
+  var matrix = new THREE.Matrix4();
+  if (data.controlsType == 'orbit') {
+    matrix.fromArray(data.controlsOrbitMatrix)
+    // apply position, quaternion, and scale from the matrix coming from presets to the camera using decompose()
+    matrix.decompose(this.camera.position, this.camera.quaternion, this.camera.scale)
+    // orbit controls needed the center property to be updated to properly position the camera after a pan, argh
+    let updatedTarget = data.controlsOrbitTarget
+    this.orbitControls.target.set(updatedTarget.x, updatedTarget.y, updatedTarget.z)
+  } else if (data.controlsType == 'firstPerson') {
+    matrix.fromArray(data.controlsFirstPersonMatrix)
+    matrix.decompose(this.camera.position, this.camera.quaternion, this.camera.scale)
+
+    scene.remove(this.firstPersonControls.getObject())
+    this.firstPersonControls = new FirstPersonControls(this.camera)
+    scene.add(this.firstPersonControls.getObject())
+  }
 }
 
 module.exports = Controls

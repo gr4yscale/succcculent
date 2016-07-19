@@ -4,7 +4,7 @@
 module.exports = function (camera) {
   const decelerationRate = 0.1
   const decelerationDuration = 300.0
-  const sensitivity = 0.008
+  const sensitivity = 0.003
   let cameraYaccelerationDelta = 0.0
   let prevTime = performance.now()
 

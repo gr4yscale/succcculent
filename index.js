@@ -287,7 +287,7 @@ function handleControlsEvent(e) {
     }
     case 'CAMERA_PRESET_LEARN': {
       let presetIdentifier = e.data.presetIdentifier
-      presets.updateCameraMap(presetIdentifier, controls.orbitControls.target, camera) // TOFIX: get orbitControls target from my controls wrapper
+      presets.updateCameraMap(presetIdentifier, camera, e.data)
       console.log('Updated camera presets for identifier: ' + presetIdentifier)
       break
     }
@@ -295,12 +295,9 @@ function handleControlsEvent(e) {
       // get the serialized matrix out of presets (which stores the matrix the matrix as an array for convenient persistence)
       // use the callback that controls gives to let it update camera / orbitcontrols state
       let presetIdentifier = e.data.presetIdentifier
-      let presetDataAcquiredCallback = e.data.callback
       let map = presets.cameraMap[presetIdentifier]
       if (map) {
-        var matrix = new THREE.Matrix4();
-        matrix.fromArray(JSON.parse(map['cameraMatrix']));
-        presetDataAcquiredCallback(matrix, map.controlsTarget)
+        controls.updateFromPresetData(map)
         console.log('Triggered orbit controls and camera update using preset with identifier: ' + presetIdentifier)
       } else {
         console.log('There is no preset for identifier: ' + presetIdentifier + '!')
