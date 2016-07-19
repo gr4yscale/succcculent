@@ -40,15 +40,20 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
   }
 
   // Audio Analysis data in from VDMX
-  this.audioAnalysisFilter1 = 0.5
-  this.audioAnalysisFilter2 = 0.5
-  this.audioAnalysisFilter3 = 0.5
-  this.audioAnalysisFilter1Gain = 0.1
-  this.audioAnalysisFilter2Gain = 0.1
-  this.audioAnalysisFilter3Gain = 0.1
-  this.audioAnalaysiFilter1TriggerThreshold = 1.0
-  this.audioAnalaysiFilter2TriggerThreshold = 1.0
-  this.audioAnalaysiFilter2TriggerThreshold = 1.0
+  // TOFIX: DRY this up, yuck!
+  this.audioAnalysisFilter1 = 1.0
+  this.audioAnalysisFilter2 = 1.0
+  this.audioAnalysisFilter3 = 1.0
+  this.audioAnalysisFilter1Gain = 1.0
+  this.audioAnalysisFilter2Gain = 1.0
+  this.audioAnalysisFilter3Gain = 1.0
+  this.audioAnalaysisFilter1TriggerThreshold = 0.7
+  this.audioAnalaysisFilter2TriggerThreshold = 0.7
+  this.audioAnalaysisFilter3TriggerThreshold = 0.7
+  this.audioAnalaysisFilter1TriggerThresholdReached = false
+  this.audioAnalaysisFilter2TriggerThresholdReached = false
+  this.audioAnalaysisFilter3TriggerThresholdReached = false
+  let audioAnalysisFilter1TriggerThresholdsEnabled = false
 
   // This is only a member function because I don't want this references everywhere on the camera controls and etc variables
   this.updateCameraWithOrbitControls = function() {
@@ -152,30 +157,54 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
             let v = e.value / 127.0
             switch(e.controller.number) {
               case 0:
-                this.audioAnalysisFilter1 = v
+                this.audioAnalysisFilter1 = v * this.audioAnalysisFilter1Gain
                 break
               case 1:
-                this.audioAnalysisFilter2 = v
+                this.audioAnalysisFilter2 = v * this.audioAnalysisFilter2Gain
                 break
               case 2:
-                this.audioAnalysisFilter3 = v
+                this.audioAnalysisFilter3 = v * this.audioAnalysisFilter3Gain
                 break
             }
 
             let data = {
-              filter1Value: this.audioAnalysisFilter1,
-              filter2Value: this.audioAnalysisFilter2,
-              filter3Value: this.audioAnalysisFilter3,
-              filter1Gain: this.audioAnalysisFilter1Gain,
-              filter2Gain: this.audioAnalysisFilter2Gain,
-              filter3Gain: this.audioAnalysisFilter3Gain
+              filter1: this.audioAnalysisFilter1,
+              filter2: this.audioAnalysisFilter2,
+              filter3: this.audioAnalysisFilter3
             }
-
             callbackForControlEvent('AUDIO_ANALYSIS_FILTER_UPDATE', data)
+            if (audioAnalysisFilter1TriggerThresholdsEnabled) {
+              updateAudioAnalysisTriggerThresholds.bind(this)()
+            }
           }
         })
       }
     })
+  }
+
+  function updateAudioAnalysisTriggerThresholds() {
+    // TOFIX: DRY this up
+    // filter 1
+    if (!this.audioAnalaysisFilter1TriggerThresholdReached && (this.audioAnalysisFilter1 > this.audioAnalaysisFilter1TriggerThreshold)) {
+      this.audioAnalaysisFilter1TriggerThresholdReached = true
+      callbackForControlEvent('AUDIO_ANALYSIS_FILTER_1_TRIGGER_THRESHOLD_REACHED')
+    } else if (this.audioAnalaysisFilter1TriggerThresholdReached && (this.audioAnalysisFilter1 < this.audioAnalaysisFilter1TriggerThreshold)) {
+      this.audioAnalaysisFilter1TriggerThresholdReached = false
+    }
+
+    if (!this.audioAnalaysisFilter2TriggerThresholdReached && (this.audioAnalysisFilter2 > this.audioAnalaysisFilter2TriggerThreshold)) {
+      this.audioAnalaysisFilter2TriggerThresholdReached = true
+      callbackForControlEvent('AUDIO_ANALYSIS_FILTER_2_TRIGGER_THRESHOLD_REACHED')
+    } else if (this.audioAnalaysisFilter2TriggerThresholdReached && (this.audioAnalysisFilter2 < this.audioAnalaysisFilter2TriggerThreshold)) {
+      this.audioAnalaysisFilter2TriggerThresholdReached = false
+    }
+
+    if (!this.audioAnalaysisFilter3TriggerThresholdReached && (this.audioAnalysisFilter3 > this.audioAnalaysisFilter3TriggerThreshold)) {
+      this.audioAnalaysisFilter3TriggerThresholdReached = true
+      callbackForControlEvent('AUDIO_ANALYSIS_FILTER_3_TRIGGER_THRESHOLD_REACHED')
+    } else if (this.audioAnalaysisFilter3TriggerThresholdReached && (this.audioAnalysisFilter3 < this.audioAnalaysisFilter3TriggerThreshold)) {
+      this.audioAnalaysisFilter3TriggerThresholdReached = false
+    }
   }
 
   function callbackForControlEvent(type, data) {
@@ -221,6 +250,9 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
         break
       case 'g':
         callbackForControlEvent('GENERATE_NEW_RANDOM_GARDEN')
+        break
+      case 'a':
+        audioAnalysisFilter1TriggerThresholdsEnabled = !audioAnalysisFilter1TriggerThresholdsEnabled
         break
       case ',':
         self.audioAnalysisEnabled = !self.audioAnalysisEnabled // TOFIX:
@@ -304,6 +336,7 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
     let v = e.value / 127.0
 
     switch (e.controller.number) {
+      // page 1
       case 0:
         cameraRotationDeltaY = lerp(-0.5, 0.5, v)
         break
@@ -322,7 +355,29 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
       case 5:
         cameraDollyDelta = lerp(1.01, 0.99, v)
         break
-      case 9: {
+      // page 2, starting with number 6
+      case 6:
+        self.audioAnalaysisFilter1TriggerThreshold = lerp(0, 1.0, v)
+        self.audioAnalaysisFilter1TriggerThresholdReached = false
+        break
+      case 7:
+        self.audioAnalaysisFilter2TriggerThreshold = lerp(0, 1.0, v)
+        self.audioAnalaysisFilter2TriggerThresholdReached = false
+        break
+      case 8:
+        self.audioAnalaysisFilter3TriggerThreshold = lerp(0, 1.0, v)
+        self.audioAnalaysisFilter3TriggerThresholdReached = false
+        break
+      case 9:
+        self.audioAnalysisFilter1Gain = lerp(0, 1.0, v)
+        break
+      case 10:
+        self.audioAnalysisFilter2Gain = lerp(0, 1.0, v)
+        break
+      case 11:
+        self.audioAnalysisFilter3Gain = lerp(0, 1.0, v)
+        break
+      case 15: {
         sameShaderForAllPlantsIndex = Math.floor(lerp(0, 14, v)) //TOFIX: keep this within bounds, pass in the shaders array length
         if (sameShaderForAllPlants) {
           callbackToUpdatePlantShaders(sameShaderForAllPlantsIndex)
