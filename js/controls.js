@@ -7,6 +7,7 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
   let FirstPersonControls = require('./controls_first_person.js')
   let outputAPC40
   let logControlSurfaceEvents = true
+  let xboxController
 
   // camera
   this.camera = camera
@@ -21,12 +22,14 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
   let cameraRotationDeltaY = 0.0
   let cameraPositionDeltaX = 0.0
   let cameraPositionDeltaY = 0.0
-  let joystickSensitivity = 1.0
+  let joystickSensitivity = 2.0
   let cameraDollyDelta = 1.0
 
-  let firstPersonEnabled = true
+  // xbox controller
+  let xboxControllerSelected = true
   let firstPersonDirection = 0
   let xboxLeftJoystickButtonLastState = false
+  let xboxJoystickCalibration = {leftX: 0, leftY: 0, rightX: 0, rightY: 0}
 
   // misc modes
   let sameShaderForAllPlants = false
@@ -38,6 +41,8 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
     '/' :  {0: 0x97, 1: 0x35}, // TOFIX: DRY this up later
     'F#8' :  {0: 0x97, 1: 0x36}
   }
+
+
 
   // Audio Analysis data in from VDMX
   // TOFIX: DRY this up, yuck!
@@ -66,24 +71,23 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
   }
 
   this.updateCameraFromGamepadState = function() {
-    if (!firstPersonEnabled) return
 
     if (navigator.webkitGetGamepads) {
-      var gamepad = navigator.webkitGetGamepads()[0]
+      xboxController = navigator.webkitGetGamepads()[0]
     } else {
-      var gamepad = navigator.getGamepads()[0]
+      xboxController = navigator.getGamepads()[0]
     }
 
-    if (gamepad) {
-      if (gamepad.buttons[6].pressed == true) { // left trigger button
+    if (xboxController) {
+      if (xboxController.buttons[6].pressed == true) { // left trigger button
         firstPersonDirection = -1
-      } else if (gamepad.buttons[7].pressed == true) { // right trigger button
+      } else if (xboxController.buttons[7].pressed == true) { // right trigger button
         firstPersonDirection = 1
       } else {
         firstPersonDirection = 0
       }
 
-      xboxLeftJoystickButtonState = gamepad.buttons[10].pressed
+      xboxLeftJoystickButtonState = xboxController.buttons[10].pressed
       if (xboxLeftJoystickButtonState != xboxLeftJoystickButtonLastState) {
         if (xboxLeftJoystickButtonState) {
           buttonPressed('xbox10')
@@ -91,11 +95,19 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
         xboxLeftJoystickButtonLastState = xboxLeftJoystickButtonState
       }
 
-      this.firstPersonControls.update(gamepad.axes[0],
-                                      gamepad.axes[1],
-                                      firstPersonDirection,
-                                      gamepad.axes[2],
-                                      gamepad.axes[3])
+      if (xboxControllerSelected) {
+        cameraRotationDeltaX = lerp(0.25, -0.25, 0.5 + xboxController.axes[0] - xboxJoystickCalibration.leftX)
+        cameraRotationDeltaY = lerp(0.25, -0.25, 0.5 + xboxController.axes[1] - xboxJoystickCalibration.leftY)
+        cameraPositionDeltaX = lerp(1.0, -1.0, 0.5 + xboxController.axes[2] - xboxJoystickCalibration.rightX)
+        cameraPositionDeltaY = lerp(1.0, -1.0, 0.5 + xboxController.axes[3] - xboxJoystickCalibration.rightY)
+      }
+
+      // TOFIX: handle first person controls mode later, i prefer orbitcontrols with xbox turns out
+      // this.firstPersonControls.update(gamepad.axes[0],
+      //                                 gamepad.axes[1],
+      //                                 firstPersonDirection,
+      //                                 gamepad.axes[2],
+      //                                 gamepad.axes[3])
     }
   }
 
@@ -228,7 +240,7 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
 
   function updateAPC40ToggleButtonLEDs() {
     updateAPC40Button('F8', cameraPresetsLearn, false)
-    updateAPC40Button('F#8', firstPersonEnabled, false)
+    updateAPC40Button('F#8', xboxControllerSelected, false)
     let button = buttonIdentifierToAPC40Packet[lastCameraPresetIdentifierPressed]
     if (button) {
       updateAPC40Button(button, true, true)
@@ -275,10 +287,17 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
       case 'F#8': // APC40
       case 'D#2': // TouchOSC
       case '.': {
-        firstPersonEnabled = !firstPersonEnabled
-        callbackForControlEvent('FIRST_PERSON_CAMERA_CONTROLS_TOGGLED', {key: 'firstPersonEnabled', value: firstPersonEnabled})
+        xboxControllerSelected = !xboxControllerSelected
+        callbackForControlEvent('XBOX_CONTROLLER_SELECTION_TOGGLED', {key: 'xboxControllerSelected', value: xboxControllerSelected})
+        xboxJoystickCalibration.leftX = xboxController.axes[0]
+        xboxJoystickCalibration.leftY = xboxController.axes[1]
+        xboxJoystickCalibration.rightX = xboxController.axes[2]
+        xboxJoystickCalibration.rightY = xboxController.axes[3]
+        cameraRotationDeltaX = 0
+        cameraRotationDeltaY = 0
+        cameraPositionDeltaY = 0
+        cameraPositionDeltaX = 0
         updateAPC40ToggleButtonLEDs()
-        this.cameraReset.bind(this)()
         break
       }
       case 'D1': // APC40
@@ -339,16 +358,16 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
     switch (e.controller.number) {
       // page 1
       case 0:
-        cameraRotationDeltaY = lerp(-0.5, 0.5, v)
+        if (!xboxControllerSelected) cameraRotationDeltaY = lerp(-0.5, 0.5, v)
         break
       case 1:
-        cameraRotationDeltaX = lerp(0.5, -0.5, v)
+        if (!xboxControllerSelected) cameraRotationDeltaX = lerp(0.5, -0.5, v)
         break;
       case 2:
-        cameraPositionDeltaY = lerp(-2.0, 2.0, v)
+        if (!xboxControllerSelected) cameraPositionDeltaY = lerp(-0.5, 0.5, v)
         break;
       case 3:
-        cameraPositionDeltaX = lerp(2.0, -2.0, v)
+        if (!xboxControllerSelected) cameraPositionDeltaX = lerp(0.5, -0.5, v)
         break;
       case 4:
         joystickSensitivity = lerp(0, 8.0, v)
@@ -472,9 +491,9 @@ Controls.prototype.updateFromPresetData = function(data) {
     matrix.fromArray(data.controlsFirstPersonMatrix)
     matrix.decompose(this.camera.position, this.camera.quaternion, this.camera.scale)
 
-    scene.remove(this.firstPersonControls.getObject())
-    this.firstPersonControls = new FirstPersonControls(this.camera)
-    scene.add(this.firstPersonControls.getObject())
+    // scene.remove(this.firstPersonControls.getObject())
+    // this.firstPersonControls = new FirstPersonControls(this.camera)
+    // scene.add(this.firstPersonControls.getObject())
   }
 }
 
