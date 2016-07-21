@@ -287,17 +287,15 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
       case 'F#8': // APC40
       case 'D#2': // TouchOSC
       case '.': {
-        xboxControllerSelected = !xboxControllerSelected
-        callbackForControlEvent('XBOX_CONTROLLER_SELECTION_TOGGLED', {key: 'xboxControllerSelected', value: xboxControllerSelected})
-        xboxJoystickCalibration.leftX = xboxController.axes[0]
-        xboxJoystickCalibration.leftY = xboxController.axes[1]
-        xboxJoystickCalibration.rightX = xboxController.axes[2]
-        xboxJoystickCalibration.rightY = xboxController.axes[3]
-        cameraRotationDeltaX = 0
-        cameraRotationDeltaY = 0
-        cameraPositionDeltaY = 0
-        cameraPositionDeltaX = 0
-        updateAPC40ToggleButtonLEDs()
+        if (xboxController) {
+          xboxControllerSelected = !xboxControllerSelected
+          callbackForControlEvent('XBOX_CONTROLLER_SELECTION_TOGGLED', {key: 'xboxControllerSelected', value: xboxControllerSelected})
+          xboxJoystickCalibration.leftX = xboxController.axes[0]
+          xboxJoystickCalibration.leftY = xboxController.axes[1]
+          xboxJoystickCalibration.rightX = xboxController.axes[2]
+          xboxJoystickCalibration.rightY = xboxController.axes[3]
+          updateAPC40ToggleButtonLEDs()
+        }
         break
       }
       case 'D1': // APC40
