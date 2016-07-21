@@ -3,16 +3,17 @@
 function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCallback) {
 
   let self = this // fucking ES5 =\
-  let lerp = require('./util.js').lerp
   let FirstPersonControls = require('./controls_first_person.js')
+  let state = require('./state.js')
+  let lerp = require('./util.js').lerp
   let outputAPC40
-  let logControlSurfaceEvents = true
   let xboxController
+
+  let logControlSurfaceEvents = false
 
   // camera
   this.camera = camera
-  let cameraPresetsLearn = false
-  let orbitControlsEnabled = true
+  let orbitControlsEnabled = true // TOFIX: we'll need this back when first person controls are back in
 
   // TOFIX: make these Vector3's probably
   let cameraRotationDeltaX = 0.0
@@ -27,34 +28,12 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
   let xboxLeftJoystickButtonLastState = false
   let xboxJoystickCalibration = {leftX: 0, leftY: 0, rightX: 0, rightY: 0}
 
-  // misc modes
-  let sameShaderForAllPlants = false
-  let sameShaderForAllPlantsIndex = 0
-
   let lastCameraPresetIdentifierPressed
   const buttonIdentifierToAPC40Packet = {
     'A#1' : {0: 0x97, 1: 0x35},
     '/' :  {0: 0x97, 1: 0x35}, // TOFIX: DRY this up later
     'F#8' :  {0: 0x97, 1: 0x36}
   }
-
-
-
-  // Audio Analysis data in from VDMX
-  // TOFIX: DRY this up, yuck!
-  this.audioAnalysisFilter1 = 1.0
-  this.audioAnalysisFilter2 = 1.0
-  this.audioAnalysisFilter3 = 1.0
-  this.audioAnalysisFilter1Gain = 1.0
-  this.audioAnalysisFilter2Gain = 1.0
-  this.audioAnalysisFilter3Gain = 1.0
-  this.audioAnalaysisFilter1TriggerThreshold = 0.7
-  this.audioAnalaysisFilter2TriggerThreshold = 0.7
-  this.audioAnalaysisFilter3TriggerThreshold = 0.7
-  this.audioAnalaysisFilter1TriggerThresholdReached = false
-  this.audioAnalaysisFilter2TriggerThresholdReached = false
-  this.audioAnalaysisFilter3TriggerThresholdReached = false
-  let audioAnalysisFilter1TriggerThresholdsEnabled = false
 
   // This is only a member function because I don't want this references everywhere on the camera controls and etc variables
   this.updateCameraWithOrbitControls = function() {
@@ -179,23 +158,23 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
             let v = e.value / 127.0
             switch(e.controller.number) {
               case 0:
-                this.audioAnalysisFilter1 = v * this.audioAnalysisFilter1Gain
+                state.audioAnalysisFilter1 = v * state.audioAnalysisFilter1Gain
                 break
               case 1:
-                this.audioAnalysisFilter2 = v * this.audioAnalysisFilter2Gain
+                state.audioAnalysisFilter2 = v * state.audioAnalysisFilter2Gain
                 break
               case 2:
-                this.audioAnalysisFilter3 = v * this.audioAnalysisFilter3Gain
+                state.audioAnalysisFilter3 = v * state.audioAnalysisFilter3Gain
                 break
             }
 
             let data = {
-              filter1: this.audioAnalysisFilter1,
-              filter2: this.audioAnalysisFilter2,
-              filter3: this.audioAnalysisFilter3
+              filter1: state.audioAnalysisFilter1,
+              filter2: state.audioAnalysisFilter2,
+              filter3: state.audioAnalysisFilter3
             }
             callbackForControlEvent('AUDIO_ANALYSIS_FILTER_UPDATE', data)
-            if (audioAnalysisFilter1TriggerThresholdsEnabled) {
+            if (state.audioAnalysisFilter1TriggerThresholdsEnabled) {
               updateAudioAnalysisTriggerThresholds.bind(this)()
             }
           }
@@ -207,25 +186,25 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
   function updateAudioAnalysisTriggerThresholds() {
     // TOFIX: DRY this up
     // filter 1
-    if (!this.audioAnalaysisFilter1TriggerThresholdReached && (this.audioAnalysisFilter1 > this.audioAnalaysisFilter1TriggerThreshold)) {
-      this.audioAnalaysisFilter1TriggerThresholdReached = true
+    if (!state.audioAnalaysisFilter1TriggerThresholdReached && (state.audioAnalysisFilter1 > state.audioAnalaysisFilter1TriggerThreshold)) {
+      state.audioAnalaysisFilter1TriggerThresholdReached = true
       callbackForControlEvent('AUDIO_ANALYSIS_FILTER_1_TRIGGER_THRESHOLD_REACHED')
-    } else if (this.audioAnalaysisFilter1TriggerThresholdReached && (this.audioAnalysisFilter1 < this.audioAnalaysisFilter1TriggerThreshold)) {
-      this.audioAnalaysisFilter1TriggerThresholdReached = false
+    } else if (state.audioAnalaysisFilter1TriggerThresholdReached && (state.audioAnalysisFilter1 < state.audioAnalaysisFilter1TriggerThreshold)) {
+      state.audioAnalaysisFilter1TriggerThresholdReached = false
     }
 
-    if (!this.audioAnalaysisFilter2TriggerThresholdReached && (this.audioAnalysisFilter2 > this.audioAnalaysisFilter2TriggerThreshold)) {
-      this.audioAnalaysisFilter2TriggerThresholdReached = true
+    if (!state.audioAnalaysisFilter2TriggerThresholdReached && (state.audioAnalysisFilter2 > state.audioAnalaysisFilter2TriggerThreshold)) {
+      state.audioAnalaysisFilter2TriggerThresholdReached = true
       callbackForControlEvent('AUDIO_ANALYSIS_FILTER_2_TRIGGER_THRESHOLD_REACHED')
-    } else if (this.audioAnalaysisFilter2TriggerThresholdReached && (this.audioAnalysisFilter2 < this.audioAnalaysisFilter2TriggerThreshold)) {
-      this.audioAnalaysisFilter2TriggerThresholdReached = false
+    } else if (state.audioAnalaysisFilter2TriggerThresholdReached && (state.audioAnalysisFilter2 < state.audioAnalaysisFilter2TriggerThreshold)) {
+      state.audioAnalaysisFilter2TriggerThresholdReached = false
     }
 
-    if (!this.audioAnalaysisFilter3TriggerThresholdReached && (this.audioAnalysisFilter3 > this.audioAnalaysisFilter3TriggerThreshold)) {
-      this.audioAnalaysisFilter3TriggerThresholdReached = true
+    if (!state.audioAnalaysisFilter3TriggerThresholdReached && (state.audioAnalysisFilter3 > state.audioAnalaysisFilter3TriggerThreshold)) {
+      state.audioAnalaysisFilter3TriggerThresholdReached = true
       callbackForControlEvent('AUDIO_ANALYSIS_FILTER_3_TRIGGER_THRESHOLD_REACHED')
-    } else if (this.audioAnalaysisFilter3TriggerThresholdReached && (this.audioAnalysisFilter3 < this.audioAnalaysisFilter3TriggerThreshold)) {
-      this.audioAnalaysisFilter3TriggerThresholdReached = false
+    } else if (state.audioAnalaysisFilter3TriggerThresholdReached && (state.audioAnalysisFilter3 < state.audioAnalaysisFilter3TriggerThreshold)) {
+      state.audioAnalaysisFilter3TriggerThresholdReached = false
     }
   }
 
@@ -282,23 +261,28 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
       case 'B1': // APC40
         callbackForControlEvent('GENERATE_NEW_RANDOM_GARDEN')
         break
+      case 'C1': // APC40
+        state.generateNewPlantsWithTextures = !state.generateNewPlantsWithTextures
+        callbackForControlEvent('GENERATE_NEW_PLANTS_TEXTURE_STYLES_TOGGLE', {generateNewPlantsWithTextures: state.generateNewPlantsWithTextures})
+        break
       case 'a':
-        audioAnalysisFilter1TriggerThresholdsEnabled = !audioAnalysisFilter1TriggerThresholdsEnabled
+        state.audioAnalysisFilter1TriggerThresholdsEnabled = !state.audioAnalysisFilter1TriggerThresholdsEnabled
         break
       case ',':
-        self.audioAnalysisEnabled = !self.audioAnalysisEnabled // TOFIX:
+      case 'C#2': // TouchOSC
+        state.audioAnalysisCanUpdateCamera = !state.audioAnalysisCanUpdateCamera // TOFIX:
         break
       case 'A#1': // APC40
       case 'E2': // TouchOSC
       case '/':
       case 'xbox10': {
-        cameraPresetsLearn = !cameraPresetsLearn
-        callbackForControlEvent('CAMERA_PRESETS_LEARN_TOGGLED', {key: 'cameraPresetsLearn', value: cameraPresetsLearn})
+        state.cameraPresetsLearn = !state.cameraPresetsLearn
+        callbackForControlEvent('CAMERA_PRESETS_LEARN_TOGGLED', {key: 'cameraPresetsLearn', value: state.cameraPresetsLearn})
         updateAPC40ToggleButtonLEDs()
         break
       }
       case 'A4': { // TouchOSC
-        sameShaderForAllPlants = !sameShaderForAllPlants
+        state.sameShaderForAllPlants = !state.sameShaderForAllPlants
         callbackToUpdatePlantShaders(0)
         break
       }
@@ -328,22 +312,13 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
         break
       default: {
         if (state.cameraPresetsLearn) {
-          let data = {presetIdentifier: buttonIdentifier}
-
-          // if (xboxControllerSelected) {
-          //   data = Object.assign({}, data, {
-          //     controlsType: 'firstPerson'
-          //     // controlsFirstPersonMatrix: this.firstPersonControls.getObject().matrix.toArray()
-          //   })
-          // } else {
-            data = Object.assign({}, data, {
-              controlsType: 'orbit',
-              controlsOrbitMatrix: this.orbitControls.object.matrix.toArray(),
-              controlsOrbitTarget: this.orbitControls.target.clone()
-            })
-          // }
-          console.log(data)
-          this.cameraPresetsLearn = false
+          let data = {
+            presetIdentifier: buttonIdentifier,
+            controlsType: 'orbit',
+            controlsOrbitMatrix: this.orbitControls.object.matrix.toArray(),
+            controlsOrbitTarget: this.orbitControls.target.clone()
+          }
+          state.cameraPresetsLearn = false
           callbackForControlEvent('CAMERA_PRESET_LEARN', data)
         } else {
           let data = {
@@ -409,18 +384,18 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
         self.audioAnalaysisFilter3TriggerThresholdReached = false
         break
       case 9:
-        self.audioAnalysisFilter1Gain = lerp(0, 1.0, v)
+        state.audioAnalysisFilter1Gain = lerp(0, 1.0, v)
         break
       case 10:
-        self.audioAnalysisFilter2Gain = lerp(0, 1.0, v)
+        state.audioAnalysisFilter2Gain = lerp(0, 1.0, v)
         break
       case 11:
         self.audioAnalysisFilter3Gain = lerp(0, 1.0, v)
         break
       case 15: {
-        sameShaderForAllPlantsIndex = Math.floor(lerp(0, 14, v)) //TOFIX: keep this within bounds, pass in the shaders array length
-        if (sameShaderForAllPlants) {
-          callbackToUpdatePlantShaders(sameShaderForAllPlantsIndex)
+        state.sameShaderForAllPlantsIndex = Math.floor(lerp(0, 14, v)) //TOFIX: keep this within bounds, pass in the shaders array length
+        if (state.sameShaderForAllPlants) {
+          callbackToUpdatePlantShaders(state.sameShaderForAllPlantsIndex)
         }
         break
       }
@@ -455,8 +430,8 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
   }
 
   function handleUnhandledMidiEvent(e) {
-    // console.log('Unhandled MIDI event fired!')
-    // console.log(e)
+    console.log('Unhandled MIDI event fired!')
+    console.log(e)
   }
 
 
@@ -464,7 +439,7 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
   // CALLBACK HELPERS
 
   function callbackToUpdatePlantShaders(shaderIndex) {
-    if (sameShaderForAllPlants) {
+    if (state.sameShaderForAllPlants) {
       let data = {shaderIndex: shaderIndex}
       callbackForControlEvent('SET_SAME_SHADER_FOR_ALL_PLANTS', data)
     } else {
@@ -478,7 +453,6 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
   this.orbitControls = new THREE.OrbitControls(camera, elementForOrbitControls)
   // this.firstPersonControls = new FirstPersonControls(camera)
   // scene.add(this.firstPersonControls.getObject())
-  this.audioAnalysisCanUpdateCamera = false // TOFIX: can i remove the this reference?
 }
 
 
@@ -490,31 +464,23 @@ Controls.prototype.update = function() {
     this.updateCameraFromGamepadState()
     this.updateCameraWithOrbitControls()
 
-    if (this.audioAnalysisEnabled) {
-      this.camera.position.set(this.camera.position.x, this.audioAnalysisFilter1 * this.audioAnalysisFilter1Gain,this.camera.position.z)
+    if (this.audioAnalysisCanUpdateCamera) {
+      this.camera.position.set(this.camera.position.x, state.audioAnalysisFilter1,this.camera.position.z)
       // Update rotation with FFT MIDI data
       // let v = this.camera.rotation
-      // this.camera.rotation.set(this.audioAnalysisFilter1 * this.audioAnalysisFilter1Gain, this.camera.rotation.y, this.camera.rotation.z)
+      // this.camera.rotation.set(state.audioAnalysisFilter1 * state.audioAnalysisFilter1Gain, this.camera.rotation.y, this.camera.rotation.z)
     }
 }
 
+// TOFIX: sloppy, this tries to handle the conditions of setting camera preset for either first person or orbit controls
 Controls.prototype.updateFromPresetData = function(data) {
   var matrix = new THREE.Matrix4();
-  if (data.controlsType == 'orbit') {
-    matrix.fromArray(data.controlsOrbitMatrix)
-    // apply position, quaternion, and scale from the matrix coming from presets to the camera using decompose()
-    matrix.decompose(this.camera.position, this.camera.quaternion, this.camera.scale)
-    // orbit controls needed the center property to be updated to properly position the camera after a pan, argh
-    let updatedTarget = data.controlsOrbitTarget
-    this.orbitControls.target.set(updatedTarget.x, updatedTarget.y, updatedTarget.z)
-  } else if (data.controlsType == 'firstPerson') {
-    matrix.fromArray(data.controlsFirstPersonMatrix)
-    matrix.decompose(this.camera.position, this.camera.quaternion, this.camera.scale)
-
-    // scene.remove(this.firstPersonControls.getObject())
-    // this.firstPersonControls = new FirstPersonControls(this.camera)
-    // scene.add(this.firstPersonControls.getObject())
-  }
+  matrix.fromArray(data.controlsOrbitMatrix)
+  // apply position, quaternion, and scale from the matrix coming from presets to the camera using decompose()
+  matrix.decompose(this.camera.position, this.camera.quaternion, this.camera.scale)
+  // orbit controls needed the center property to be updated to properly position the camera after a pan, argh
+  let updatedTarget = data.controlsOrbitTarget
+  this.orbitControls.target.set(updatedTarget.x, updatedTarget.y, updatedTarget.z)
 }
 
 module.exports = Controls
