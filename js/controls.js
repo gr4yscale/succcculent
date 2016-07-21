@@ -3,6 +3,8 @@
 function Controls(state, midi, scene, camera, elementForOrbitControls, controlsEventCallback) {
 
   let self = this // fucking ES5 =\
+  let apc = require('./controls_midi_apc40')
+  let kb = require('./controls_kb')
   let FirstPersonControls = require('./controls_first_person.js')
   let events = require('./events.js')
   let lerp = require('./util.js').lerp
@@ -28,17 +30,9 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
   let xboxLeftJoystickButtonLastState = false
   let xboxJoystickCalibration = {leftX: 0, leftY: 0, rightX: 0, rightY: 0}
 
-  let lastCameraPresetIdentifierPressed
-  const buttonIdentifierToAPC40Packet = {
-    'A#1' : {0: 0x97, 1: 0x35},
-    '/' :  {0: 0x97, 1: 0x35}, // TOFIX: DRY this up later
-    'F#8' :  {0: 0x97, 1: 0x36}
-  }
-
   // This is only a member function because I don't want this references everywhere on the camera controls and etc variables
   this.updateCameraWithOrbitControls = function() {
     if (!orbitControlsEnabled) return
-
     this.orbitControls.handleJoystickRotate(cameraRotationDeltaX * joystickSensitivity, cameraRotationDeltaY * joystickSensitivity)
     this.orbitControls.handleJoystickDolly(cameraDollyDelta)
     this.orbitControls.handleJoystickPan(cameraPositionDeltaX * joystickSensitivity, cameraPositionDeltaY * joystickSensitivity)
@@ -133,7 +127,7 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
       }
 
       if (outputAPC40) {
-        updateAPC40ToggleButtonLEDs() // update LED state on init to make sure they properly represent current state
+        apc.updateAPC40ToggleButtonLEDs(state, self) // update LED state on init to make sure they properly represent current state
       }
 
       if (inputAudioAnalysis) {
@@ -152,12 +146,7 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
                 break
             }
 
-            let data = {
-              filter1: state.audioAnalysisFilter1,
-              filter2: state.audioAnalysisFilter2,
-              filter3: state.audioAnalysisFilter3
-            }
-            callbackForControlEvent('AUDIO_ANALYSIS_FILTER_UPDATE', data)
+            callbackForControlEvent('AUDIO_ANALYSIS_FILTER_UPDATE')
             if (state.audioAnalysisFilter1TriggerThresholdsEnabled) {
               updateAudioAnalysisTriggerThresholds.bind(this)()
             }
@@ -209,72 +198,27 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
     return e.note.name + e.channel.toString()
   }
 
-  function updateAPC40Button(buttonIdentifier, illuminate, blink) {
-    if (!outputAPC40) return
-    let map = buttonIdentifierToAPC40Packet[buttonIdentifier]
-    let lastByte = illuminate ? 0x01 : 0x00
-    if (blink) lastByte = 0x02
-    let packet = [map[0],map[1],lastByte]
-    outputAPC40.send(0xFF, packet)
-  }
-
-  function updateAPC40ToggleButtonLEDs() {
-    updateAPC40Button('A#1', state.cameraPresetsLearn, false)
-    updateAPC40Button('F#8', xboxControllerSelected, false)
-    let button = buttonIdentifierToAPC40Packet[lastCameraPresetIdentifierPressed]
-    if (button) {
-      updateAPC40Button(button, true, true)
-    }
-  }
-
   function buttonPressed(buttonIdentifier) {
     console.log('Handling button press: ' + buttonIdentifier)
 
-    switch (buttonIdentifier) {
-      case '+':
-        console.log('add a succulent randomly (outside of the normal parameter loading/saving)')
-        console.log('will have to get random params, deal with this later....')
-        break
-      case 's':
-        callbackForControlEvent(events.SAVE_GARDEN_TO_PRESET_FILE)
-        break
-      case 'l':
-        callbackForControlEvent(events.LOAD_GARDEN_FROM_PRESET_FILE)
-        break
-      case 'g':
-      case 'B1': // APC40
+    // TOFIX: making immutable copies like this on input events may cause perf issues...
+    let allInputSourcesEventIds = Object.assign({}, apc.buttonIdentifierToEventIdentifier)
+        allInputSourcesEventIds = Object.assign({}, allInputSourcesEventIds, kb.buttonIdentifierToEventIdentifier)
+
+    switch (allInputSourcesEventIds[buttonIdentifier]) {
+      case events.GENERATE_NEW_RANDOM_GARDEN:
         callbackForControlEvent(events.GENERATE_NEW_RANDOM_GARDEN)
         break
-      case 'C1': // APC40
+      case events.GENERATE_NEW_PLANTS_TEXTURE_STYLES_TOGGLE:
         state.generateNewPlantsWithTextures = !state.generateNewPlantsWithTextures
         callbackForControlEvent(events.GENERATE_NEW_PLANTS_TEXTURE_STYLES_TOGGLE, {generateNewPlantsWithTextures: state.generateNewPlantsWithTextures})
         break
-      case 'a':
-        // TOFIX: event name here?
-        state.audioAnalysisFilter1TriggerThresholdsEnabled = !state.audioAnalysisFilter1TriggerThresholdsEnabled
-        break
-      case ',':
-      case 'C#2': // TouchOSC
-        state.audioAnalysisCanUpdateCamera = !state.audioAnalysisCanUpdateCamera // TOFIX:
-        callbackForControlEvent(events.AUDIO_ANALYSIS_CAN_UPDATE_CAMERA_TOGGLE)
-        break
-      case 'A#1': // APC40
-      case 'E2': // TouchOSC
-      case '/':
-      case 'xbox10': {
+      case events.CAMERA_PRESETS_LEARN_TOGGLED:
         state.cameraPresetsLearn = !state.cameraPresetsLearn
         callbackForControlEvent(events.CAMERA_PRESETS_LEARN_TOGGLED, {key: 'cameraPresetsLearn', value: state.cameraPresetsLearn})
-        updateAPC40ToggleButtonLEDs()
+        apc.updateAPC40ToggleButtonLEDs(state, self)
         break
-      }
-      case 'A4': { // TouchOSC
-        state.sameShaderForAllPlants = !state.sameShaderForAllPlants
-        callbackToUpdatePlantShaders(0)
-        break
-      }
-      case 'F#8': // APC40
-      case 'D#2': // TouchOSC
-      case '.': {
+      case events.XBOX_CONTROLLER_SELECTION_TOGGLED:
         if (xboxController) {
           xboxControllerSelected = !xboxControllerSelected
           callbackForControlEvent(events.XBOX_CONTROLLER_SELECTION_TOGGLED, {key: 'xboxControllerSelected', value: xboxControllerSelected})
@@ -282,17 +226,14 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
           xboxJoystickCalibration.leftY = xboxController.axes[1]
           xboxJoystickCalibration.rightX = xboxController.axes[2]
           xboxJoystickCalibration.rightY = xboxController.axes[3]
-          updateAPC40ToggleButtonLEDs()
+          apc.updateAPC40ToggleButtonLEDs(state, self)
         }
         break
-      }
-      case 'D1': // APC40
-      case 'D2': // TouchOSC
-      case 'm': {
+      case events.CAMERA_CONTROLS_RESET:
         resetCameraDeltas()
         this.cameraReset.bind(this)()
+        callbackForControlEvent(events.CAMERA_CONTROLS_RESET)
         break
-      }
       case 'p':
         debugger
         break
@@ -414,7 +355,7 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
   }
 
   function handleMidiNoteOff(e) {
-    updateAPC40ToggleButtonLEDs()
+    apc.updateAPC40ToggleButtonLEDs(state, self)
   }
 
   function handleUnhandledMidiEvent(e) {
@@ -439,8 +380,6 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
   initializeMidi.bind(this)()
   document.body.addEventListener('keypress', handleKeyPress.bind(this))
   this.orbitControls = new THREE.OrbitControls(camera, elementForOrbitControls)
-  // this.firstPersonControls = new FirstPersonControls(camera)
-  // scene.add(this.firstPersonControls.getObject())
 }
 
 
