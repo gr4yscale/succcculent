@@ -1,10 +1,10 @@
 // TOFIX: This needs refactoring!
 
-function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCallback) {
+function Controls(state, midi, scene, camera, elementForOrbitControls, controlsEventCallback) {
 
   let self = this // fucking ES5 =\
   let FirstPersonControls = require('./controls_first_person.js')
-  let state = require('./state.js')
+  let events = require('./events.js')
   let lerp = require('./util.js').lerp
   let outputAPC40
   let xboxController
@@ -79,33 +79,17 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
       }
 
       if (xboxControllerSelected) {
-        // cameraRotationDeltaX = lerp(0.25, -0.25, 0.5 + xboxController.axes[0] - xboxJoystickCalibration.leftX)
-        // cameraRotationDeltaY = lerp(0.25, -0.25, 0.5 + xboxController.axes[1] - xboxJoystickCalibration.leftY)
-        // cameraPositionDeltaX = lerp(1.0, -1.0, 0.5 + xboxController.axes[2] - xboxJoystickCalibration.rightX)
-        // cameraPositionDeltaY = lerp(1.0, -1.0, 0.5 + xboxController.axes[3] - xboxJoystickCalibration.rightY)
-
         cameraRotationDeltaX = lerp(0.25, -0.25, 0.5 + xboxController.axes[0] - xboxJoystickCalibration.leftX)
         cameraRotationDeltaY = lerp(0.25, -0.25, 0.5 + xboxController.axes[1] - xboxJoystickCalibration.leftY)
         cameraPositionDeltaX = lerp(1.0, -1.0, 0.5 + xboxController.axes[2] - xboxJoystickCalibration.rightX)
         cameraPositionDeltaY = lerp(1.0, -1.0, 0.5 + xboxController.axes[3] - xboxJoystickCalibration.rightY)
-
       }
-
-      // TOFIX: handle first person controls mode later, i prefer orbitcontrols with xbox turns out
-      // this.firstPersonControls.update(gamepad.axes[0],
-      //                                 gamepad.axes[1],
-      //                                 firstPersonDirection,
-      //                                 gamepad.axes[2],
-      //                                 gamepad.axes[3])
     }
   }
 
   this.cameraReset = function() {
     this.camera.position.set(0, 0.35, 0.75)
     this.orbitControls.target.set(0,0,0)
-    // scene.remove(this.firstPersonControls.getObject())
-    // firstPersonControls = new FirstPersonControls(this.camera)
-    // scene.add(this.firstPersonControls.getObject())
   }
 
 
@@ -252,32 +236,34 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
         console.log('will have to get random params, deal with this later....')
         break
       case 's':
-        callbackForControlEvent('SAVE_GARDEN_TO_PRESET_FILE')
+        callbackForControlEvent(events.SAVE_GARDEN_TO_PRESET_FILE)
         break
       case 'l':
-        callbackForControlEvent('LOAD_GARDEN_FROM_PRESET_FILE')
+        callbackForControlEvent(events.LOAD_GARDEN_FROM_PRESET_FILE)
         break
       case 'g':
       case 'B1': // APC40
-        callbackForControlEvent('GENERATE_NEW_RANDOM_GARDEN')
+        callbackForControlEvent(events.GENERATE_NEW_RANDOM_GARDEN)
         break
       case 'C1': // APC40
         state.generateNewPlantsWithTextures = !state.generateNewPlantsWithTextures
-        callbackForControlEvent('GENERATE_NEW_PLANTS_TEXTURE_STYLES_TOGGLE', {generateNewPlantsWithTextures: state.generateNewPlantsWithTextures})
+        callbackForControlEvent(events.GENERATE_NEW_PLANTS_TEXTURE_STYLES_TOGGLE, {generateNewPlantsWithTextures: state.generateNewPlantsWithTextures})
         break
       case 'a':
+        // TOFIX: event name here?
         state.audioAnalysisFilter1TriggerThresholdsEnabled = !state.audioAnalysisFilter1TriggerThresholdsEnabled
         break
       case ',':
       case 'C#2': // TouchOSC
         state.audioAnalysisCanUpdateCamera = !state.audioAnalysisCanUpdateCamera // TOFIX:
+        callbackForControlEvent(events.AUDIO_ANALYSIS_CAN_UPDATE_CAMERA_TOGGLE)
         break
       case 'A#1': // APC40
       case 'E2': // TouchOSC
       case '/':
       case 'xbox10': {
         state.cameraPresetsLearn = !state.cameraPresetsLearn
-        callbackForControlEvent('CAMERA_PRESETS_LEARN_TOGGLED', {key: 'cameraPresetsLearn', value: state.cameraPresetsLearn})
+        callbackForControlEvent(events.CAMERA_PRESETS_LEARN_TOGGLED, {key: 'cameraPresetsLearn', value: state.cameraPresetsLearn})
         updateAPC40ToggleButtonLEDs()
         break
       }
@@ -291,7 +277,7 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
       case '.': {
         if (xboxController) {
           xboxControllerSelected = !xboxControllerSelected
-          callbackForControlEvent('XBOX_CONTROLLER_SELECTION_TOGGLED', {key: 'xboxControllerSelected', value: xboxControllerSelected})
+          callbackForControlEvent(events.XBOX_CONTROLLER_SELECTION_TOGGLED, {key: 'xboxControllerSelected', value: xboxControllerSelected})
           xboxJoystickCalibration.leftX = xboxController.axes[0]
           xboxJoystickCalibration.leftY = xboxController.axes[1]
           xboxJoystickCalibration.rightX = xboxController.axes[2]
@@ -312,19 +298,21 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
         break
       default: {
         if (state.cameraPresetsLearn) {
+          state.cameraPresetsLearn = false
           let data = {
             presetIdentifier: buttonIdentifier,
             controlsType: 'orbit',
             controlsOrbitMatrix: this.orbitControls.object.matrix.toArray(),
-            controlsOrbitTarget: this.orbitControls.target.clone()
+            controlsOrbitTarget: this.orbitControls.target.clone(),
+            key: 'cameraPresetsLearn',  // TOFIX: sloppy hack to fix indicator updates
+            value: state.cameraPresetsLearn
           }
-          state.cameraPresetsLearn = false
-          callbackForControlEvent('CAMERA_PRESET_LEARN', data)
+          callbackForControlEvent(events.CAMERA_PRESET_LEARN, data)
         } else {
           let data = {
             presetIdentifier: buttonIdentifier
           }
-          callbackForControlEvent('CAMERA_PRESET_TRIGGER', data)
+          callbackForControlEvent(events.CAMERA_PRESET_TRIGGER, data)
         }
         break
       }
@@ -441,9 +429,9 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
   function callbackToUpdatePlantShaders(shaderIndex) {
     if (state.sameShaderForAllPlants) {
       let data = {shaderIndex: shaderIndex}
-      callbackForControlEvent('SET_SAME_SHADER_FOR_ALL_PLANTS', data)
+      callbackForControlEvent(events.SET_SAME_SHADER_FOR_ALL_PLANTS, data)
     } else {
-      callbackForControlEvent('RESET_SHADERS_TO_INITIAL_SHADER_FOR_ALL_PLANTS')
+      callbackForControlEvent(events.RESET_SHADERS_TO_INITIAL_SHADER_FOR_ALL_PLANTS)
     }
   }
 

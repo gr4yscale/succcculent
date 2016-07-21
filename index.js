@@ -6,6 +6,8 @@ let WebMidi = require('webmidi')
 var Succulent = require('./js/succulent')(THREE);
 var Presets = require('./js/presets')
 var Controls = require('./js/controls')
+let state = require('./js/state.js')
+let events = require('./js/events.js')
 
 var camera, scene, renderer;
 var effect;
@@ -94,7 +96,6 @@ function addSucculent(index, plantParams) {
     let succulent = Succulent(shaderMaterial, plantParams)
     positionSucculent(succulent)
   }
-
 }
 
 function loadShaderMaterials() {
@@ -196,7 +197,7 @@ function initThree() {
   camera.position.set(0, 0.35, 0.75);
   scene.add(camera);
 
-  controls = new Controls(WebMidi, scene, camera, renderer.domElement, handleControlsEvent)
+  controls = new Controls(state, WebMidi, scene, camera, renderer.domElement, handleControlsEvent)
 
   // setup the scene
   var setupLights = require('./js/lights')(THREE, scene);
@@ -265,36 +266,34 @@ function updateIndicators(data) {
 function handleControlsEvent(e) {
   console.log('Handling control event of type: ' + e.type)
   switch (e.type) {
-    case 'ADD_SUCCULENT_IN_RANDOM_POSITION':
+    case events.ADD_SUCCULENT_IN_RANDOM_POSITION:
       console.log('add a succulent randomly (outside of the normal parameter loading/saving)')
       console.log('will have to get random params, deal with this later....')
       break
-    case 'SAVE_GARDEN_TO_PRESET_FILE':
+    case events.SAVE_GARDEN_TO_PRESET_FILE:
       presets.save('plants.json')
       break
-    case 'LOAD_GARDEN_FROM_PRESET_FILE':
+    case events.LOAD_GARDEN_FROM_PRESET_FILE:
       loadGardenFromPresetFile()
       break
-    case 'GENERATE_NEW_RANDOM_GARDEN':
+    case events.GENERATE_NEW_RANDOM_GARDEN:
       generateNewRandomGarden()
       break
-    // case 'TOGGLE_CAMERA_PRESETS_LEARN':
-      // cameraRecordMode = !cameraRecordMode
-      // break
-    case 'DEBUGGER_PAUSE':
+    case events.DEBUGGER_PAUSE:
       debugger
       break
-    case 'CAMERA_PRESETS_LEARN_TOGGLED': {
+    case events.CAMERA_PRESETS_LEARN_TOGGLED: {
       updateIndicators(e.data)
       break
     }
-    case 'CAMERA_PRESET_LEARN': {
+    case events.CAMERA_PRESET_LEARN: {
       let presetIdentifier = e.data.presetIdentifier
       presets.updateCameraMap(presetIdentifier, camera, e.data)
       console.log('Updated camera presets for identifier: ' + presetIdentifier)
+      updateIndicators(e.data)
       break
     }
-    case 'CAMERA_PRESET_TRIGGER': {
+    case events.CAMERA_PRESET_TRIGGER: {
       // get the serialized matrix out of presets (which stores the matrix the matrix as an array for convenient persistence)
       // use the callback that controls gives to let it update camera / orbitcontrols state
       let presetIdentifier = e.data.presetIdentifier
@@ -307,20 +306,23 @@ function handleControlsEvent(e) {
       }
       break
     }
-    case 'SET_SAME_SHADER_FOR_ALL_PLANTS': {
+    case events.SET_SAME_SHADER_FOR_ALL_PLANTS: {
       setSameShaderForAllPlants(e.data.shaderIndex)
       break
     }
-    case 'RESET_SHADERS_TO_INITIAL_SHADER_FOR_ALL_PLANTS':
+    case events.RESET_SHADERS_TO_INITIAL_SHADER_FOR_ALL_PLANTS:
       resetShadersForAllPlants()
       break
-    case 'FIRST_PERSON_CAMERA_CONTROLS_TOGGLED': {
-      updateIndicators(e.data)
       break
     }
     case 'AUDIO_ANALYSIS_FILTER_UPDATE':
       console.log(e.data.filter1Value + ' | ' + e.data.filter2Value + ' | ' + e.data.filter3Value)
       break
+    case events.GENERATE_NEW_PLANTS_TEXTURE_STYLES_TOGGLE: {
+      presets.generateNewPlantsWithTextures = e.data.generateNewPlantsWithTextures
+      console.log(e.data)
+      break
+    }
     default:
       console.log('Received unknown control type! *******')
       break
