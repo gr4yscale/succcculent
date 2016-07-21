@@ -24,7 +24,6 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
 
   // xbox controller
   let xboxControllerSelected = true
-  let firstPersonDirection = 0
   let xboxLeftJoystickButtonLastState = false
   let xboxJoystickCalibration = {leftX: 0, leftY: 0, rightX: 0, rightY: 0}
 
@@ -76,12 +75,15 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
     }
 
     if (xboxController) {
+      let shouldBoostDolly = xboxController.buttons[0].pressed
+      const dollySpeed = 0.00006
+      const boostAmount = 0.0001
       if (xboxController.buttons[6].pressed == true) { // left trigger button
-        firstPersonDirection = -1
+        cameraDollyDelta += dollySpeed
+        if (shouldBoostDolly) cameraDollyDelta += boostAmount
       } else if (xboxController.buttons[7].pressed == true) { // right trigger button
-        firstPersonDirection = 1
-      } else {
-        firstPersonDirection = 0
+        cameraDollyDelta -= dollySpeed
+        if (shouldBoostDolly) cameraDollyDelta -= boostAmount
       }
 
       xboxLeftJoystickButtonState = xboxController.buttons[10].pressed
