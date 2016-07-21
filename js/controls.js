@@ -15,9 +15,6 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
   let orbitControlsEnabled = true
 
   // TOFIX: make these Vector3's probably
-  let cameraPositionUpdateX = 0.0
-  let cameraPositionUpdateY = 0.0
-  let cameraPositionUpdateZ = 0.0
   let cameraRotationDeltaX = 0.0
   let cameraRotationDeltaY = 0.0
   let cameraPositionDeltaX = 0.0
@@ -37,7 +34,7 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
 
   let lastCameraPresetIdentifierPressed
   const buttonIdentifierToAPC40Packet = {
-    'F8' : {0: 0x97, 1: 0x35},
+    'A#1' : {0: 0x97, 1: 0x35},
     '/' :  {0: 0x97, 1: 0x35}, // TOFIX: DRY this up later
     'F#8' :  {0: 0x97, 1: 0x36}
   }
@@ -96,10 +93,16 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
       }
 
       if (xboxControllerSelected) {
+        // cameraRotationDeltaX = lerp(0.25, -0.25, 0.5 + xboxController.axes[0] - xboxJoystickCalibration.leftX)
+        // cameraRotationDeltaY = lerp(0.25, -0.25, 0.5 + xboxController.axes[1] - xboxJoystickCalibration.leftY)
+        // cameraPositionDeltaX = lerp(1.0, -1.0, 0.5 + xboxController.axes[2] - xboxJoystickCalibration.rightX)
+        // cameraPositionDeltaY = lerp(1.0, -1.0, 0.5 + xboxController.axes[3] - xboxJoystickCalibration.rightY)
+
         cameraRotationDeltaX = lerp(0.25, -0.25, 0.5 + xboxController.axes[0] - xboxJoystickCalibration.leftX)
         cameraRotationDeltaY = lerp(0.25, -0.25, 0.5 + xboxController.axes[1] - xboxJoystickCalibration.leftY)
         cameraPositionDeltaX = lerp(1.0, -1.0, 0.5 + xboxController.axes[2] - xboxJoystickCalibration.rightX)
         cameraPositionDeltaY = lerp(1.0, -1.0, 0.5 + xboxController.axes[3] - xboxJoystickCalibration.rightY)
+
       }
 
       // TOFIX: handle first person controls mode later, i prefer orbitcontrols with xbox turns out
@@ -165,7 +168,7 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
 
       if (inputAudioAnalysis) {
         inputAudioAnalysis.addListener('controlchange', "all", (e) => {
-          if (e.value && this.audioAnalysisEnabled) {
+          if (e.value) {
             let v = e.value / 127.0
             switch(e.controller.number) {
               case 0:
@@ -230,7 +233,6 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
 
   function updateAPC40Button(buttonIdentifier, illuminate, blink) {
     if (!outputAPC40) return
-    console.log('updateAPC40Button: ' + buttonIdentifier)
     let map = buttonIdentifierToAPC40Packet[buttonIdentifier]
     let lastByte = illuminate ? 0x01 : 0x00
     if (blink) lastByte = 0x02
@@ -239,7 +241,7 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
   }
 
   function updateAPC40ToggleButtonLEDs() {
-    updateAPC40Button('F8', cameraPresetsLearn, false)
+    updateAPC40Button('A#1', state.cameraPresetsLearn, false)
     updateAPC40Button('F#8', xboxControllerSelected, false)
     let button = buttonIdentifierToAPC40Packet[lastCameraPresetIdentifierPressed]
     if (button) {
@@ -262,6 +264,7 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
         callbackForControlEvent('LOAD_GARDEN_FROM_PRESET_FILE')
         break
       case 'g':
+      case 'B1': // APC40
         callbackForControlEvent('GENERATE_NEW_RANDOM_GARDEN')
         break
       case 'a':
@@ -270,7 +273,7 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
       case ',':
         self.audioAnalysisEnabled = !self.audioAnalysisEnabled // TOFIX:
         break
-      case 'F8': // APC40
+      case 'A#1': // APC40
       case 'E2': // TouchOSC
       case '/':
       case 'xbox10': {
@@ -306,22 +309,23 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
         debugger
         break
       default: {
-        if (cameraPresetsLearn) {
+        if (state.cameraPresetsLearn) {
           let data = {presetIdentifier: buttonIdentifier}
 
-          if (firstPersonEnabled) {
-            data = Object.assign({}, data, {
-              controlsType: 'firstPerson',
-              controlsFirstPersonMatrix: this.firstPersonControls.getObject().matrix.toArray()
-            })
-          } else {
+          // if (xboxControllerSelected) {
+          //   data = Object.assign({}, data, {
+          //     controlsType: 'firstPerson'
+          //     // controlsFirstPersonMatrix: this.firstPersonControls.getObject().matrix.toArray()
+          //   })
+          // } else {
             data = Object.assign({}, data, {
               controlsType: 'orbit',
               controlsOrbitMatrix: this.orbitControls.object.matrix.toArray(),
               controlsOrbitTarget: this.orbitControls.target.clone()
             })
-          }
+          // }
           console.log(data)
+          this.cameraPresetsLearn = false
           callbackForControlEvent('CAMERA_PRESET_LEARN', data)
         } else {
           let data = {
@@ -406,23 +410,23 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
     }
   }
 
-  // MIDI - camera controls (APC40)
+  // MIDI - APC40 knobs (stub)
   function handleMidiControlChangeAPC(e) {
     console.log('Knob #: ' + e.controller.number + ' | Value: ' + e.value) // TOFIX: replace this with generic MIDI log function?
     let v = e.value / 127.0
 
     switch (e.controller.number) {
       case 48:
-        cameraPositionUpdateX = lerp(-0.01, 0.01, v)
+
         break
       case 49:
-        cameraPositionUpdateY = lerp(-0.01, 0.01, v)
+
         break
       case 50:
-        cameraPositionUpdateZ = lerp(-0.01, 0.01, v)
+
         break
       case 51:
-        cameraDolly = lerp(-5000, 5000, v)
+
         break
       default:
     }
@@ -454,9 +458,9 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
   initializeMidi.bind(this)()
   document.body.addEventListener('keypress', handleKeyPress.bind(this))
   this.orbitControls = new THREE.OrbitControls(camera, elementForOrbitControls)
-  this.firstPersonControls = new FirstPersonControls(camera)
-  scene.add(this.firstPersonControls.getObject())
-  this.audioAnalysisEnabled = true
+  // this.firstPersonControls = new FirstPersonControls(camera)
+  // scene.add(this.firstPersonControls.getObject())
+  this.audioAnalysisCanUpdateCamera = false // TOFIX: can i remove the this reference?
 }
 
 
