@@ -75,6 +75,11 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
     }
 
     if (xboxController) {
+      // reset camera
+      if (xboxController.buttons[9].pressed) {
+        this.cameraReset()
+      }
+
       let shouldBoostDolly = xboxController.buttons[0].pressed
       const dollySpeed = 0.00006
       const boostAmount = 0.0001
@@ -224,6 +229,14 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
     }
   }
 
+  function resetCameraDeltas() {
+    cameraRotationDeltaX = 0
+    cameraRotationDeltaY = 0
+    cameraPositionDeltaY = 0
+    cameraPositionDeltaX = 0
+    cameraDollyDelta = 1.0
+  }
+
   function callbackForControlEvent(type, data) {
     let event = { type: type, data: data}
     controlsEventCallback(event)
@@ -305,8 +318,11 @@ function Controls(midi, scene, camera, elementForOrbitControls, controlsEventCal
       }
       case 'D1': // APC40
       case 'D2': // TouchOSC
+      case 'm': {
+        resetCameraDeltas()
         this.cameraReset.bind(this)()
         break
+      }
       case 'p':
         debugger
         break
