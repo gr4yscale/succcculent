@@ -86,6 +86,7 @@ const bottomColumnDirectlyUnderMainGridIdentifiers = [
 
 apc.buttonIdentifierToEventIdentifier = {
   'E1': events.CAMERA_PRESETS_LEARN_TOGGLED,
+  'xbox10': events.CAMERA_PRESETS_LEARN_TOGGLED, // TOFIX: stupid hack to map xbox controller left joystick to camera learn
   'E2': events.XBOX_CONTROLLER_SELECTION_TOGGLED,
   'E3': events.CAMERA_CONTROLS_RESET,
   'E4': events.GENERATE_NEW_RANDOM_GARDEN,

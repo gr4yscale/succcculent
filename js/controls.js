@@ -27,6 +27,7 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
   let cameraPositionDeltaY = 0.0
   let joystickSensitivity = 2.0
   let cameraDollyDelta = 1.0
+  let cameraDollySensitivity = 1.0
 
   // xbox controller
   this.xboxControllerSelected = true
@@ -36,7 +37,7 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
   // This is only a member function because I don't want this references everywhere on the camera controls and etc variables
   this.updateCameraWithOrbitControls = function() {
     this.orbitControls.handleJoystickRotate(cameraRotationDeltaX * joystickSensitivity, cameraRotationDeltaY * joystickSensitivity)
-    this.orbitControls.handleJoystickDolly(cameraDollyDelta)
+    this.orbitControls.handleJoystickDolly(cameraDollyDelta * cameraDollySensitivity)
     this.orbitControls.handleJoystickPan(cameraPositionDeltaX * joystickSensitivity, cameraPositionDeltaY * joystickSensitivity)
     this.orbitControls.update()
   }
@@ -285,8 +286,6 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
 
   // MIDI - camera controls (TouchOSC)
   function handleMidiControlChangeTouchOSC(e) {
-
-
     console.log('Knob #: ' + e.controller.number + ' | Value: ' + e.value) // TOFIX: replace this with generic MIDI log function?
     let v = e.value / 127.0
 
@@ -308,7 +307,7 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
         joystickSensitivity = lerp(0, 8.0, v)
         break
       case 5:
-        cameraDollyDelta = lerp(1.01, 0.99, v)
+        cameraDollyDelta = lerp(1.02, 0.98, v)
         break
       // page 2, starting with number 6
       case 6:
