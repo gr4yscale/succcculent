@@ -3,6 +3,8 @@ var state = exports
 ////////////////////////
 // Modes:
 
+state.presetSelectModeEnabled = true
+
 // camera presets learn
 state.cameraPresetsLearn = false
 

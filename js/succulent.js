@@ -21,6 +21,10 @@ module.exports = function(THREE) {
       return mesh;
     }
 
+    var updatePlantWithTextureMaterial = function(texture) {
+
+    }
+
     var createPlant = function(texture) {
       var singleGeometry = new THREE.Geometry();
 
@@ -58,9 +62,9 @@ module.exports = function(THREE) {
     var petalWidth = plantParams['petalWidth']
 
     // if the plant is textured, then we need to return it async, otherwise return it immediately
-    if (plantParams.textureFilename) {
+    if (plantParams.textureFileName) {
       var loader = new THREE.TextureLoader();
-      loader.load(plantParams.textureFilename, function (texture) {
+      loader.load(plantParams.textureFileName, function (texture) {
         texture.wrapS = THREE.RepeatWrapping
         texture.wrapT = THREE.RepeatWrapping
         texture.repeat.set(1, 1)

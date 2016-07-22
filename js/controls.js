@@ -290,57 +290,62 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
     console.log('Knob #: ' + e.controller.number + ' | Value: ' + e.value) // TOFIX: replace this with generic MIDI log function?
     let v = e.value / 127.0
 
-    switch (e.controller.number) {
-      // page 1
-      case 0:
-        if (!self.xboxControllerSelected) cameraRotationDeltaY = lerp(-0.5, 0.5, v)
-        break
-      case 1:
-        if (!self.xboxControllerSelected) cameraRotationDeltaX = lerp(0.5, -0.5, v)
-        break;
-      case 2:
-        if (!self.xboxControllerSelected) cameraPositionDeltaY = lerp(-0.5, 0.5, v)
-        break;
-      case 3:
-        if (!self.xboxControllerSelected) cameraPositionDeltaX = lerp(0.5, -0.5, v)
-        break;
-      case 4:
-        joystickSensitivity = lerp(0, 8.0, v)
-        break
-      case 5:
-        cameraDollyDelta = lerp(1.02, 0.98, v)
-        break
-      // page 2, starting with number 6
-      case 6:
-        self.audioAnalaysisFilter1TriggerThreshold = lerp(0, 1.0, v)
-        self.audioAnalaysisFilter1TriggerThresholdReached = false
-        break
-      case 7:
-        self.audioAnalaysisFilter2TriggerThreshold = lerp(0, 1.0, v)
-        self.audioAnalaysisFilter2TriggerThresholdReached = false
-        break
-      case 8:
-        self.audioAnalaysisFilter3TriggerThreshold = lerp(0, 1.0, v)
-        self.audioAnalaysisFilter3TriggerThresholdReached = false
-        break
-      case 9:
-        state.audioAnalysisFilter1Gain = lerp(0, 1.0, v)
-        break
-      case 10:
-        state.audioAnalysisFilter2Gain = lerp(0, 1.0, v)
-        break
-      case 11:
-        self.audioAnalysisFilter3Gain = lerp(0, 1.0, v)
-        break
-      case 15: {
-        state.sameShaderForAllPlantsIndex = Math.floor(lerp(0, 14, v)) //TOFIX: keep this within bounds, pass in the shaders array length
-        if (state.sameShaderForAllPlants) {
-          callbackToUpdatePlantShaders(state.sameShaderForAllPlantsIndex)
+    // Camera, page 1
+    if (e.channel == 1) {
+      switch (e.controller.number) {
+        case 0:
+          if (!self.xboxControllerSelected) cameraRotationDeltaY = lerp(-0.5, 0.5, v)
+          break
+        case 1:
+          if (!self.xboxControllerSelected) cameraRotationDeltaX = lerp(0.5, -0.5, v)
+          break;
+        case 2:
+          if (!self.xboxControllerSelected) cameraPositionDeltaY = lerp(-0.5, 0.5, v)
+          break;
+        case 3:
+          if (!self.xboxControllerSelected) cameraPositionDeltaX = lerp(0.5, -0.5, v)
+          break;
+        case 4:
+          joystickSensitivity = lerp(0, 8.0, v)
+          break
+        case 5:
+          cameraDollyDelta = lerp(1.0099, 0.986, v)
+          break
         }
-        break
+      // Textures, page 2
+    } else if (e.channel = 3) {
+      switch (e.controller.number) {
+        case 7:
+          state.textureUpdateSpeed = lerp(1.0, 10.0, v)
+          break
+        case 8:
+          state.textureRepeatRange = lerp(1.0, 10.0, v)
+          break
       }
-      default:
     }
+
+      // case 8:
+      //   self.audioAnalaysisFilter3TriggerThreshold = lerp(0, 1.0, v)
+      //   self.audioAnalaysisFilter3TriggerThresholdReached = false
+      //   break
+      // case 9:
+      //   state.audioAnalysisFilter1Gain = lerp(0, 1.0, v)
+      //   break
+      // case 10:
+      //   state.audioAnalysisFilter2Gain = lerp(0, 1.0, v)
+      //   break
+      // case 11:
+      //   self.audioAnalysisFilter3Gain = lerp(0, 1.0, v)
+      //   break
+    //   case 15: {
+    //     state.sameShaderForAllPlantsIndex = Math.floor(lerp(0, 14, v)) //TOFIX: keep this within bounds, pass in the shaders array length
+    //     if (state.sameShaderForAllPlants) {
+    //       callbackToUpdatePlantShaders(state.sameShaderForAllPlantsIndex)
+    //     }
+    //     break
+    //   }
+    //   default:
+    // }
   }
 
   // MIDI - APC40 knobs (stub)

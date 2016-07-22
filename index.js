@@ -16,7 +16,7 @@ var clock = new THREE.Clock();
 
 var presets = new Presets()
 
-var numPlants = 150;
+var numPlants = 100;
 var speed = 1000;
 var boxes = [];
 var succulents = [];
@@ -75,6 +75,7 @@ function positionSucculentRandomly(index, plantParams, succulent) {
 }
 
 function addSucculent(index, plantParams) {
+  if (!plantParams) return
   var shaderIndex = plantParams['shaderIndex']
   var shaderMaterial = shaders[shaderIndex];
 
@@ -90,7 +91,7 @@ function addSucculent(index, plantParams) {
     scene.add(succulent);
     succulents.push(succulent);
   }
-  if (plantParams.textureFilename) {
+  if (plantParams.textureFileName) {
     Succulent(shaderMaterial, plantParams, positionSucculent)
   } else {
     let succulent = Succulent(shaderMaterial, plantParams)
@@ -177,7 +178,7 @@ function generateNewRandomGarden() {
   presets.generatePlantParams(numPlants, shaders.length)
 
   for (var i=0; i < numPlants; i++) {
-    addSucculent(i, presets.plantParams[i])
+    addSucculent(i, presets.plantParams(i))
   }
 }
 
@@ -218,8 +219,29 @@ function resize() {
   effect.setSize(width, height);
 }
 
+////////////////////////////////
+
+var delta = 0.001
 function update(t) {
   var tickCounter = (t / speed);
+
+  for (var i = 0; i < succulents.length; i++) {
+    delta++
+    if (delta > state.textureUpdateSpeed) {
+      if (succulents[i]) {
+        let aTex = succulents[i].material.map
+        if (aTex) {
+          let repeatA = Math.ceil(getRandomArbitrary(1, state.textureRepeatRange))
+          let repeatB = Math.ceil(getRandomArbitrary(1, state.textureRepeatRange))
+          aTex.repeat.set(repeatA, repeatB)
+          succulents[i].material.map = aTex
+        }
+      }
+      delta = 0
+    }
+  }
+
+  ////////////////////////////////
 
   for (var j = 0; j < shaders.length; j++) {
     shaders[j].uniforms.iGlobalTime.value = tickCounter;
@@ -290,7 +312,7 @@ function handleControlsEvent(e) {
     case events.CAMERA_PRESET_LEARN: {
       let presetIdentifier = e.data.presetIdentifier
       presets.updateCameraMap(presetIdentifier, camera, e.data)
-      console.log('Updated camera presets for identifier: ' + presetIdentifier)
+      // console.log('Updated camera presets for identifier: ' + presetIdentifier)
       updateIndicators(e.data)
       break
     }
@@ -307,6 +329,8 @@ function handleControlsEvent(e) {
       }
       break
     }
+    case events.CAMERA_CONTROLS_RESET:
+      break
     case events.SET_SAME_SHADER_FOR_ALL_PLANTS: {
       setSameShaderForAllPlants(e.data.shaderIndex)
       break
@@ -314,10 +338,28 @@ function handleControlsEvent(e) {
     case events.RESET_SHADERS_TO_INITIAL_SHADER_FOR_ALL_PLANTS:
       resetShadersForAllPlants()
       break
+    case events.AUDIO_ANALYSIS_FILTER_UPDATE:
+      // console.log(e.data.filter1 + ' | ' + e.data.filter2 + ' | ' + e.data.filter3)
+      break
+    case events.AUDIO_ANALYSIS_FILTER_1_TRIGGER_THRESHOLD_REACHED: {
+      console.log('tried to trigger filter 1')
+      let map = presets.cameraMap['1']
+      if (map) {
+        console.log(map)
+        controls.updateFromPresetData(map)
+      }
       break
     }
-    case 'AUDIO_ANALYSIS_FILTER_UPDATE':
-      console.log(e.data.filter1Value + ' | ' + e.data.filter2Value + ' | ' + e.data.filter3Value)
+    case events.AUDIO_ANALYSIS_FILTER_2_TRIGGER_THRESHOLD_REACHED: {
+      console.log('tried to trigger filter 2')
+      let map = presets.cameraMap['2']
+      if (map) {
+        console.log(map)
+        controls.updateFromPresetData(map)
+      }
+      break
+    }
+    case events.AUDIO_ANALYSIS_FILTER_3_TRIGGER_THRESHOLD_REACHED:
       break
     case events.GENERATE_NEW_PLANTS_TEXTURE_STYLES_TOGGLE: {
       presets.generateNewPlantsWithTextures = e.data.generateNewPlantsWithTextures
