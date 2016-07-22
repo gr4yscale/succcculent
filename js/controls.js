@@ -3,15 +3,18 @@
 function Controls(state, midi, scene, camera, elementForOrbitControls, controlsEventCallback) {
 
   let self = this // fucking ES5 =\
-  let apc = require('./controls_midi_apc40')
-  let kb = require('./controls_kb')
   let FirstPersonControls = require('./controls_first_person.js')
   let events = require('./events.js')
   let lerp = require('./util.js').lerp
-  let outputAPC40
-  let xboxController
+  let logControlSurfaceEvents = true
 
-  let logControlSurfaceEvents = false
+  // control surfaces
+  this.apc = require('./controls_midi_apc40')
+  this.outputAPC40
+  let xboxController
+  let touchOSC = require('./controls_midi_touchosc')
+  let kb = require('./controls_kb')
+
 
   // camera
   this.camera = camera
@@ -26,13 +29,12 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
   let cameraDollyDelta = 1.0
 
   // xbox controller
-  let xboxControllerSelected = true
+  this.xboxControllerSelected = true
   let xboxLeftJoystickButtonLastState = false
   let xboxJoystickCalibration = {leftX: 0, leftY: 0, rightX: 0, rightY: 0}
 
   // This is only a member function because I don't want this references everywhere on the camera controls and etc variables
   this.updateCameraWithOrbitControls = function() {
-    if (!orbitControlsEnabled) return
     this.orbitControls.handleJoystickRotate(cameraRotationDeltaX * joystickSensitivity, cameraRotationDeltaY * joystickSensitivity)
     this.orbitControls.handleJoystickDolly(cameraDollyDelta)
     this.orbitControls.handleJoystickPan(cameraPositionDeltaX * joystickSensitivity, cameraPositionDeltaY * joystickSensitivity)
@@ -40,6 +42,7 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
   }
 
   this.updateCameraFromGamepadState = function() {
+    if (!this.xboxControllerSelected) return
 
     if (navigator.webkitGetGamepads) {
       xboxController = navigator.webkitGetGamepads()[0]
@@ -72,12 +75,10 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
         xboxLeftJoystickButtonLastState = xboxLeftJoystickButtonState
       }
 
-      if (xboxControllerSelected) {
-        cameraRotationDeltaX = lerp(0.25, -0.25, 0.5 + xboxController.axes[0] - xboxJoystickCalibration.leftX)
-        cameraRotationDeltaY = lerp(0.25, -0.25, 0.5 + xboxController.axes[1] - xboxJoystickCalibration.leftY)
-        cameraPositionDeltaX = lerp(1.0, -1.0, 0.5 + xboxController.axes[2] - xboxJoystickCalibration.rightX)
-        cameraPositionDeltaY = lerp(1.0, -1.0, 0.5 + xboxController.axes[3] - xboxJoystickCalibration.rightY)
-      }
+      cameraRotationDeltaX = lerp(0.25, -0.25, 0.5 + xboxController.axes[0] - xboxJoystickCalibration.leftX)
+      cameraRotationDeltaY = lerp(0.25, -0.25, 0.5 + xboxController.axes[1] - xboxJoystickCalibration.leftY)
+      cameraPositionDeltaX = lerp(1.0, -1.0, 0.5 + xboxController.axes[2] - xboxJoystickCalibration.rightX)
+      cameraPositionDeltaY = lerp(1.0, -1.0, 0.5 + xboxController.axes[3] - xboxJoystickCalibration.rightY)
     }
   }
 
@@ -100,7 +101,7 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
       }
 
       let inputAPC40 = midi.getInputByName("Akai APC40")
-      outputAPC40 = midi.getOutputByName("Akai APC40")
+      self.outputAPC40 = midi.getOutputByName("Akai APC40")
       let inputTouchOSC = midi.getInputByName("TouchOSC Bridge")
       let inputAudioAnalysis = midi.getInputByName("From VDMX")
 
@@ -120,14 +121,13 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
         inputTouchOSC.addListener('pitchbend', "all", handleUnhandledMidiEvent)
         inputTouchOSC.addListener('channelaftertouch', "all", handleUnhandledMidiEvent)
         inputTouchOSC.addListener('programchange', "all", handleUnhandledMidiEvent)
-        inputTouchOSC.addListener('controlchange', "all", handleUnhandledMidiEvent)
         inputTouchOSC.addListener('noteon', "all", handleMidiNoteOn.bind(self))
         inputTouchOSC.addListener('noteoff', "all", handleMidiNoteOff)
         inputTouchOSC.addListener('controlchange', "all", handleMidiControlChangeTouchOSC)
       }
 
-      if (outputAPC40) {
-        apc.updateAPC40ToggleButtonLEDs(state, self) // update LED state on init to make sure they properly represent current state
+      if (self.outputAPC40) {
+        self.apc.updateButtonLEDsForToggles(state, self, self.outputAPC40) // update LED state on init to make sure they properly represent current state
       }
 
       if (inputAudioAnalysis) {
@@ -195,6 +195,7 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
   }
 
   function buttonIdentifierFromMidiEvent(e) {
+    // find out if it's from the APC or from TouchOSC, generate a unique name so no conflicts between controllers
     return e.note.name + e.channel.toString()
   }
 
@@ -202,8 +203,9 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
     console.log('Handling button press: ' + buttonIdentifier)
 
     // TOFIX: making immutable copies like this on input events may cause perf issues...
-    let allInputSourcesEventIds = Object.assign({}, apc.buttonIdentifierToEventIdentifier)
+    let allInputSourcesEventIds = Object.assign({}, this.apc.buttonIdentifierToEventIdentifier)
         allInputSourcesEventIds = Object.assign({}, allInputSourcesEventIds, kb.buttonIdentifierToEventIdentifier)
+        allInputSourcesEventIds = Object.assign({}, allInputSourcesEventIds, touchOSC.buttonIdentifierToEventIdentifier)
 
     switch (allInputSourcesEventIds[buttonIdentifier]) {
       case events.GENERATE_NEW_RANDOM_GARDEN:
@@ -216,17 +218,18 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
       case events.CAMERA_PRESETS_LEARN_TOGGLED:
         state.cameraPresetsLearn = !state.cameraPresetsLearn
         callbackForControlEvent(events.CAMERA_PRESETS_LEARN_TOGGLED, {key: 'cameraPresetsLearn', value: state.cameraPresetsLearn})
-        apc.updateAPC40ToggleButtonLEDs(state, self)
+        self.apc.updateButtonLEDsForToggles(state, self, self.outputAPC40)
         break
       case events.XBOX_CONTROLLER_SELECTION_TOGGLED:
         if (xboxController) {
-          xboxControllerSelected = !xboxControllerSelected
-          callbackForControlEvent(events.XBOX_CONTROLLER_SELECTION_TOGGLED, {key: 'xboxControllerSelected', value: xboxControllerSelected})
+          self.xboxControllerSelected = !self.xboxControllerSelected
           xboxJoystickCalibration.leftX = xboxController.axes[0]
           xboxJoystickCalibration.leftY = xboxController.axes[1]
           xboxJoystickCalibration.rightX = xboxController.axes[2]
           xboxJoystickCalibration.rightY = xboxController.axes[3]
-          apc.updateAPC40ToggleButtonLEDs(state, self)
+          resetCameraDeltas()
+          self.apc.updateButtonLEDsForToggles(state, self, self.outputAPC40)
+          callbackForControlEvent(events.XBOX_CONTROLLER_SELECTION_TOGGLED, {key: 'xboxControllerSelected', value: self.xboxControllerSelected})
         }
         break
       case events.CAMERA_CONTROLS_RESET:
@@ -276,22 +279,24 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
 
   // MIDI - camera controls (TouchOSC)
   function handleMidiControlChangeTouchOSC(e) {
+
+
     console.log('Knob #: ' + e.controller.number + ' | Value: ' + e.value) // TOFIX: replace this with generic MIDI log function?
     let v = e.value / 127.0
 
     switch (e.controller.number) {
       // page 1
       case 0:
-        if (!xboxControllerSelected) cameraRotationDeltaY = lerp(-0.5, 0.5, v)
+        if (!self.xboxControllerSelected) cameraRotationDeltaY = lerp(-0.5, 0.5, v)
         break
       case 1:
-        if (!xboxControllerSelected) cameraRotationDeltaX = lerp(0.5, -0.5, v)
+        if (!self.xboxControllerSelected) cameraRotationDeltaX = lerp(0.5, -0.5, v)
         break;
       case 2:
-        if (!xboxControllerSelected) cameraPositionDeltaY = lerp(-0.5, 0.5, v)
+        if (!self.xboxControllerSelected) cameraPositionDeltaY = lerp(-0.5, 0.5, v)
         break;
       case 3:
-        if (!xboxControllerSelected) cameraPositionDeltaX = lerp(0.5, -0.5, v)
+        if (!self.xboxControllerSelected) cameraPositionDeltaX = lerp(0.5, -0.5, v)
         break;
       case 4:
         joystickSensitivity = lerp(0, 8.0, v)
@@ -355,12 +360,12 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
   }
 
   function handleMidiNoteOff(e) {
-    apc.updateAPC40ToggleButtonLEDs(state, self)
+    self.apc.updateButtonLEDsForToggles(state, self, self.outputAPC40)
   }
 
   function handleUnhandledMidiEvent(e) {
-    console.log('Unhandled MIDI event fired!')
-    console.log(e)
+    // console.log('Unhandled MIDI event fired!')
+    // console.log(e)
   }
 
 
@@ -387,6 +392,7 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
 // Public methods
 // TOFIX: this reference
 
+var interval = 0.001
 Controls.prototype.update = function() {
     this.updateCameraFromGamepadState()
     this.updateCameraWithOrbitControls()
@@ -396,6 +402,15 @@ Controls.prototype.update = function() {
       // Update rotation with FFT MIDI data
       // let v = this.camera.rotation
       // this.camera.rotation.set(state.audioAnalysisFilter1 * state.audioAnalysisFilter1Gain, this.camera.rotation.y, this.camera.rotation.z)
+    }
+
+    // TOFIX: hack to not kill perf sending MIDI out too often
+    interval++
+    if (interval > 8.0) {
+      if (this.outputAPC40) {
+        this.apc.updateButtonLEDsForCameraPresetMode(this.presets, this.outputAPC40)
+      }
+      interval = 0
     }
 }
 

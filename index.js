@@ -198,6 +198,7 @@ function initThree() {
   scene.add(camera);
 
   controls = new Controls(state, WebMidi, scene, camera, renderer.domElement, handleControlsEvent)
+  controls.presets = presets
 
   // setup the scene
   var setupLights = require('./js/lights')(THREE, scene);
