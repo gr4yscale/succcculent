@@ -298,9 +298,9 @@ function handleControlsEvent(e) {
       // get the serialized matrix out of presets (which stores the matrix the matrix as an array for convenient persistence)
       // use the callback that controls gives to let it update camera / orbitcontrols state
       let presetIdentifier = e.data.presetIdentifier
-      let map = presets.cameraMap[presetIdentifier]
-      if (map) {
-        controls.updateFromPresetData(map)
+      let data = presets.selectedPresetCameraMap()[presetIdentifier]
+      if (data) {
+        controls.updateFromPresetData(data)
         console.log('Triggered orbit controls and camera update using preset with identifier: ' + presetIdentifier)
       } else {
         console.log('There is no preset for identifier: ' + presetIdentifier + '!')
