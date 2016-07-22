@@ -209,7 +209,7 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
     console.log('Handling button press: ' + buttonIdentifier)
 
     // TOFIX: making immutable copies like this on input events may cause perf issues...
-    let allInputSourcesEventIds = Object.assign({}, this.apc.buttonIdentifierToEventIdentifier)
+    let allInputSourcesEventIds = Object.assign({}, self.apc.buttonIdentifierToEventIdentifier)
         allInputSourcesEventIds = Object.assign({}, allInputSourcesEventIds, kb.buttonIdentifierToEventIdentifier)
         allInputSourcesEventIds = Object.assign({}, allInputSourcesEventIds, touchOSC.buttonIdentifierToEventIdentifier)
 
