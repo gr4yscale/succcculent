@@ -14,7 +14,7 @@ var Presets = function() {
   this.styles = require('./styles')
   this.data = []
   this.selectedPresetIndex = 0
-  this.selectedStyleIndex = 0
+  this.selectedStyleIndex = 3
   this.lastGeneratedPlantParams = {}
   this.selectedTextureStyleForNewlyGeneratedPlants = {
     shaderIndexes: [1, 2, 4],
@@ -69,11 +69,16 @@ Presets.prototype.generatePlantParams = function(numberOfPlants, numberOfShaders
     let layers = Math.floor(getRandomArbitrary(8, 10))
     let petalLength = getRandomArbitrary(0.1, 0.7)
     let petalWidth = getRandomArbitrary(0.4, 0.6)
+    let textureFilename = ''
+    let shaderIndex = -999
 
-    let shaderStyleSelectionIndex = Math.floor(getRandomArbitrary(0, this.selectedStyle().shaderIndexes.length))
-    let shaderIndex = this.selectedStyle().shaderIndexes[shaderStyleSelectionIndex]
-
-    let textureFilename = 'images/' + this.selectedTextureStyleForNewlyGeneratedPlants.textureNames[0]
+    if (this.selectedStyle().shaderIndexes) {
+      let shaderStyleSelectionIndex = Math.floor(getRandomArbitrary(0, this.selectedStyle().shaderIndexes.length))
+      shaderIndex = this.selectedStyle().shaderIndexes[shaderStyleSelectionIndex]
+    } else {
+      let textureStyleSelectionIndex = Math.floor(getRandomArbitrary(0, this.selectedStyle().textureNames.length))
+      textureFilename = this.selectedStyle().textureNames[textureStyleSelectionIndex]
+    }
 
     let params = {
       petalCount: petalCount,
@@ -83,29 +88,27 @@ Presets.prototype.generatePlantParams = function(numberOfPlants, numberOfShaders
       layers: layers,
       petalLength: petalLength,
       petalWidth: petalWidth,
-      shaderIndex: shaderIndex,
       positionX: 'not_placed',
       positionY: 'not_placed',
       positionZ: 'not_placed',
     }
 
-    if (this.generateNewPlantsWithTextures) {
-      params = Object.assign({}, params, {textureFileName: textureFilename}) // TOFIX: maybe making a copy isn't great from a perf standpoint...
+    if (this.generateNewPlantsWithTextures || textureFilename != '') {
+      params = Object.assign({}, params, {textureFileName: 'images/' + textureFilename}) // TOFIX: maybe making a copy isn't great from a perf standpoint...
+    } else {
+      params = Object.assign({}, params, {shaderIndex: shaderIndex})
     }
     plantParams.push(params)
   }
-  let r = {
+  let preset = {
     plantParams: plantParams,
     cameraMap: {}
   }
-  this.data[this.selectedPresetIndex] = r
-  console.log(r)
-  return {
-    plantParams: r
-    // TOFIX: add camera stuff too
-  }
+  this.data[this.selectedPresetIndex] = preset
+  return this.data[this.selectedPresetIndex]
 }
 
+// TOFIX: selectedPreset
 Presets.prototype.selectPresetWithIndex = function(index) {
   self.selectedPresetIndex = index
 }
@@ -122,11 +125,7 @@ Presets.prototype.plantParams = function(index) {
 
 // TOFIX: WRONG!
 Presets.prototype.save = function(fileName) {
-  let data = {
-    plantParams: this.data,
-    cameraMap: this.cameraMap
-  }
-  saveData(data, fileName)
+  saveData(this.data, fileName)
 }
 
 Presets.prototype.updateCameraMap = function(key, camera, data) {
@@ -134,7 +133,26 @@ Presets.prototype.updateCameraMap = function(key, camera, data) {
   cameraMap[key] = Object.assign({}, cameraMap[key], data)
 }
 
+
+Presets.prototype.addNew = function() {
+  this.data.push({'foo':'bar'})
+  this.data[this.data.length] = this.generatePlantParams()
+}
+
+Presets.prototype.generateGardenForSelectedIndex = function() {
+  this.data[this.selectedPresetIndex].plantParams = this.generatePlantParams()
+}
+
+Presets.prototype.select = function(index) {
+  this.selectedPresetIndex = index
+}
+
+Presets.prototype.selectedPresetData = function() {
+  return this.data[this.selectedPresetIndex]
+}
+
 Presets.prototype.selectedStyle = function() {
   return this.styles[this.selectedStyleIndex]
 }
+
 module.exports = Presets

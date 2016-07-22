@@ -91,6 +91,7 @@ function addSucculent(index, plantParams) {
     scene.add(succulent);
     succulents.push(succulent);
   }
+
   if (plantParams.textureFileName) {
     Succulent(shaderMaterial, plantParams, positionSucculent)
   } else {
@@ -178,7 +179,7 @@ function generateNewRandomGarden() {
   presets.generatePlantParams(numPlants, shaders.length)
 
   for (var i=0; i < numPlants; i++) {
-    addSucculent(i, presets.plantParams(i))
+    addSucculent(i, presets.selectedPresetData().plantParams[i])
   }
 }
 

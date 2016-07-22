@@ -68,7 +68,6 @@ module.exports = function(THREE) {
         texture.wrapS = THREE.RepeatWrapping
         texture.wrapT = THREE.RepeatWrapping
         texture.repeat.set(1, 1)
-        console.log('made a textured plant!')
         textureLoadedCallback(createPlant(texture))
       })
     } else {
