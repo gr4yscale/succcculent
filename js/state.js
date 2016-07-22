@@ -12,6 +12,8 @@ state.sameShaderForAllPlantsIndex = 0
 
 // texture mode
 state.generateNewPlantsWithTextures = false
+state.textureRepeatRange = 1
+state.textureUpdateSpeed = 6.0
 
 // audio analysis (comes in as MIDI from VDMX)
 self.audioAnalysisCanUpdateCamera = false

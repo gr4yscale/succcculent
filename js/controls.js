@@ -221,6 +221,7 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
       case events.GENERATE_NEW_PLANTS_TEXTURE_STYLES_TOGGLE:
         state.generateNewPlantsWithTextures = !state.generateNewPlantsWithTextures
         callbackForControlEvent(events.GENERATE_NEW_PLANTS_TEXTURE_STYLES_TOGGLE, {generateNewPlantsWithTextures: state.generateNewPlantsWithTextures})
+        self.apc.updateButtonLEDsForToggles(state, self, self.outputAPC40)
         break
       case events.CAMERA_PRESETS_LEARN_TOGGLED:
         state.cameraPresetsLearn = !state.cameraPresetsLearn
