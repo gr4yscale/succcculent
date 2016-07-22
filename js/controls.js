@@ -196,7 +196,13 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
 
   function buttonIdentifierFromMidiEvent(e) {
     // find out if it's from the APC or from TouchOSC, generate a unique name so no conflicts between controllers
-    return e.note.name + e.channel.toString()
+    let noteNameAndChannel = e.note.name + e.channel.toString()
+    // TOFIX: stupid hack to prevent collisions on button identifiers
+    if (e.target._midiInput.name == "TouchOSC Bridge") {
+      return "touchOSC-" + noteNameAndChannel
+    } else {
+      return noteNameAndChannel
+    }
   }
 
   function buttonPressed(buttonIdentifier) {
