@@ -1,9 +1,5 @@
 let fileReader = new FileReader()
-let styles = require('./styles')
 
-console.log(styles)
-
-//
 // let selectedGeometryStyleForNewlyGeneratedPlants = {
 //   petalCount: {min: 20, max: 40},
 //   curveAmountB: {min: 0.08, 0.20},
@@ -15,8 +11,10 @@ console.log(styles)
 // }
 
 var Presets = function() {
+  this.styles = require('./styles')
   this.data = []
   this.selectedPresetIndex = 0
+  this.selectedStyleIndex = 0
   this.lastGeneratedPlantParams = {}
   this.selectedTextureStyleForNewlyGeneratedPlants = {
     shaderIndexes: [1, 2, 4],
@@ -71,7 +69,10 @@ Presets.prototype.generatePlantParams = function(numberOfPlants, numberOfShaders
     let layers = Math.floor(getRandomArbitrary(8, 10))
     let petalLength = getRandomArbitrary(0.1, 0.7)
     let petalWidth = getRandomArbitrary(0.4, 0.6)
-    let shaderIndex = Math.floor(getRandomArbitrary(0, numberOfShaders));
+
+    let shaderStyleSelectionIndex = Math.floor(getRandomArbitrary(0, this.selectedStyle().shaderIndexes.length))
+    let shaderIndex = this.selectedStyle().shaderIndexes[shaderStyleSelectionIndex]
+
     let textureFilename = 'images/' + this.selectedTextureStyleForNewlyGeneratedPlants.textureNames[0]
 
     let params = {
@@ -133,4 +134,7 @@ Presets.prototype.updateCameraMap = function(key, camera, data) {
   cameraMap[key] = Object.assign({}, cameraMap[key], data)
 }
 
+Presets.prototype.selectedStyle = function() {
+  return this.styles[this.selectedStyleIndex]
+}
 module.exports = Presets
