@@ -1,25 +1,11 @@
 let fileReader = new FileReader()
 
-// let selectedGeometryStyleForNewlyGeneratedPlants = {
-//   petalCount: {min: 20, max: 40},
-//   curveAmountB: {min: 0.08, 0.20},
-//   curveAmountC: {min: 0.2, 0.6},
-//   curveAmountD: {min: 0.08, 0.20},
-//   layers: {min: 8, 10},
-//   petalLength: {min: 0.1, max: 0.7},
-//   petalWidth: {min: 0.4, max: 0.6}
-// }
-
 var Presets = function() {
+  this.selectedStyleIndex = 6
   this.styles = require('./styles')
   this.data = []
   this.selectedPresetIndex = 0
-  this.selectedStyleIndex = 3
   this.lastGeneratedPlantParams = {}
-  this.selectedTextureStyleForNewlyGeneratedPlants = {
-    shaderIndexes: [1, 2, 4],
-    textureNames: ['c0d807dd3bd03e907959e64f60527504.jpg']
-  }
   this.generateNewPlantsWithTextures = false
 }
 

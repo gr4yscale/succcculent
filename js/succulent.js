@@ -23,6 +23,10 @@ module.exports = function(THREE) {
 
     var updatePlantWithTextureMaterial = function(texture) {
 
+      // TOFIX:
+
+      // CLONE GEOMETRY, MAKE A NEW MATERIAL AFTER TEXTURE IS LOADED,
+      // REMOVE OLD GEOM, ADD NEW GEOM
     }
 
     var createPlant = function(texture) {

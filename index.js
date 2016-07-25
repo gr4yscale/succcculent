@@ -235,6 +235,11 @@ function update(t) {
           let repeatA = Math.ceil(getRandomArbitrary(1, state.textureRepeatRange))
           let repeatB = Math.ceil(getRandomArbitrary(1, state.textureRepeatRange))
           aTex.repeat.set(repeatA, repeatB)
+          // Do the offset with music
+          // console.log(state.audioAnalysisFilter1)
+          // aTex.offset.set(aTex.offset.x - 0.01, aTex.offset.y)
+
+          aTex.offset.set(aTex.offset.x - 0.0001 - (state.audioAnalysisFilter1 * 0.15), aTex.offset.y)
           succulents[i].material.map = aTex
         }
       }
@@ -288,7 +293,7 @@ function updateIndicators(data) {
 }
 
 function handleControlsEvent(e) {
-  console.log('Handling control event of type: ' + e.type)
+  // console.log('Handling control event of type: ' + e.type)
   switch (e.type) {
     case events.ADD_SUCCULENT_IN_RANDOM_POSITION:
       console.log('add a succulent randomly (outside of the normal parameter loading/saving)')
@@ -368,7 +373,7 @@ function handleControlsEvent(e) {
       break
     }
     default:
-      console.log('Received unknown control type! *******')
+      // console.log('Received unknown control type! *******')
       break
   }
 }

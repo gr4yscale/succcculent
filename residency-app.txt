@@ -1,0 +1,65 @@
+fabLAB Asturias
+
+---
+
+** Physical interactions with the succulents
+    3d print plants, experiment with materials that let us bend leaves as control surfaces
+    Experiment with light and shadows on plants as a control surface
+    Lighting, DMX, computer vision, machine learning, evolutionary algorithms
+
+
+
+** What are some possibilities of hardware interactions with the system?
+    Interactive installations, physical interfaces, interaction with 3D environments
+
+
+
+** Short biography about me
+
+  I like doing experimental things with software and hardware.
+
+  My focus areas for the next little while are: machine learning, artificial intelligence, generative algorithms, and virtual / augmented reality.
+
+  I'm always building and making:
+
+  interactive web-based graphics things
+  native mobile & desktop applications
+  web-based applications (server + client-side)
+  embedded / hardware-based things
+
+
+
+
+** Project description
+
+
+
+** Residence selection:
+  -Why am I choosing this residence?
+    -Interested in the Fablab in particular
+    -LEV: one of my close friends said great things about the festival this year
+    -Mention interest in hardware and electronics
+    -An AV Research lab + FABLab would be more fitting as I would prefer to create a system that an audience can participate with
+    -Feel more comfortable with this than to integrate my project into a performance setting
+
+Production plan:
+  -Technical requirements: equipment, software, technical support
+  -Timeline for 2 weeks
+  -Budget
+
+Portfolio
+
+
+
+
+
+
+--- tracks:
+
+https://soundcloud.com/gravitas-recordings/zebbler-encanti-experience-pockitz-riddlez
+
+
+
+---
+
+Laboral Centro de Arte y Creación Industrial

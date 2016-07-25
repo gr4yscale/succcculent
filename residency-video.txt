@@ -1,0 +1,42 @@
+
+Live visuals performance software
+Garden of succulent plants
+Started as an experiment where I rendered one succulent plant, began extending it
+WebGL-based, but routes video frames through Syphon + CEF in C++
+Work in progress
+Has scene selection and camera controls
+Generative, but parameters and camera positions can be saved
+Takes inputs from other systems via OSC/MIDI
+Routes video output through Syphon
+Camera controls (position + angle)
+Camera presets (you can record position + angles as hotkeys and play back later)
+
+
+
+So far it is just a visual thing.
+I would like to experiment and couple it with a sound component which is fitting for the aesthetics.
+Want to do some things like manipulate geometry in realtime (morph the angle of petals in response to audio, for example)
+
+
+
+Digital fabrication:
+
+Large plants as control surfaces
+Recreate the generative function that produced geometry
+Algorithmic Beauty of Plants
+Using light as a control parameter - plant sensing light
+Acceleration / motion, light
+Petals flexible, detect amount of bend and feed it to parameters
+
+I have experience working with small AVR and ARM-based microcontrollers (teensy, arduino, discovery), am comfortable with the electronics side of things
+
+
+
+Residency, why I chose:
+
+LEV: one of my friends said great things about the festival this year
+Interested in the Fablab in particular
+Want artistic direction and people to collaborate and share ideas with
+
+An AV Research lab + FABLab would be more fitting as I would prefer to create a system that an audience can participate with
+Feel more comfortable with this than to integrate my project into a performance setting
