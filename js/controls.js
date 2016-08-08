@@ -30,7 +30,7 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
   let cameraDollySensitivity = 1.0
 
   // xbox controller
-  this.xboxControllerSelected = true
+  this.xboxControllerSelected = false
   let xboxLeftJoystickButtonLastState = false
   let xboxJoystickCalibration = {leftX: 0, leftY: 0, rightX: 0, rightY: 0}
 
@@ -229,8 +229,8 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
         self.apc.updateButtonLEDsForToggles(state, self, self.outputAPC40)
         break
       case events.XBOX_CONTROLLER_SELECTION_TOGGLED:
-        if (xboxController) {
-          self.xboxControllerSelected = !self.xboxControllerSelected
+        self.xboxControllerSelected = !self.xboxControllerSelected
+        if (self.xboxControllerSelected) {
           xboxJoystickCalibration.leftX = xboxController.axes[0]
           xboxJoystickCalibration.leftY = xboxController.axes[1]
           xboxJoystickCalibration.rightX = xboxController.axes[2]
