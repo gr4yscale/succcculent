@@ -1,6 +1,6 @@
-// TOFIX: This needs refactoring!
+// TOFIX: This needs refactoring!...BADLY!
 
-function Controls(state, midi, scene, camera, elementForOrbitControls, controlsEventCallback) {
+function Controls(presets, state, midi, scene, camera, elementForOrbitControls, controlsEventCallback) {
 
   let self = this // fucking ES5 =\
   let FirstPersonControls = require('./controls_first_person.js')
@@ -128,6 +128,7 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
       }
 
       if (self.outputAPC40) {
+        self.apc.resetMainGridButtonLEDsToOffState(self.outputAPC40)
         self.apc.updateButtonLEDsForToggles(state, self, self.outputAPC40) // update LED state on init to make sure they properly represent current state
       }
 
@@ -245,10 +246,18 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
         this.cameraReset.bind(this)()
         callbackForControlEvent(events.CAMERA_CONTROLS_RESET)
         break
+      case events.GARDEN_PRESET_MODE_TOGGLED:
+        state.gardenPresetModeEnabled = !state.gardenPresetModeEnabled
+        break
+      case events.ADD_NEW_GARDEN_PRESET:
+        presets.addNew()
+        break
       case 'p':
         debugger
         break
       default: {
+        // TOFIX: if gardenPresetModeEnabled, select a preset and reload the garden
+
         if (state.cameraPresetsLearn) {
           state.cameraPresetsLearn = false
           let data = {
@@ -404,7 +413,7 @@ function Controls(state, midi, scene, camera, elementForOrbitControls, controlsE
 // TOFIX: this reference
 
 var interval = 0.001
-Controls.prototype.update = function() {
+Controls.prototype.update = function(state, presets) {
     this.updateCameraFromGamepadState()
     this.updateCameraWithOrbitControls()
 
@@ -419,7 +428,11 @@ Controls.prototype.update = function() {
     interval++
     if (interval > 8.0) {
       if (this.outputAPC40) {
-        this.apc.updateButtonLEDsForCameraPresetMode(this.presets, this.outputAPC40)
+        if (state.gardenPresetModeEnabled) {
+          this.apc.updateMainGridButtonLEDsForGardenPresetMode(presets, this.outputAPC40)
+        } else {
+          this.apc.updateMainGridButtonLEDsForCameraPresetMode(presets.selectedPresetCameraMap(), this.outputAPC40)
+        }
       }
       interval = 0
     }

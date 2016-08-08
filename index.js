@@ -199,8 +199,7 @@ function initThree() {
   camera.position.set(0, 0.35, 0.75);
   scene.add(camera);
 
-  controls = new Controls(state, WebMidi, scene, camera, renderer.domElement, handleControlsEvent)
-  controls.presets = presets
+  controls = new Controls(presets, state, WebMidi, scene, camera, renderer.domElement, handleControlsEvent)
 
   // setup the scene
   var setupLights = require('./js/lights')(THREE, scene);
@@ -253,7 +252,7 @@ function update(t) {
     shaders[j].uniforms.iGlobalTime.value = tickCounter;
   }
   resize()
-  controls.update()
+  controls.update(state, presets)
 }
 
 function render(dt) {

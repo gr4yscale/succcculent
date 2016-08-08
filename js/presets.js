@@ -122,7 +122,7 @@ Presets.prototype.updateCameraMap = function(key, camera, data) {
 
 Presets.prototype.addNew = function() {
   this.data.push({'foo':'bar'})
-  this.data[this.data.length] = this.generatePlantParams()
+  this.data[this.data.length - 1] = this.generatePlantParams()
 }
 
 Presets.prototype.generateGardenForSelectedIndex = function() {

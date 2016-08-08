@@ -91,10 +91,20 @@ apc.buttonIdentifierToEventIdentifier = {
   'E3': events.CAMERA_CONTROLS_RESET,
   'E4': events.GENERATE_NEW_RANDOM_GARDEN,
   'E5': events.GENERATE_NEW_PLANTS_TEXTURE_STYLES_TOGGLE,
+  'A#1': events.GARDEN_PRESET_MODE_TOGGLED,
+  'B1': events.ADD_NEW_GARDEN_PRESET
 }
 
-apc.updateButtonLEDsForCameraPresetMode = function(presets, outputAPC) {
-  let map = presets.selectedPresetCameraMap()
+// TOFIX: should probably loop over APC buttons, not presets.data.length
+apc.updateMainGridButtonLEDsForGardenPresetMode = function(presets, outputAPC) {
+  for (var i = 0; i < presets.data.length; i++) {
+    let id = mainGridButtonIdentifiers[i]
+    // TOFIX: handle 'selected' state with a blink
+    updateAPC40Button(id, true, false, outputAPC)
+  }
+}
+
+apc.updateMainGridButtonLEDsForCameraPresetMode = function(map, outputAPC) {
   for (var i = 0; i< mainGridButtonIdentifiers.length; i++) {
     let state = 0 // off
     let id = mainGridButtonIdentifiers[i]
@@ -110,6 +120,12 @@ apc.updateButtonLEDsForToggles = function(state, controls, outputAPC) {
   updateAPC40Button('E1', state.cameraPresetsLearn, false, outputAPC)
   updateAPC40Button('E2', controls.xboxControllerSelected, false, outputAPC)
   updateAPC40Button('E5', state.generateNewPlantsWithTextures, false, outputAPC)
+}
+
+apc.resetMainGridButtonLEDsToOffState = function(outputAPC) {
+  for (var i = 0; i< mainGridButtonIdentifiers.length; i++) {
+    updateAPC40Button(mainGridButtonIdentifiers[i], false, false, outputAPC)
+  }
 }
 
 // private
