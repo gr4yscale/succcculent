@@ -1,6 +1,9 @@
 let events = require('./events.js')
 var apc = exports
 
+// init this with the stuff it needs (presets, controls, state, apc),
+// make all LED update calls private and expose an update() func
+
 // TOFIX: devise a scheme to maintain visual state of APC40 grid based on underlying state (presets, controls, etc)
 
 // constants
@@ -89,10 +92,11 @@ apc.buttonIdentifierToEventIdentifier = {
   'xbox10': events.CAMERA_PRESETS_LEARN_TOGGLED, // TOFIX: stupid hack to map xbox controller left joystick to camera learn
   'E2': events.XBOX_CONTROLLER_SELECTION_TOGGLED,
   'E3': events.CAMERA_CONTROLS_RESET,
-  'E4': events.GENERATE_NEW_RANDOM_GARDEN,
   'E5': events.GENERATE_NEW_PLANTS_TEXTURE_STYLES_TOGGLE,
   'A#1': events.GARDEN_PRESET_MODE_TOGGLED,
-  'B1': events.ADD_NEW_GARDEN_PRESET
+  'B1': events.ADD_NEW_GARDEN_PRESET,
+  'C1': events.GENERATE_NEW_RANDOM_GARDEN,
+  'C#1': events.GARDEN_PRESET_MODE_SAVE_NEXT_PRESET_TOGGLED
 }
 
 // TOFIX: should probably loop over APC buttons, not presets.data.length
@@ -120,12 +124,17 @@ apc.updateButtonLEDsForToggles = function(state, controls, outputAPC) {
   updateAPC40Button('E1', state.cameraPresetsLearn, false, outputAPC)
   updateAPC40Button('E2', controls.xboxControllerSelected, false, outputAPC)
   updateAPC40Button('E5', state.generateNewPlantsWithTextures, false, outputAPC)
+  updateAPC40Button('C#1', state.gardenPresetSaveNext, false, outputAPC)
 }
 
 apc.resetMainGridButtonLEDsToOffState = function(outputAPC) {
   for (var i = 0; i< mainGridButtonIdentifiers.length; i++) {
     updateAPC40Button(mainGridButtonIdentifiers[i], false, false, outputAPC)
   }
+}
+
+apc.indexOfButtonForIdentifier = function(identifier) {
+  return mainGridButtonIdentifiers.indexOf(identifier)
 }
 
 // private

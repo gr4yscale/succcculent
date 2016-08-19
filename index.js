@@ -165,7 +165,7 @@ function clearSucculents() {
   boxes = []
 }
 
-function loadGardenFromPresetFile() {
+function loadFirstGardenFromPresetFile() {
   clearSucculents()
   presets.load(function(plantParams) {
     for (var i=0; i < numPlants; i++) {
@@ -174,12 +174,22 @@ function loadGardenFromPresetFile() {
   })
 }
 
+function loadGardenFromSelectedPreset() {
+  // assumes we've already loaded data into presets from the file
+  clearSucculents()
+  let plantParams = presets.selectedPresetData().plantParams
+  for (var i=0; i < state.numPlantsForNextGeneration; i++) {
+    if (i < plantParams.length) {
+      addSucculent(i, plantParams[i])
+    }
+  }
+}
+
 function generateNewRandomGarden() {
   clearSucculents()
-  presets.generatePlantParams(numPlants, shaders.length)
-
-  for (var i=0; i < numPlants; i++) {
-    addSucculent(i, presets.selectedPresetData().plantParams[i])
+  let preset = presets.generatePlantParams(state.numPlantsForNextGeneration, shaders.length, state)
+  for (var i=0; i < state.numPlantsForNextGeneration; i++) {
+    addSucculent(i, preset.plantParams[i])
   }
 }
 
@@ -302,10 +312,28 @@ function handleControlsEvent(e) {
       presets.save('plants.json')
       break
     case events.LOAD_GARDEN_FROM_PRESET_FILE:
-      loadGardenFromPresetFile()
+      loadFirstGardenFromPresetFile()
       break
     case events.GENERATE_NEW_RANDOM_GARDEN:
       generateNewRandomGarden()
+      break
+    case events.GARDEN_PRESET_MODE_TOGGLED:
+      state.gardenPresetModeEnabled = !state.gardenPresetModeEnabled
+      break
+    case events.GARDEN_PRESET_MODE_SAVE_NEXT_PRESET_TOGGLED:
+      state.gardenPresetSaveNext = !state.gardenPresetSaveNext
+      console.log('preset save next : ' + state.gardenPresetSaveNext)
+      break
+    case events.ADD_NEW_GARDEN_PRESET:
+      presets.addNew()
+      break
+    case events.LOAD_GARDEN_FROM_SELECTED_PRESET:
+      presets.select(e.data.index)
+      loadGardenFromSelectedPreset()
+      break
+    case events.SAVE_GARDEN_TO_SELECTED_PRESET:
+      presets.select(e.data.index)
+      presets.saveLastGeneratedPresetForSelectedIndex()
       break
     case events.DEBUGGER_PAUSE:
       debugger

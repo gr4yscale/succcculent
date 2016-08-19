@@ -5,7 +5,7 @@ var Presets = function() {
   this.styles = require('./styles')
   this.data = []
   this.selectedPresetIndex = 0
-  this.lastGeneratedPlantParams = {}
+  this.lastGeneratedPresetData = {}
   this.generateNewPlantsWithTextures = false
 }
 
@@ -90,13 +90,9 @@ Presets.prototype.generatePlantParams = function(numberOfPlants, numberOfShaders
     plantParams: plantParams,
     cameraMap: {}
   }
-  this.data[this.selectedPresetIndex] = preset
-  return this.data[this.selectedPresetIndex]
-}
 
-// TOFIX: selectedPreset
-Presets.prototype.selectPresetWithIndex = function(index) {
-  self.selectedPresetIndex = index
+  this.lastGeneratedPresetData = preset
+  return preset
 }
 
 Presets.prototype.selectedPresetCameraMap = function() {
@@ -109,7 +105,7 @@ Presets.prototype.plantParams = function(index) {
   return this.data[this.selectedPresetIndex].plantParams[index]
 }
 
-// TOFIX: WRONG!
+// TOFIX: WRONG!, save ALL of the presets
 Presets.prototype.save = function(fileName) {
   saveData(this.data, fileName)
 }
@@ -119,14 +115,13 @@ Presets.prototype.updateCameraMap = function(key, camera, data) {
   cameraMap[key] = Object.assign({}, cameraMap[key], data)
 }
 
-
 Presets.prototype.addNew = function() {
   this.data.push({'foo':'bar'})
   this.data[this.data.length - 1] = this.generatePlantParams()
 }
 
-Presets.prototype.generateGardenForSelectedIndex = function() {
-  this.data[this.selectedPresetIndex].plantParams = this.generatePlantParams()
+Presets.prototype.saveLastGeneratedPresetForSelectedIndex = function() {
+  this.data[this.selectedPresetIndex] = this.lastGeneratedPresetData
 }
 
 Presets.prototype.select = function(index) {

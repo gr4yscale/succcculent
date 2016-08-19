@@ -208,13 +208,12 @@ function Controls(presets, state, midi, scene, camera, elementForOrbitControls, 
   }
 
   function buttonPressed(buttonIdentifier) {
-    console.log('Handling button press: ' + buttonIdentifier)
-
     // TOFIX: making immutable copies like this on input events may cause perf issues...
     let allInputSourcesEventIds = Object.assign({}, self.apc.buttonIdentifierToEventIdentifier)
         allInputSourcesEventIds = Object.assign({}, allInputSourcesEventIds, kb.buttonIdentifierToEventIdentifier)
         allInputSourcesEventIds = Object.assign({}, allInputSourcesEventIds, touchOSC.buttonIdentifierToEventIdentifier)
 
+    console.log('Handling button press: ' + buttonIdentifier + ' for event id: ' + allInputSourcesEventIds[buttonIdentifier])
     switch (allInputSourcesEventIds[buttonIdentifier]) {
       case events.GENERATE_NEW_RANDOM_GARDEN:
         callbackForControlEvent(events.GENERATE_NEW_RANDOM_GARDEN)
@@ -247,33 +246,52 @@ function Controls(presets, state, midi, scene, camera, elementForOrbitControls, 
         callbackForControlEvent(events.CAMERA_CONTROLS_RESET)
         break
       case events.GARDEN_PRESET_MODE_TOGGLED:
-        state.gardenPresetModeEnabled = !state.gardenPresetModeEnabled
+        callbackForControlEvent(events.GARDEN_PRESET_MODE_TOGGLED)
+        break
+      case events.GARDEN_PRESET_MODE_SAVE_NEXT_PRESET_TOGGLED:
+        callbackForControlEvent(events.GARDEN_PRESET_MODE_SAVE_NEXT_PRESET_TOGGLED)
         break
       case events.ADD_NEW_GARDEN_PRESET:
-        presets.addNew()
+        callbackForControlEvent(events.ADD_NEW_GARDEN_PRESET)
         break
       case 'p':
         debugger
         break
       default: {
-        // TOFIX: if gardenPresetModeEnabled, select a preset and reload the garden
+          // handle garden presets save / load mode
+        if (state.gardenPresetModeEnabled) {
+          if (state.gardenPresetSaveNext) {
+            state.gardenPresetSaveNext = false
 
-        if (state.cameraPresetsLearn) {
-          state.cameraPresetsLearn = false
-          let data = {
-            presetIdentifier: buttonIdentifier,
-            controlsType: 'orbit',
-            controlsOrbitMatrix: this.orbitControls.object.matrix.toArray(),
-            controlsOrbitTarget: this.orbitControls.target.clone(),
-            key: 'cameraPresetsLearn',  // TOFIX: sloppy hack to fix indicator updates
-            value: state.cameraPresetsLearn
+            let index = self.apc.indexOfButtonForIdentifier(buttonIdentifier)
+            console.log('about to save preset index: ' + index)
+            // TOFIX: this should be "next selected" preset and the index of the apc40 should correspond to the index of presets data
+            // i should just initialize presets data with an array of empty objects so that the indexes are aligned?
+            callbackForControlEvent(events.SAVE_GARDEN_TO_SELECTED_PRESET, {index: index})
+          } else {
+            let index = self.apc.indexOfButtonForIdentifier(buttonIdentifier)
+            console.log('about to load preset index: ' + index)
+            callbackForControlEvent(events.LOAD_GARDEN_FROM_SELECTED_PRESET, {index: index})
           }
-          callbackForControlEvent(events.CAMERA_PRESET_LEARN, data)
         } else {
-          let data = {
-            presetIdentifier: buttonIdentifier
+          // handle camera hotkey learn / trigger mode
+          if (state.cameraPresetsLearn) {
+            state.cameraPresetsLearn = false
+            let data = {
+              presetIdentifier: buttonIdentifier,
+              controlsType: 'orbit',
+              controlsOrbitMatrix: this.orbitControls.object.matrix.toArray(),
+              controlsOrbitTarget: this.orbitControls.target.clone(),
+              key: 'cameraPresetsLearn',  // TOFIX: sloppy hack to fix indicator updates
+              value: state.cameraPresetsLearn
+            }
+            callbackForControlEvent(events.CAMERA_PRESET_LEARN, data)
+          } else {
+            let data = {
+              presetIdentifier: buttonIdentifier
+            }
+            callbackForControlEvent(events.CAMERA_PRESET_TRIGGER, data)
           }
-          callbackForControlEvent(events.CAMERA_PRESET_TRIGGER, data)
         }
         break
       }
@@ -433,6 +451,7 @@ Controls.prototype.update = function(state, presets) {
         } else {
           this.apc.updateMainGridButtonLEDsForCameraPresetMode(presets.selectedPresetCameraMap(), this.outputAPC40)
         }
+        this.apc.updateButtonLEDsForToggles(state, this, this.outputAPC40)
       }
       interval = 0
     }
