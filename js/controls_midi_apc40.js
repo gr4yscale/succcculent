@@ -8,11 +8,30 @@ var apc = exports
 
 // constants
 
+const MAIN_GRID_LED_STATES = {
+  off:             0,
+  solid_green:     1,
+  blinking_green:  2,
+  solid_red:       3,
+  blinking_red:    4,
+  solid_orange:    5,
+  blinking_orange: 6
+}
+
+const MAIN_GRID_EDGES_LED_STATES = {
+  off:             0,
+  solid_green:     1,
+  blinking_green:  2,
+}
+
+
 // TOFIX: update APC lights state based on events, not on button identifiers
 const buttonIdentifierToAPC40PacketPrefix = {
   // TOFIX: the right most column lights don't come on, investigate APC40 comm protocol
   '/'   :  {0: 0x97, 1: 0x35}, // TOFIX: handling button identifiers from other controllers? hrm...DRY this up later
-  // TOFIX: these are wrong
+
+  // Main Grid
+
   'F1' :   {0: 0x90, 1: 0x35},
   'F2' :   {0: 0x91, 1: 0x35},
   'F3' :   {0: 0x92, 1: 0x35},
@@ -65,8 +84,16 @@ const buttonIdentifierToAPC40PacketPrefix = {
   'E5' :   {0: 0x94, 1: 0x34},
   'E6' :   {0: 0x95, 1: 0x34},
   'E7' :   {0: 0x96, 1: 0x34},
-  'E8' :   {0: 0x97, 1: 0x34}
+  'E8' :   {0: 0x97, 1: 0x34},
 
+  // Column to the right of main grid:
+
+  'A#1':   {0: 0x90, 1: 0x52},
+  'B1':    {0: 0x90, 1: 0x53},
+  'C1':    {0: 0x90, 1: 0x54},
+  'C#1':   {0: 0x90, 1: 0x55},
+  'D1':    {0: 0x90, 1: 0x56},
+  // 'A#1':   {0: 0x98, 1: 0x34},
 }
 
 const mainGridButtonIdentifiers = [
@@ -102,34 +129,43 @@ apc.buttonIdentifierToEventIdentifier = {
 // TOFIX: should probably loop over APC buttons, not presets.data.length
 apc.updateMainGridButtonLEDsForGardenPresetMode = function(presets, outputAPC) {
   for (var i = 0; i < presets.data.length; i++) {
-    let id = mainGridButtonIdentifiers[i]
+    let buttonId = mainGridButtonIdentifiers[i]
     // TOFIX: handle 'selected' state with a blink
-    updateAPC40Button(id, true, false, outputAPC)
+    updateAPC40Button(buttonId, MAIN_GRID_LED_STATES.solid_green, outputAPC)
+  }
+  let selectedButtonId = mainGridButtonIdentifiers[presets.selectedPresetIndex]
+  if (selectedButtonId) {
+    updateAPC40Button(selectedButtonId, MAIN_GRID_LED_STATES.blinking_red, outputAPC)
   }
 }
 
 apc.updateMainGridButtonLEDsForCameraPresetMode = function(map, outputAPC) {
+  if (!map) return
   for (var i = 0; i< mainGridButtonIdentifiers.length; i++) {
-    let state = 0 // off
-    let id = mainGridButtonIdentifiers[i]
-    if (map[id]) {
-      state = 1 // on
+    let buttonId = mainGridButtonIdentifiers[i]
+    if (map[buttonId]) {
+      updateAPC40Button(buttonId, MAIN_GRID_LED_STATES.solid_green, outputAPC)
     }
-    // TOFIX: handle 'selected' state with a blink
-    updateAPC40Button(id, (state == 1), (state == -1), outputAPC)
+  }
+  if (apc.lastCameraPresetIdentifier) {
+    updateAPC40Button(apc.lastCameraPresetIdentifier, MAIN_GRID_LED_STATES.blinking_orange, outputAPC)
   }
 }
 
 apc.updateButtonLEDsForToggles = function(state, controls, outputAPC) {
-  updateAPC40Button('E1', state.cameraPresetsLearn, false, outputAPC)
-  updateAPC40Button('E2', controls.xboxControllerSelected, false, outputAPC)
-  updateAPC40Button('E5', state.generateNewPlantsWithTextures, false, outputAPC)
-  updateAPC40Button('C#1', state.gardenPresetSaveNext, false, outputAPC)
+  updateAPC40Button('E1', state.cameraPresetsLearn ? MAIN_GRID_EDGES_LED_STATES.blinking_green : MAIN_GRID_EDGES_LED_STATES.off, outputAPC)
+  updateAPC40Button('E2', controls.xboxControllerSelected ? MAIN_GRID_EDGES_LED_STATES.blinking_green : MAIN_GRID_EDGES_LED_STATES.off, outputAPC)
+  updateAPC40Button('E5', state.generateNewPlantsWithTextures ? MAIN_GRID_EDGES_LED_STATES.blinking_green : MAIN_GRID_EDGES_LED_STATES.off, outputAPC)
+
+  // right column near main grid
+
+  updateAPC40Button('A#1', state.gardenPresetModeEnabled ? MAIN_GRID_EDGES_LED_STATES.blinking_green : MAIN_GRID_EDGES_LED_STATES.off, outputAPC)
+  updateAPC40Button('C#1', state.gardenPresetSaveNext ? MAIN_GRID_EDGES_LED_STATES.blinking_green : MAIN_GRID_EDGES_LED_STATES.off, outputAPC)
 }
 
 apc.resetMainGridButtonLEDsToOffState = function(outputAPC) {
   for (var i = 0; i< mainGridButtonIdentifiers.length; i++) {
-    updateAPC40Button(mainGridButtonIdentifiers[i], false, false, outputAPC)
+    updateAPC40Button(mainGridButtonIdentifiers[i], MAIN_GRID_LED_STATES.off, outputAPC)
   }
 }
 
@@ -139,11 +175,27 @@ apc.indexOfButtonForIdentifier = function(identifier) {
 
 // private
 
-function updateAPC40Button(buttonIdentifier, illuminate, blink, outputAPC) {
+function updateAPC40Button(buttonIdentifier, ledByte, outputAPC) {
   let map = buttonIdentifierToAPC40PacketPrefix[buttonIdentifier]
   if (!outputAPC || !map) return
-  let lastByte = illuminate ? 0x01 : 0x00
-  if (blink) lastByte = 0x02
-  let packet = [map[0],map[1],lastByte]
-  outputAPC.send(0xFF, packet)
+
+  let packet = [map[0],map[1],ledByte]
+
+  // let packet = [map[1],lastByte]
+
+  // outputAPC.send(0x97, packet)
+  // outputAPC.sendSysex(0x47, packet)
+
+  // let message = [0x98, 0x52, 0x01]
+
+
+  // fuck yeah!
+
+  // let message = [0x90, 0x53, 2]
+  // let message = [0x90, 0x53, 3]
+  // let message = [0x91, 0x35, 3]
+
+  outputAPC._midiOutput.send(packet, 0)
+
+  // outputAPC.send(0xFF, packet)
 }

@@ -1,7 +1,7 @@
 let fileReader = new FileReader()
 
 var Presets = function() {
-  this.selectedStyleIndex = 6
+  this.selectedStyleIndex = 1
   this.styles = require('./styles')
   this.data = []
   this.selectedPresetIndex = 0
@@ -45,16 +45,37 @@ Presets.prototype.load = function(callback) {
 }
 
 // TOFIX: load up a specfic preset from a selectedPresetIndex
-Presets.prototype.generatePlantParams = function(numberOfPlants, numberOfShaders) {
+Presets.prototype.generatePlantParams = function(numberOfPlants, numberOfShaders, state) {
+
   let plantParams = []
   for (var i = 0; i < numberOfPlants; i++) {
-    let petalCount = Math.floor(getRandomArbitrary(20, 40))
-    let curveAmountB = getRandomArbitrary(0.08, 0.20) // multiplier for log curvature
-    let curveAmountC = getRandomArbitrary(0.2, 0.6) // initial curve amount
-    let curveAmountD = getRandomArbitrary(0.2, 0.5)
-    let layers = Math.floor(getRandomArbitrary(8, 10))
-    let petalLength = getRandomArbitrary(0.1, 0.7)
-    let petalWidth = getRandomArbitrary(0.4, 0.6)
+    let petalCount
+    let curveAmountB
+    let curveAmountC
+    let curveAmountD
+    let layers
+    let petalLength
+    let petalWidth
+
+    if (state.adHocGardenGenerationEnabled) {
+      petalCount = Math.floor(state.adHocPlantParamsPetalCount)
+      petalLength = state.adHocPlantParamsPetalLength
+      petalWidth = state.adHocPlantParamsPetalWidth
+      curveAmountB = state.adHocPlantParamsCurveAmountB
+      curveAmountC = state.adHocPlantParamsCurveAmountC
+      curveAmountD = state.adHocPlantParamsCurveAmountD
+      layers = Math.floor(state.adHocPlantParamsLayers)
+    } else {
+      let s = this.selectedStyle()
+      petalCount = Math.floor(getRandomArbitrary(s.petalCountMin, s.petalCountMax))
+      petalLength = getRandomArbitrary(s.petalLengthMin, s.petalLengthMax)
+      petalWidth = getRandomArbitrary(s.petalWidthMin, s.petalWidthMax)
+      curveAmountB = getRandomArbitrary(s.curveAmountBMin, s.curveAmountBMax) // multiplier for log curvature
+      curveAmountC = getRandomArbitrary(s.curveAmountCMin, s.curveAmountCMax) // initial curve amount
+      curveAmountD = getRandomArbitrary(s.curveAmountDMin, s.curveAmountDMax)
+      layers = Math.floor(getRandomArbitrary(s.layersMin, s.layersMax))
+    }
+
     let textureFilename = ''
     let shaderIndex = -999
 
@@ -96,23 +117,31 @@ Presets.prototype.generatePlantParams = function(numberOfPlants, numberOfShaders
 }
 
 Presets.prototype.selectedPresetCameraMap = function() {
-  // debugger
-  return this.data[this.selectedPresetIndex].cameraMap
+  let presetData = this.data[this.selectedPresetIndex]
+  if (presetData) return presetData.cameraMap
 }
 
 Presets.prototype.plantParams = function(index) {
-  if (!this.data[this.selectedPresetIndex]) return
-  return this.data[this.selectedPresetIndex].plantParams[index]
+  if (!this.data[this.selectedPresetIndex]) {
+    console.log('Error! Tried to get plant params, but they didnt exist for the selected preset index! ****')
+    return
+  } else {
+    return this.data[this.selectedPresetIndex].plantParams[index]
+  }
 }
 
-// TOFIX: WRONG!, save ALL of the presets
 Presets.prototype.save = function(fileName) {
   saveData(this.data, fileName)
 }
 
 Presets.prototype.updateCameraMap = function(key, camera, data) {
-  let cameraMap = this.data[this.selectedPresetIndex].cameraMap
-  cameraMap[key] = Object.assign({}, cameraMap[key], data)
+  if (!this.data[this.selectedPresetIndex]) {
+    console.log('Error! Tried to update camera map, but there was no data available for selected preset index! ****')
+    return
+  } else {
+    let cameraMap = this.data[this.selectedPresetIndex].cameraMap
+    cameraMap[key] = Object.assign({}, cameraMap[key], data)
+  }
 }
 
 Presets.prototype.addNew = function() {

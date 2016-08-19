@@ -8,6 +8,7 @@ var Presets = require('./js/presets')
 var Controls = require('./js/controls')
 let state = require('./js/state.js')
 let events = require('./js/events.js')
+let config = require('./js/config.js')
 
 var camera, scene, renderer;
 var effect;
@@ -42,8 +43,8 @@ function findRandomUnusedSucculentPosition(offsetMin, offsetMax, box) {
     var aBox = boxes[i];
     if (newBox.intersectsBox(aBox)) {
       // console.log('There was an intersection: ' + offsetX + ' ' + offsetZ);
-      var newOffsetMin = offsetMin - 0.02;
-      var newOffsetMax = offsetMax + 0.02;
+      var newOffsetMin = offsetMin - config.randomPositionTestOffset;
+      var newOffsetMax = offsetMax + config.randomPositionTestOffset;
       return findRandomUnusedSucculentPosition(newOffsetMin, newOffsetMax, box);
     }
   }
@@ -55,7 +56,7 @@ function positionSucculentRandomly(index, plantParams, succulent) {
   var bboxHelperA = new THREE.BoundingBoxHelper(succulent);
   bboxHelperA.update();
   // var bbox = new THREE.Box3().setFromObject(succulent);
-  var newBox = findRandomUnusedSucculentPosition(-0.02, 0.02, bboxHelperA.box);
+  var newBox = findRandomUnusedSucculentPosition(-config.randomPositionTestOffset, config.randomPositionTestOffset, bboxHelperA.box);
 
   succulent.position.x = newBox.center().x;
   succulent.position.y = 0;
@@ -353,9 +354,9 @@ function handleControlsEvent(e) {
       // get the serialized matrix out of presets (which stores the matrix the matrix as an array for convenient persistence)
       // use the callback that controls gives to let it update camera / orbitcontrols state
       let presetIdentifier = e.data.presetIdentifier
-      let data = presets.selectedPresetCameraMap()[presetIdentifier]
+      let data = presets.selectedPresetCameraMap()
       if (data) {
-        controls.updateFromPresetData(data)
+        controls.updateFromPresetData(data[presetIdentifier])
         console.log('Triggered orbit controls and camera update using preset with identifier: ' + presetIdentifier)
       } else {
         console.log('There is no preset for identifier: ' + presetIdentifier + '!')

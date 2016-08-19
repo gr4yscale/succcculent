@@ -6,5 +6,7 @@ kb.buttonIdentifierToEventIdentifier = {
   '.': events.XBOX_CONTROLLER_SELECTION_TOGGLED,
   ',': events.GENERATE_NEW_RANDOM_GARDEN,
   'm': events.GENERATE_NEW_PLANTS_TEXTURE_STYLES_TOGGLE,
-  'n': events.CAMERA_CONTROLS_RESET
+  'n': events.CAMERA_CONTROLS_RESET,
+  's': events.SAVE_GARDEN_TO_PRESET_FILE,
+  'q': events.LOAD_GARDEN_FROM_PRESET_FILE
 }

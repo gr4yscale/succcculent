@@ -15,7 +15,6 @@ function Controls(presets, state, midi, scene, camera, elementForOrbitControls, 
   let touchOSC = require('./controls_midi_touchosc')
   let kb = require('./controls_kb')
 
-
   // camera
   this.camera = camera
   let orbitControlsEnabled = true // TOFIX: we'll need this back when first person controls are back in
@@ -155,7 +154,7 @@ function Controls(presets, state, midi, scene, camera, elementForOrbitControls, 
           }
         })
       }
-    })
+    }, true)
   }
 
   function updateAudioAnalysisTriggerThresholds() {
@@ -215,28 +214,37 @@ function Controls(presets, state, midi, scene, camera, elementForOrbitControls, 
 
     console.log('Handling button press: ' + buttonIdentifier + ' for event id: ' + allInputSourcesEventIds[buttonIdentifier])
     switch (allInputSourcesEventIds[buttonIdentifier]) {
+      case events.SAVE_GARDEN_TO_PRESET_FILE:
+        callbackForControlEvent(events.SAVE_GARDEN_TO_PRESET_FILE)
+        break
+      case events.LOAD_GARDEN_FROM_PRESET_FILE:
+        callbackForControlEvent(events.LOAD_GARDEN_FROM_PRESET_FILE)
+        break
       case events.GENERATE_NEW_RANDOM_GARDEN:
         callbackForControlEvent(events.GENERATE_NEW_RANDOM_GARDEN)
         break
       case events.GENERATE_NEW_PLANTS_TEXTURE_STYLES_TOGGLE:
         state.generateNewPlantsWithTextures = !state.generateNewPlantsWithTextures
         callbackForControlEvent(events.GENERATE_NEW_PLANTS_TEXTURE_STYLES_TOGGLE, {generateNewPlantsWithTextures: state.generateNewPlantsWithTextures})
-        self.apc.updateButtonLEDsForToggles(state, self, self.outputAPC40)
         break
       case events.CAMERA_PRESETS_LEARN_TOGGLED:
-        state.cameraPresetsLearn = !state.cameraPresetsLearn
-        callbackForControlEvent(events.CAMERA_PRESETS_LEARN_TOGGLED, {key: 'cameraPresetsLearn', value: state.cameraPresetsLearn})
-        self.apc.updateButtonLEDsForToggles(state, self, self.outputAPC40)
+        if (!state.gardenPresetModeEnabled) {
+          state.cameraPresetsLearn = !state.cameraPresetsLearn
+          callbackForControlEvent(events.CAMERA_PRESETS_LEARN_TOGGLED, {key: 'cameraPresetsLearn', value: state.cameraPresetsLearn})
+          self.apc.resetMainGridButtonLEDsToOffState(self.outputAPC40)
+          self.apc.updateButtonLEDsForToggles(state, self, self.outputAPC40) // update LED state on init to make sure they properly represent current state
+        }
         break
       case events.XBOX_CONTROLLER_SELECTION_TOGGLED:
         self.xboxControllerSelected = !self.xboxControllerSelected
         if (self.xboxControllerSelected) {
-          xboxJoystickCalibration.leftX = xboxController.axes[0]
-          xboxJoystickCalibration.leftY = xboxController.axes[1]
-          xboxJoystickCalibration.rightX = xboxController.axes[2]
-          xboxJoystickCalibration.rightY = xboxController.axes[3]
+          if (xboxController) {
+            xboxJoystickCalibration.leftX = xboxController.axes[0]
+            xboxJoystickCalibration.leftY = xboxController.axes[1]
+            xboxJoystickCalibration.rightX = xboxController.axes[2]
+            xboxJoystickCalibration.rightY = xboxController.axes[3]
+          }
           resetCameraDeltas()
-          self.apc.updateButtonLEDsForToggles(state, self, self.outputAPC40)
           callbackForControlEvent(events.XBOX_CONTROLLER_SELECTION_TOGGLED, {key: 'xboxControllerSelected', value: self.xboxControllerSelected})
         }
         break
@@ -247,12 +255,16 @@ function Controls(presets, state, midi, scene, camera, elementForOrbitControls, 
         break
       case events.GARDEN_PRESET_MODE_TOGGLED:
         callbackForControlEvent(events.GARDEN_PRESET_MODE_TOGGLED)
+        self.apc.resetMainGridButtonLEDsToOffState(self.outputAPC40)
+        self.apc.updateButtonLEDsForToggles(state, self, self.outputAPC40) // update LED state on init to make sure they properly represent current state
         break
       case events.GARDEN_PRESET_MODE_SAVE_NEXT_PRESET_TOGGLED:
         callbackForControlEvent(events.GARDEN_PRESET_MODE_SAVE_NEXT_PRESET_TOGGLED)
+        // self.apc.updateButtonLEDsForToggles(state, self, self.outputAPC40)
         break
       case events.ADD_NEW_GARDEN_PRESET:
         callbackForControlEvent(events.ADD_NEW_GARDEN_PRESET)
+        // self.apc.updateButtonLEDsForToggles(state, self, self.outputAPC40)
         break
       case 'p':
         debugger
@@ -291,6 +303,7 @@ function Controls(presets, state, midi, scene, camera, elementForOrbitControls, 
               presetIdentifier: buttonIdentifier
             }
             callbackForControlEvent(events.CAMERA_PRESET_TRIGGER, data)
+            self.apc.lastCameraPresetIdentifier = buttonIdentifier
           }
         }
         break
@@ -314,7 +327,10 @@ function Controls(presets, state, midi, scene, camera, elementForOrbitControls, 
 
   // MIDI - camera controls (TouchOSC)
   function handleMidiControlChangeTouchOSC(e) {
-    console.log('Knob #: ' + e.controller.number + ' | Value: ' + e.value) // TOFIX: replace this with generic MIDI log function?
+    if (logControlSurfaceEvents) {
+      console.log('Channel #: ' + e.channel + ' | Knob #: ' + e.controller.number + ' | Value: ' + e.value) // TOFIX: replace this with generic MIDI log function?
+    }
+
     let v = e.value / 127.0
 
     // Camera, page 1
@@ -340,7 +356,7 @@ function Controls(presets, state, midi, scene, camera, elementForOrbitControls, 
           break
         }
       // Textures, page 2
-    } else if (e.channel = 3) {
+    } else if (e.channel == 3) {
       switch (e.controller.number) {
         case 7:
           state.textureUpdateSpeed = lerp(1.0, 10.0, v)
@@ -348,7 +364,17 @@ function Controls(presets, state, midi, scene, camera, elementForOrbitControls, 
         case 8:
           state.textureRepeatRange = lerp(1.0, 10.0, v)
           break
+      } // Garden Presets
+    } else if (e.channel == 4) {
+      switch (e.controller.number) {
+        case 0:
+          presets.selectedStyleIndex = Math.floor(lerp(0, presets.styles.length - 1, v))
+          break
+        case 1:
+          state.numPlantsForNextGeneration = Math.floor(lerp(0, 250, v))
+          break
       }
+
     }
 
       // case 8:
@@ -398,7 +424,7 @@ function Controls(presets, state, midi, scene, camera, elementForOrbitControls, 
   }
 
   function handleMidiNoteOff(e) {
-    self.apc.updateButtonLEDsForToggles(state, self, self.outputAPC40)
+    // self.apc.updateButtonLEDsForToggles(state, self, self.outputAPC40)
   }
 
   function handleUnhandledMidiEvent(e) {
@@ -451,6 +477,7 @@ Controls.prototype.update = function(state, presets) {
         } else {
           this.apc.updateMainGridButtonLEDsForCameraPresetMode(presets.selectedPresetCameraMap(), this.outputAPC40)
         }
+
         this.apc.updateButtonLEDsForToggles(state, this, this.outputAPC40)
       }
       interval = 0
@@ -459,6 +486,10 @@ Controls.prototype.update = function(state, presets) {
 
 // TOFIX: sloppy, this tries to handle the conditions of setting camera preset for either first person or orbit controls
 Controls.prototype.updateFromPresetData = function(data) {
+  if (!data) {
+    console.log('Expected there to be some camera preset data, but there wasnt! ******')
+    return
+  }
   var matrix = new THREE.Matrix4();
   matrix.fromArray(data.controlsOrbitMatrix)
   // apply position, quaternion, and scale from the matrix coming from presets to the camera using decompose()
