@@ -35,7 +35,8 @@ module.exports = function(THREE) {
 
       for (var i = 1; i < petalCount; i++) {
         var j = i / petalCount;
-        var rotationAmount = j * layers;
+        // var rotationAmount = j * layers;
+        var rotationAmount = i * layers / petalCount;
 
         // this is responsible for the weird "blow out" effect of a strange huge leaf off the side
         curveAmountA = Math.abs(curveAmountC + Math.log(j) * 0.08); // 0.08 is a sane-ish value
