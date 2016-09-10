@@ -13,3 +13,7 @@ touchOSC.buttonIdentifierToEventIdentifier = {
   // 'B1': events.GENERATE_NEW_RANDOM_GARDEN,
   // 'C1': events.GENERATE_NEW_PLANTS_TEXTURE_STYLES_TOGGLE,
 }
+
+
+// TODO:
+// Map knob values to variables?

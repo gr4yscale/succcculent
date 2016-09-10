@@ -11,20 +11,16 @@ let events = require('./js/events.js')
 let config = require('./js/config.js')
 
 var camera, scene, renderer;
-var effect;
 var container;
 var clock = new THREE.Clock();
 
 var presets = new Presets()
 
-var numPlants = 100;
-var speed = 1000;
+var speed = 1000; // TOFIX: see if I'll actually use this for controlling timing of anything
 var boxes = [];
 var succulents = [];
 var shaders = [];
 var fragShaders = [];
-var useVR = false; // disable device orientation when VR is off
-var randomPoints = [];
 
 var controls;
 
@@ -225,7 +221,6 @@ function initThree() {
   container = document.getElementById('webglrender');
   container.appendChild(renderer.domElement);
 
-  effect = new THREE.StereoEffect(renderer);
   scene = new THREE.Scene();
 
   camera = new THREE.PerspectiveCamera(65, 1, 0.0001, 1000000);
@@ -250,7 +245,6 @@ function resize() {
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
   renderer.setSize(width, height);
-  effect.setSize(width, height);
 }
 
 ////////////////////////////////
@@ -290,11 +284,7 @@ function update(t) {
 }
 
 function render(dt) {
-  if (useVR) {
-    effect.render(scene, camera);
-  } else {
-    renderer.render(scene, camera);
-  }
+  renderer.render(scene, camera);
 }
 
 function animate(t) {
