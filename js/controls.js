@@ -200,7 +200,7 @@ function Controls(presets, state, midi, scene, camera, elementForOrbitControls, 
     let noteNameAndChannel = e.note.name + e.channel.toString()
     // TOFIX: stupid hack to prevent collisions on button identifiers
     if (e.target._midiInput.name == "TouchOSC Bridge") {
-      return "touchOSC-" + noteNameAndChannel
+      return "touchOSC-" + noteNameAndChannel + '-' + e.note.number.toString() // incredibly hacky way to uniquely identify midi controller buttons
     } else {
       return noteNameAndChannel
     }
@@ -212,7 +212,7 @@ function Controls(presets, state, midi, scene, camera, elementForOrbitControls, 
         allInputSourcesEventIds = Object.assign({}, allInputSourcesEventIds, kb.buttonIdentifierToEventIdentifier)
         allInputSourcesEventIds = Object.assign({}, allInputSourcesEventIds, touchOSC.buttonIdentifierToEventIdentifier)
 
-    console.log('Handling button press: ' + buttonIdentifier + ' for event id: ' + allInputSourcesEventIds[buttonIdentifier])
+    // console.log('Handling button press: ' + buttonIdentifier + ' for event id: ' + allInputSourcesEventIds[buttonIdentifier])
     switch (allInputSourcesEventIds[buttonIdentifier]) {
       case events.SAVE_GARDEN_TO_PRESET_FILE:
         callbackForControlEvent(events.SAVE_GARDEN_TO_PRESET_FILE)
@@ -275,13 +275,22 @@ function Controls(presets, state, midi, scene, camera, elementForOrbitControls, 
           if (state.gardenPresetSaveNext) {
             state.gardenPresetSaveNext = false
 
-            let index = self.apc.indexOfButtonForIdentifier(buttonIdentifier)
+            let index
+
+            index = self.apc.indexOfButtonForIdentifier(buttonIdentifier)
+            if (index == -1) {
+              index = touchOSC.indexOfPresetHotkeyButtonForIdentifier(buttonIdentifier)
+            }
+
             console.log('about to save preset index: ' + index)
             // TOFIX: this should be "next selected" preset and the index of the apc40 should correspond to the index of presets data
             // i should just initialize presets data with an array of empty objects so that the indexes are aligned?
             callbackForControlEvent(events.SAVE_GARDEN_TO_SELECTED_PRESET, {index: index})
           } else {
             let index = self.apc.indexOfButtonForIdentifier(buttonIdentifier)
+            if (index == -1) {
+              index = touchOSC.indexOfPresetHotkeyButtonForIdentifier(buttonIdentifier)
+            }
             console.log('about to load preset index: ' + index)
             callbackForControlEvent(events.LOAD_GARDEN_FROM_SELECTED_PRESET, {index: index})
           }

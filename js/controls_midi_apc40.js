@@ -117,9 +117,9 @@ const bottomColumnDirectlyUnderMainGridIdentifiers = [
 apc.buttonIdentifierToEventIdentifier = {
   'E1': events.CAMERA_PRESETS_LEARN_TOGGLED,
   'xbox10': events.CAMERA_PRESETS_LEARN_TOGGLED, // TOFIX: stupid hack to map xbox controller left joystick to camera learn
-  'E2': events.XBOX_CONTROLLER_SELECTION_TOGGLED,
-  'E3': events.CAMERA_CONTROLS_RESET,
-  'E5': events.GENERATE_NEW_PLANTS_TEXTURE_STYLES_TOGGLE,
+  'E3': events.XBOX_CONTROLLER_SELECTION_TOGGLED,
+  'E2': events.CAMERA_CONTROLS_RESET,
+  'E5': events.AUDIO_ANALYSIS_CAN_UPDATE_CAMERA_Y_TOGGLE,
   'A#1': events.GARDEN_PRESET_MODE_TOGGLED,
   'B1': events.ADD_NEW_GARDEN_PRESET,
   'C1': events.GENERATE_NEW_RANDOM_GARDEN,
@@ -154,8 +154,8 @@ apc.updateMainGridButtonLEDsForCameraPresetMode = function(map, outputAPC) {
 
 apc.updateButtonLEDsForToggles = function(state, controls, outputAPC) {
   updateAPC40Button('E1', state.cameraPresetsLearn ? MAIN_GRID_EDGES_LED_STATES.blinking_green : MAIN_GRID_EDGES_LED_STATES.off, outputAPC)
-  updateAPC40Button('E2', controls.xboxControllerSelected ? MAIN_GRID_EDGES_LED_STATES.blinking_green : MAIN_GRID_EDGES_LED_STATES.off, outputAPC)
-  updateAPC40Button('E5', state.generateNewPlantsWithTextures ? MAIN_GRID_EDGES_LED_STATES.blinking_green : MAIN_GRID_EDGES_LED_STATES.off, outputAPC)
+  updateAPC40Button('E3', controls.xboxControllerSelected ? MAIN_GRID_EDGES_LED_STATES.blinking_green : MAIN_GRID_EDGES_LED_STATES.off, outputAPC)
+  updateAPC40Button('E5', state.audioAnalysisCanUpdateCamera ? MAIN_GRID_EDGES_LED_STATES.blinking_green : MAIN_GRID_EDGES_LED_STATES.off, outputAPC)
 
   // right column near main grid
 
