@@ -3,7 +3,9 @@ var state = exports
 ////////////////////////
 // Modes:
 
-state.gardenPresetModeEnabled = true
+// modes:
+state.gardenPresetModeEnabled = false
+state.gardenPresetSaveNext = false
 
 // camera presets learn
 state.cameraPresetsLearn = false
