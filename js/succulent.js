@@ -31,6 +31,7 @@ module.exports = function(THREE) {
 
     var createPlant = function(texture) {
       var singleGeometry = new THREE.Geometry();
+      var singleMesh = new THREE.Mesh(singleGeometry, shaderMaterial);
 
       for (var i = 1; i < petalCount; i++) {
         var j = i / petalCount;
@@ -49,10 +50,12 @@ module.exports = function(THREE) {
         petalMesh.scale.z = scale;
 
         petalMesh.updateMatrix();
-        singleGeometry.merge(petalMesh.geometry, petalMesh.matrix);
+        // singleGeometry.merge(petalMesh.geometry, petalMesh.matrix);
+        singleMesh.add(petalMesh)
       }
 
       var singleMesh = new THREE.Mesh(singleGeometry, shaderMaterial);
+      // var singleMesh = new THREE.Mesh(singleGeometry, shaderMaterial);
       return singleMesh;
     }
 
