@@ -1,7 +1,15 @@
 var state = exports
 
-////////////////////////
-// Modes:
+// garden generation params
+state.numPlantsForNextGeneration = 100;
+state.adHocGardenGenerationEnabled = false
+state.adHocPlantParamsPetalCount = 36
+state.adHocPlantParamsCurveAmountB = 0.13275223848488998
+state.adHocPlantParamsCurveAmountC = 0.20827196143002302
+state.adHocPlantParamsCurveAmountD = 0.36005163068644075
+state.adHocPlantParamsLayers = 6
+state.adHocPlantParamsPetalLength = 0.43796780893085985
+state.adHocPlantParamsPetalWidth = 0.5438646263177942
 
 // modes:
 state.gardenPresetModeEnabled = false
