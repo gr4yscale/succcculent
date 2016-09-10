@@ -199,6 +199,7 @@ function initThree() {
   renderer.setPixelRatio( window.devicePixelRatio );
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setClearColor(new THREE.Color(0x333333, 1.0));
+  renderer.setFaceCulling(false)
 
   container = document.getElementById('webglrender');
   container.appendChild(renderer.domElement);
@@ -206,7 +207,8 @@ function initThree() {
   effect = new THREE.StereoEffect(renderer);
   scene = new THREE.Scene();
 
-  camera = new THREE.PerspectiveCamera(65, 1, 0.001, 1000);
+  camera = new THREE.PerspectiveCamera(65, 1, 0.0001, 1000000);
+
   camera.position.set(0, 0.35, 0.75);
   scene.add(camera);
 
