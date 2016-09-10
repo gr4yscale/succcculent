@@ -154,7 +154,7 @@ function Controls(presets, state, midi, scene, camera, elementForOrbitControls, 
           }
         })
       }
-    }, true)
+    }, false)
   }
 
   function updateAudioAnalysisTriggerThresholds() {
