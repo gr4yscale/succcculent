@@ -16,7 +16,10 @@ var clock = new THREE.Clock();
 
 var presets = new Presets()
 
-var speed = 1000; // TOFIX: see if I'll actually use this for controlling timing of anything
+var sceneUpdateTickerSpeed = 0.001
+var fps = 60.0
+var shaderTickerSpeed = 1000 // TOFIX: remnant of old project, probably put scene update and shader on same timer
+
 var boxes = [];
 var succulents = [];
 var shaders = [];
@@ -249,36 +252,41 @@ function resize() {
 
 ////////////////////////////////
 
-var delta = 0.001
-function update(t) {
-  var tickCounter = (t / speed);
-
+function updateSucculentTextures() {
+  // update succulent textures
   for (var i = 0; i < succulents.length; i++) {
-    delta++
-    if (delta > state.textureUpdateSpeed) {
+    sceneUpdateTickerSpeed++
+    if (sceneUpdateTickerSpeed > fps) {
       if (succulents[i]) {
         let aTex = succulents[i].material.map
         if (aTex) {
           let repeatA = Math.ceil(getRandomArbitrary(1, state.textureRepeatRange))
           let repeatB = Math.ceil(getRandomArbitrary(1, state.textureRepeatRange))
           aTex.repeat.set(repeatA, repeatB)
+          aTex.offset.set(aTex.offset.x - 0.01 - (state.audioAnalysisFilter1 * 0.15), aTex.offset.y)
+
           // Do the offset with music
           // console.log(state.audioAnalysisFilter1)
           // aTex.offset.set(aTex.offset.x - 0.01, aTex.offset.y)
-
-          aTex.offset.set(aTex.offset.x - 0.0001 - (state.audioAnalysisFilter1 * 0.15), aTex.offset.y)
           succulents[i].material.map = aTex
         }
       }
-      delta = 0
+      sceneUpdateTickerSpeed = 0
     }
   }
+}
 
-  ////////////////////////////////
-
+function updateShaderUniforms(t) {
+  // update shader time
+  var shaderTime = (t / shaderTickerSpeed)
   for (var j = 0; j < shaders.length; j++) {
-    shaders[j].uniforms.iGlobalTime.value = tickCounter;
+    shaders[j].uniforms.iGlobalTime.value = shaderTime;
   }
+}
+
+function update(t) {
+  updateSucculentTextures()
+  updateShaderUniforms(t)
   resize()
   controls.update(state, presets)
 }
