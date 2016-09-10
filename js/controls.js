@@ -266,6 +266,9 @@ function Controls(presets, state, midi, scene, camera, elementForOrbitControls, 
         callbackForControlEvent(events.ADD_NEW_GARDEN_PRESET)
         // self.apc.updateButtonLEDsForToggles(state, self, self.outputAPC40)
         break
+      case events.AUDIO_ANALYSIS_CAN_UPDATE_CAMERA_Y_TOGGLE:
+        state.audioAnalysisCanUpdateCamera = !state.audioAnalysisCanUpdateCamera
+        break
       case 'p':
         debugger
         break
@@ -470,11 +473,11 @@ Controls.prototype.update = function(state, presets) {
     this.updateCameraFromGamepadState()
     this.updateCameraWithOrbitControls()
 
-    if (this.audioAnalysisCanUpdateCamera) {
+    if (state.audioAnalysisCanUpdateCamera) {
       this.camera.position.set(this.camera.position.x, state.audioAnalysisFilter1,this.camera.position.z)
       // Update rotation with FFT MIDI data
       // let v = this.camera.rotation
-      // this.camera.rotation.set(state.audioAnalysisFilter1 * state.audioAnalysisFilter1Gain, this.camera.rotation.y, this.camera.rotation.z)
+      // this.camera.rotation.set(state.audioAnalysisFilter1 * state.audioAnalysisFilter1Gain, v.y, v.z)
     }
 
     // TOFIX: hack to not kill perf sending MIDI out too often

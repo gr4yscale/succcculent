@@ -28,10 +28,10 @@ state.textureRepeatRange = 1
 state.textureUpdateSpeed = 1.0
 
 // audio analysis (comes in as MIDI from VDMX)
-self.audioAnalysisCanUpdateCamera = false
-state.audioAnalysisFilter1 = 1.0
-state.audioAnalysisFilter2 = 1.0
-state.audioAnalysisFilter3 = 1.0
+state.audioAnalysisCanUpdateCamera = false
+state.audioAnalysisFilter1 = 0
+state.audioAnalysisFilter2 = 0
+state.audioAnalysisFilter3 = 0
 state.audioAnalysisFilter1Gain = 1.0
 state.audioAnalysisFilter2Gain = 1.0
 state.audioAnalysisFilter3Gain = 1.0
