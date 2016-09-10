@@ -137,14 +137,14 @@ function loadShaderMaterials() {
 }
 
 function setSameShaderForAllPlants(shaderIndex) {
-  for (var i = 0; i < numPlants; i++) {
+  for (var i = 0; i < state.numPlantsForNextGeneration; i++) {
     succulents[i].material.fragmentShader = fragShaders[shaderIndex]
     succulents[i].material.needsUpdate = true
   }
 }
 
 function resetShadersForAllPlants() {
-  for (var i=0; i < numPlants; i++) {
+  for (var i=0; i < state.numPlantsForNextGeneration; i++) {
     succulents[i].material.fragmentShader = fragShaders[presets.plantParams[i].shaderIndex]
     succulents[i].material.needsUpdate = true
   }
@@ -153,6 +153,26 @@ function resetShadersForAllPlants() {
 // APP ENTRY POINT (LOVE THE MESSINESS, who has time for refactoring?)
 
 domReady(function(){
+
+  const regenGardenIfAllowed = () => {
+    if (state.adHocGardenGenerationEnabled) generateNewRandomGarden()
+  }
+
+  let gui = new dat.GUI()
+
+  let guiGardenGen = gui.addFolder("Ad-Hoc Garden Generation")
+  guiGardenGen.add(state, 'numPlantsForNextGeneration', 1, 300).step(1).name("# Plants").onFinishChange(regenGardenIfAllowed)
+  guiGardenGen.add(state, 'adHocGardenGenerationEnabled').name("Ad-Hoc Garden Gen").onFinishChange(regenGardenIfAllowed)
+  guiGardenGen.add(state, 'adHocPlantParamsPetalCount', 4, 200).step(1).name("Petal Count").onFinishChange(regenGardenIfAllowed)
+  guiGardenGen.add(state, 'adHocPlantParamsPetalLength', 0.01, 4.0).step(0.01).name("Petal Length").onFinishChange(regenGardenIfAllowed)
+  guiGardenGen.add(state, 'adHocPlantParamsPetalWidth', 0.01, 4.0).step(0.01).name("Petal Width").onFinishChange(regenGardenIfAllowed)
+  guiGardenGen.add(state, 'adHocPlantParamsCurveAmountB', 0.01, 3.0).step(0.01).name("Curve Amt B").onFinishChange(regenGardenIfAllowed)
+  guiGardenGen.add(state, 'adHocPlantParamsCurveAmountC', 0.01, 3.0).step(0.01).name("Curve Amt C").onFinishChange(regenGardenIfAllowed)
+  guiGardenGen.add(state, 'adHocPlantParamsCurveAmountD', 0.01, 3.0).step(0.01).name("Curve Amt D").onFinishChange(regenGardenIfAllowed)
+  guiGardenGen.add(state, 'adHocPlantParamsLayers', 2, 40).step(1).name("# Layers").onFinishChange(regenGardenIfAllowed)
+
+  // dat.GUI.toggleHide()
+
   initThree()
   generateNewRandomGarden()
   animate()
@@ -169,7 +189,7 @@ function clearSucculents() {
 function loadFirstGardenFromPresetFile() {
   clearSucculents()
   presets.load(function(plantParams) {
-    for (var i=0; i < numPlants; i++) {
+    for (var i=0; i < state.numPlantsForNextGeneration; i++) {
       addSucculent(i, plantParams[i])
     }
   })
@@ -178,6 +198,7 @@ function loadFirstGardenFromPresetFile() {
 function loadGardenFromSelectedPreset() {
   // assumes we've already loaded data into presets from the file
   clearSucculents()
+  if (!presets.selectedPresetData()) return
   let plantParams = presets.selectedPresetData().plantParams
   for (var i=0; i < state.numPlantsForNextGeneration; i++) {
     if (i < plantParams.length) {
