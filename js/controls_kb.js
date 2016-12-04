@@ -10,4 +10,5 @@ kb.buttonIdentifierToEventIdentifier = {
   's': events.SAVE_GARDEN_TO_PRESET_FILE,
   'q': events.LOAD_GARDEN_FROM_PRESET_FILE,
   ']': events.AUDIO_ANALYSIS_CAN_UPDATE_CAMERA_Y_TOGGLE
+  'e': events.EXPORT_STL
 }

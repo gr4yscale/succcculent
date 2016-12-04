@@ -2,6 +2,11 @@ var domReady = require('domready');
 var dat = require('dat-gui');
 var glslify = require('glslify');
 
+require('./js/FileSaver.js')
+
+// TOFIX: changed this to find the correct THREE reference
+const stlExporter = require('three-STLexporter') // adds to the global THREE namespace
+
 let WebMidi = require('webmidi')
 var Succulent = require('./js/succulent')(THREE);
 var Presets = require('./js/presets')
@@ -421,8 +426,34 @@ function handleControlsEvent(e) {
       console.log(e.data)
       break
     }
+    case events.EXPORT_STL:
+      saveSTL(scene, 'test')
+      break
     default:
       // console.log('Received unknown control type! *******')
       break
   }
+}
+
+function saveSTL(scene, name) {
+  var exporter = new stlExporter()
+  var stlString = exporter.parse(scene)
+
+  console.log(stlString)
+  // console.log(exporter)
+  debugger
+
+  var blob = new Blob([stlString], {type: 'text/plain'})
+  // saveAs(blob, name + '.stl')
+
+  // create a link and make us click on it!
+  var a = document.createElement("a");
+  document.body.appendChild(a);
+  a.style = "display: none";
+
+  url = window.URL.createObjectURL(blob);
+  a.href = url;
+  a.download = name;
+  a.click();
+  window.URL.revokeObjectURL(url);
 }

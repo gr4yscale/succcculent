@@ -31,5 +31,8 @@
   },
   "browserify-shim": {
     "three": "global:THREE"
+  },
+  "dependencies": {
+    "three-stlexporter": "^1.0.0"
   }
 }

@@ -266,6 +266,9 @@ function Controls(presets, state, midi, scene, camera, elementForOrbitControls, 
         callbackForControlEvent(events.ADD_NEW_GARDEN_PRESET)
         // self.apc.updateButtonLEDsForToggles(state, self, self.outputAPC40)
         break
+      case events.EXPORT_STL:
+        callbackForControlEvent(events.EXPORT_STL)
+        break
       case events.AUDIO_ANALYSIS_CAN_UPDATE_CAMERA_Y_TOGGLE:
         state.audioAnalysisCanUpdateCamera = !state.audioAnalysisCanUpdateCamera
         break
