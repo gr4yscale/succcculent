@@ -9,6 +9,8 @@ kb.buttonIdentifierToEventIdentifier = {
   'n': events.CAMERA_CONTROLS_RESET,
   's': events.SAVE_GARDEN_TO_PRESET_FILE,
   'q': events.LOAD_GARDEN_FROM_PRESET_FILE,
-  ']': events.AUDIO_ANALYSIS_CAN_UPDATE_CAMERA_Y_TOGGLE
+  ']': events.AUDIO_ANALYSIS_CAN_UPDATE_CAMERA_Y_TOGGLE,
+  'p': events.DEBUGGER_PAUSE,
+  'd': events.TOGGLE_DAT_GUI,
   'e': events.EXPORT_STL
 }

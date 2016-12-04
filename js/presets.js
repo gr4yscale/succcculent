@@ -1,7 +1,7 @@
 let fileReader = new FileReader()
 
 var Presets = function() {
-  this.selectedStyleIndex = 1
+  this.selectedStyleIndex = 0
   this.styles = require('./styles')
   this.data = []
   this.selectedPresetIndex = 0

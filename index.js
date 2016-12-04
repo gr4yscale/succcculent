@@ -126,7 +126,10 @@ function loadShaderMaterials() {
   for (var i = 0; i < fragShaders.length; i++) {
     var shaderMaterial = new THREE.ShaderMaterial({
       uniforms : {
-        iGlobalTime: { type: 'f', value: 0 }
+        iGlobalTime: { type: 'f', value: 0 },
+        audio1: { type: 'f', value: 0 },
+        audio2: { type: 'f', value: 0 },
+        audio3: { type: 'f', value: 0 },
       },
       defines: {
         USE_MAP: ''
@@ -258,7 +261,6 @@ function resize() {
 ////////////////////////////////
 
 function updateSucculentTextures() {
-  // update succulent textures
   for (var i = 0; i < succulents.length; i++) {
     sceneUpdateTickerSpeed++
     if (sceneUpdateTickerSpeed > fps) {
@@ -286,6 +288,9 @@ function updateShaderUniforms(t) {
   var shaderTime = (t / shaderTickerSpeed)
   for (var j = 0; j < shaders.length; j++) {
     shaders[j].uniforms.iGlobalTime.value = shaderTime;
+    shaders[j].uniforms.audio1.value = state.audioAnalysisFilter1;
+    shaders[j].uniforms.audio2.value = state.audioAnalysisFilter2;
+    shaders[j].uniforms.audio3.value = state.audioAnalysisFilter3;
   }
 }
 
@@ -331,10 +336,6 @@ function updateIndicators(data) {
 function handleControlsEvent(e) {
   // console.log('Handling control event of type: ' + e.type)
   switch (e.type) {
-    case events.ADD_SUCCULENT_IN_RANDOM_POSITION:
-      console.log('add a succulent randomly (outside of the normal parameter loading/saving)')
-      console.log('will have to get random params, deal with this later....')
-      break
     case events.SAVE_GARDEN_TO_PRESET_FILE:
       presets.save('plants.json')
       break
@@ -383,7 +384,7 @@ function handleControlsEvent(e) {
       let data = presets.selectedPresetCameraMap()
       if (data) {
         controls.updateFromPresetData(data[presetIdentifier])
-        console.log('Triggered orbit controls and camera update using preset with identifier: ' + presetIdentifier)
+        // console.log('Triggered orbit controls and camera update using preset with identifier: ' + presetIdentifier)
       } else {
         console.log('There is no preset for identifier: ' + presetIdentifier + '!')
       }
@@ -426,6 +427,9 @@ function handleControlsEvent(e) {
       console.log(e.data)
       break
     }
+    case events.TOGGLE_DAT_GUI:
+      dat.GUI.toggleHide()
+      break
     case events.EXPORT_STL:
       saveSTL(scene, 'test')
       break

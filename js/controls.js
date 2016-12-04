@@ -147,6 +147,8 @@ function Controls(presets, state, midi, scene, camera, elementForOrbitControls, 
                 break
             }
 
+            // console.log('[1]  ' + state.audioAnalysisFilter1 + '   [2]  ' + state.audioAnalysisFilter2 + '  [3]   ' +state.audioAnalysisFilter3)
+
             callbackForControlEvent('AUDIO_ANALYSIS_FILTER_UPDATE')
             if (state.audioAnalysisFilter1TriggerThresholdsEnabled) {
               updateAudioAnalysisTriggerThresholds.bind(this)()
@@ -265,6 +267,12 @@ function Controls(presets, state, midi, scene, camera, elementForOrbitControls, 
       case events.ADD_NEW_GARDEN_PRESET:
         callbackForControlEvent(events.ADD_NEW_GARDEN_PRESET)
         // self.apc.updateButtonLEDsForToggles(state, self, self.outputAPC40)
+        break
+      case events.DEBUGGER_PAUSE:
+        callbackForControlEvent(events.DEBUGGER_PAUSE)
+        break
+      case events.TOGGLE_DAT_GUI:
+        callbackForControlEvent(events.TOGGLE_DAT_GUI)
         break
       case events.EXPORT_STL:
         callbackForControlEvent(events.EXPORT_STL)
@@ -483,20 +491,24 @@ Controls.prototype.update = function(state, presets) {
       // this.camera.rotation.set(state.audioAnalysisFilter1 * state.audioAnalysisFilter1Gain, v.y, v.z)
     }
 
-    // TOFIX: hack to not kill perf sending MIDI out too often
-    interval++
-    if (interval > 8.0) {
-      if (this.outputAPC40) {
-        if (state.gardenPresetModeEnabled) {
-          this.apc.updateMainGridButtonLEDsForGardenPresetMode(presets, this.outputAPC40)
-        } else {
-          this.apc.updateMainGridButtonLEDsForCameraPresetMode(presets.selectedPresetCameraMap(), this.outputAPC40)
-        }
+    this.updateMidiControllerLEDs(state, presets)
+}
 
-        this.apc.updateButtonLEDsForToggles(state, this, this.outputAPC40)
+Controls.prototype.updateMidiControllerLEDs = function(state, presets) {
+  // TOFIX: hack to not kill perf sending MIDI out too often
+  interval++
+  if (interval > 8.0) {
+    if (this.outputAPC40) {
+      if (state.gardenPresetModeEnabled) {
+        this.apc.updateMainGridButtonLEDsForGardenPresetMode(presets, this.outputAPC40)
+      } else {
+        this.apc.updateMainGridButtonLEDsForCameraPresetMode(presets.selectedPresetCameraMap(), this.outputAPC40)
       }
-      interval = 0
+
+      this.apc.updateButtonLEDsForToggles(state, this, this.outputAPC40)
     }
+    interval = 0
+  }
 }
 
 // TOFIX: sloppy, this tries to handle the conditions of setting camera preset for either first person or orbit controls
