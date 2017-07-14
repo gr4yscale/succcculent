@@ -34,9 +34,9 @@ void main() {
 
 
 //  Cooooool......
-//  float x = position.x;
-//  /float y = distance(position.y, plantPosition.x);
-//  float z = position.z;
+float x = position.x;
+float y = distance(position.y, plantPosition.x);
+float z = position.z;
 
 // audio reactive
 //float x = position.x * (1.0 + audio3);
@@ -53,8 +53,6 @@ void main() {
 // position.y + sin(distance(plantPosition.y, plantPosition.y)
 
 //float dist = dot(vec2(position.x, position.z), vec2(plantPosition.x, plantPosition.z));
-
-
 // float dist = sin(distance(plantPosition.x, position.x));
 
 float dist = sin(petalRotation * 4.0);
@@ -64,9 +62,9 @@ float dist = sin(petalRotation * 4.0);
 // float z = position.z + audio2;
 
 //passthrough
-float x = position.x;
-float y = position.y;
-float z = position.z;
+//float x = position.x;
+//float y = position.y;
+//float z = position.z;
 
 //  Cooooool......
 //  float x = position.x * (1.0 + audio1);
