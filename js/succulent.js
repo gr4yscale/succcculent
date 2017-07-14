@@ -2,6 +2,103 @@ module.exports = function(THREE) {
 
   return (shaderMaterial, plantParams, textureLoadedCallback) => {
 
+    // var createInstancedGeometry = function( geometry  , attributes ){
+    //
+    //   var positions; var normals;
+    //
+    //   if( geometry instanceof THREE.BufferGeometry ){
+    //
+    //     positions = geometry.attributes.position.array;
+    //     normals = geometry.attributes.normal.array;
+    //
+    //   }else{
+    //
+    //     var faces = geometry.faces.length;
+    //
+    //     // Get the totalVerts by looking up how many faces
+    //     // we've got in the geometry
+    //
+    //     positions = new Float32Array( faces * 3 * 3 );
+    //     normals   = new Float32Array( faces * 3 * 3 );
+    //
+    //     for( var j = 0; j < faces; j++ ){
+    //
+    //       var index =  j * 3;
+    //
+    //       var face = geometry.faces[j];
+    //
+    //       var p1 = geometry.vertices[ face.a ];
+    //       var p2 = geometry.vertices[ face.b ];
+    //       var p3 = geometry.vertices[ face.c ];
+    //
+    //       var n1 = face.vertexNormals[ 0 ];
+    //       var n2 = face.vertexNormals[ 1 ];
+    //       var n3 = face.vertexNormals[ 2 ];
+    //
+    //       positions[ index * 3  + 0 ] = p1.x;
+    //       positions[ index * 3  + 1 ] = p1.y;
+    //       positions[ index * 3  + 2 ] = p1.z;
+    //
+    //       positions[ index * 3  + 3 ] = p2.x;
+    //       positions[ index * 3  + 4 ] = p2.y;
+    //       positions[ index * 3  + 5 ] = p2.z;
+    //
+    //       positions[ index * 3  + 6 ] = p3.x;
+    //       positions[ index * 3  + 7 ] = p3.y;
+    //       positions[ index * 3  + 8 ] = p3.z;
+    //
+    //       normals[ index * 3  + 0 ] = n1.x;
+    //       normals[ index * 3  + 1 ] = n1.y;
+    //       normals[ index * 3  + 2 ] = n1.z;
+    //
+    //       normals[ index * 3  + 3 ] = n2.x;
+    //       normals[ index * 3  + 4 ] = n2.y;
+    //       normals[ index * 3  + 5 ] = n2.z;
+    //
+    //       normals[ index * 3  + 6 ] = n3.x;
+    //       normals[ index * 3  + 7 ] = n3.y;
+    //       normals[ index * 3  + 8 ] = n3.z;
+    //
+    //     }
+    //
+    //   }
+    //
+    //
+    //   var geo = new THREE.InstancedBufferGeometry();
+    //   geo.maxInstancedCount = 250;
+    //
+    //
+    //   // Taking care of our instanced geometry
+    //   var a_position  = new THREE.BufferAttribute( positions , 3 );
+    //   var a_normal    = new THREE.BufferAttribute( normals   , 3 );
+    //
+    //   geo.addAttribute( 'position'  , a_position );
+    //   geo.addAttribute( 'normal'    , a_normal   );
+    //
+    //
+    //   var instances = 250
+    //   // per instance data
+    //   var offsets = new THREE.InstancedBufferAttribute( new Float32Array( instances * 3 ), 3, 1 );
+    //   var instanceIDs = new THREE.InstancedBufferAttribute( new Float32Array( instances ), 1, 1 );
+    //
+    //   var vector = new THREE.Vector4();
+    //   for ( var i = 0, ul = offsets.count; i < ul; i++ ) {
+    //       var x = i * 0.2
+    //       var y = i * 0.2
+    //       var z = -50; // Math.random() * 10 - 5;
+    //       vector.set( x, y, z, 0 ).normalize();
+    //       // move out at least 5 units from center in current direction
+    //       offsets.setXYZ( i, x + vector.x, y + vector.y, z + vector.z);
+    //       instanceIDs.setX( i, i );
+    //   }
+    //
+    //   geo.addAttribute( 'offset', offsets ); // per mesh translation
+    //   geo.addAttribute( 'instanceID', instanceIDs ); // per mesh instance
+    //
+    //   return geo;
+    //
+    // }
+
     var petalFunc = function (u, v) {
       var curve = Math.pow(u * 4.0, curveAmountD) * curveAmountA; // * (Math.pow(u, 0.9));
       // var curve = Math.pow(u * 4.0, curveAmountD) * curveAmountA; // * (Math.pow(u, 0.9));
@@ -9,16 +106,27 @@ module.exports = function(THREE) {
 
       var petalOutline = (Math.sin((u - 1.5) * 2.0) * Math.sin((v - 0.5) * Math.sin((u + 2.14))) * 2.0);
 
+
+
+      // u += (Math.sin((6 - v) * -2.0) * -2.0)
+      // u += (Math.sin((u) * 4.0) * 1.0) // spidery
+
+
       return new THREE.Vector3(petalOutline * petalWidth, u * petalLength, curve);
+
+      // return new THREE.Vector3(petalOutline * petalWidth, u * petalLength, curve * 4.0);
     };
 
     var createPetalMesh = function(texture) {
       if (texture) {
         shaderMaterial = new THREE.MeshBasicMaterial({map: texture, side: THREE.DoubleSide});
       }
-      var geom = new THREE.ParametricGeometry(petalFunc, 6, 6);
-      var mesh = new THREE.Mesh(geom, shaderMaterial);
-      return mesh;
+      var parametricGeometry = new THREE.ParametricGeometry(petalFunc, 6, 6);
+
+      var bufferGeom = new THREE.BufferGeometry()
+      bufferGeom.fromGeometry(parametricGeometry)
+      return new THREE.Mesh(bufferGeom, shaderMaterial);
+      // return new THREE.Mesh(parametricGeometry, shaderMaterial);
     }
 
     var updatePlantWithTextureMaterial = function(texture) {
@@ -31,6 +139,7 @@ module.exports = function(THREE) {
 
     var createPlant = function(texture) {
       var singleGeometry = new THREE.Geometry();
+
       var singleMesh = new THREE.Mesh(singleGeometry, shaderMaterial);
 
       for (var i = 1; i < petalCount; i++) {
@@ -55,8 +164,11 @@ module.exports = function(THREE) {
         singleMesh.add(petalMesh)
       }
 
-      var singleMesh = new THREE.Mesh(singleGeometry, shaderMaterial);
-      // var singleMesh = new THREE.Mesh(singleGeometry, shaderMaterial);
+      // var instanceGeom = createInstancedGeometry(singleGeometry, shaderMaterial)
+      // let instanceMesh = new THREE.Mesh(instanceGeom, shaderMaterial);
+      // instanceMesh.frustumCulled = false;
+      // return instanceMesh;
+
       return singleMesh;
     }
 
