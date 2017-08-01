@@ -25,7 +25,7 @@
       bottom: 0;
       z-index: 999;
       outline: none;
-      display: none;
+      /*display: none;*/
     }
     #cameraPresetsLearn {
       position: absolute;
@@ -56,7 +56,23 @@
   <script src="js/three.js"></script>
   <script src="js/DeviceOrientationControls.js"></script>
   <script src="js/OrbitControls.js"></script>
-  <script src="js/bundle.js"></script>
+
+  <script src="js/postprocessing/EffectComposer.js"></script>
+  <script src="js/postprocessing/RenderPass.js"></script>
+  <script src="js/postprocessing/ShaderPass.js"></script>
+  <script src="js/postprocessing/MaskPass.js"></script>
+  <script src="js/postprocessing/CopyShader.js"></script>
+
+  <script src="js/shaders/BleachBypassShader.js"></script>
+  <script src="js/shaders/EdgeShader.js"></script>
+  <script src="js/shaders/FXAAShader.js"></script>
+  <script src="js/shaders/FocusShader.js"></script>
+  <script src="js/shaders/ColorCorrectionShader.js"></script>
+  <script src="js/shaders/HueSaturationShader.js"></script>
+
+
+  <script src="build/bundle.js"></script>
+
 
   <div id="webglrender"></div>
   <div id="cameraPresetsLearn"></div>

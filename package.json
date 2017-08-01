@@ -6,8 +6,8 @@
   "author": "Tyler Powers / @gr4yscale",
   "license": "ISC",
   "scripts": {
-    "devserver": "budo index.js:js/bundle.js -t glslify -v --live | garnish",
-    "build": "browserify -t glslify index.js | uglifyjs -cm > js/bundle.js"
+    "devserver": "budo js/index.js:build/bundle.js -t glslify -v --live --host=192.168.56.101 | garnish",
+    "build": "browserify -t glslify js/index.js | uglifyjs -cm > build/bundle.js"
   },
   "devDependencies": {
     "browserify": "^10.2.3",
