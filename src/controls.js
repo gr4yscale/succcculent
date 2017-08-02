@@ -1,4 +1,7 @@
 // TOFIX: This needs refactoring!...BADLY!
+//TOFIX: hack
+const THREE = window.THREE
+
 
 function Controls(presets, state, midi, scene, camera, elementForOrbitControls, controlsEventCallback) {
 
@@ -30,6 +33,7 @@ function Controls(presets, state, midi, scene, camera, elementForOrbitControls, 
 
   // xbox controller
   this.xboxControllerSelected = false
+  let xboxLeftJoystickButtonState = false
   let xboxLeftJoystickButtonLastState = false
   let xboxJoystickCalibration = {leftX: 0, leftY: 0, rightX: 0, rightY: 0}
 

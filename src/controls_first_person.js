@@ -1,6 +1,9 @@
 // Custom camera controls for XBox360 controller.
 // Left and Right finger trigger buttons adjust cameraY with a time-based deceleration
 
+//TOFIX: hack
+const THREE = window.THREE
+
 module.exports = function (camera) {
   const decelerationRate = 0.1
   const decelerationDuration = 300.0

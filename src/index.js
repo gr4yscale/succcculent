@@ -1,8 +1,20 @@
+const THREE = window.THREE
+
+import React from 'react'
+import {render} from 'react-dom'
+import {browserHistory} from 'react-router'
+import {syncHistoryWithStore} from 'react-router-redux'
+import configureStore from './redux/store/configureStore'
+import {requestInitialData} from './redux/actions'
+import Root from './components/Root'
+
+
 var domReady = require('domready');
 var dat = require('dat-gui');
-var glslify = require('glslify');
 
-require('./FileSaver.js')
+// var glslify = require('glslify');
+
+// require('./FileSaver.js')
 
 // TOFIX: changed this to find the correct THREE reference
 // const stlExporter = require('three-STLexporter') // adds to the global THREE namespace
@@ -31,12 +43,6 @@ var shaders = [];
 var fragShaders = [];
 
 var controls;
-
-
-
-
-
-
 
 
 var composer, renderPass, effectCopy;
@@ -205,23 +211,38 @@ function addSucculent(index, plantParams) {
 }
 
 function loadShaderMaterials() {
+
+
+  const passThruShader = `
+    precision highp float;
+
+    varying vec2 vUv;
+
+    void main() {
+      // pass varyings to frag shader
+      vUv = uv;
+
+      gl_Position = projectionMatrix * modelViewMatrix * vec4( position.x, position.y, position.z, 1.0 );
+    }
+  `
+
   // this makes use of the browserify transform (it's a preprocessor)
   // so can't clean this up with a loop
-  fragShaders.push(glslify(__dirname + './../shaders/1.frag'))
-  fragShaders.push(glslify(__dirname + './../shaders/2.frag'))
-  fragShaders.push(glslify(__dirname + './../shaders/3.frag'))
-  fragShaders.push(glslify(__dirname + './../shaders/4.frag'))
-  fragShaders.push(glslify(__dirname + './../shaders/5.frag'))
-  fragShaders.push(glslify(__dirname + './../shaders/6.frag'))
-  fragShaders.push(glslify(__dirname + './../shaders/7.frag'))
-  fragShaders.push(glslify(__dirname + './../shaders/8.frag'))
-  fragShaders.push(glslify(__dirname + './../shaders/9.frag'))
-  fragShaders.push(glslify(__dirname + './../shaders/10.frag'))
-  fragShaders.push(glslify(__dirname + './../shaders/11.frag'))
-  fragShaders.push(glslify(__dirname + './../shaders/12.frag'))
-  fragShaders.push(glslify(__dirname + './../shaders/13.frag'))
-  fragShaders.push(glslify(__dirname + './../shaders/14.frag'))
-  fragShaders.push(glslify(__dirname + './../shaders/15.frag'))
+  // fragShaders.push(glslify(__dirname + './../shaders/1.frag'))
+  // fragShaders.push(glslify(__dirname + './../shaders/2.frag'))
+  // fragShaders.push(glslify(__dirname + './../shaders/3.frag'))
+  // fragShaders.push(glslify(__dirname + './../shaders/4.frag'))
+  // fragShaders.push(glslify(__dirname + './../shaders/5.frag'))
+  // fragShaders.push(glslify(__dirname + './../shaders/6.frag'))
+  // fragShaders.push(glslify(__dirname + './../shaders/7.frag'))
+  // fragShaders.push(glslify(__dirname + './../shaders/8.frag'))
+  // fragShaders.push(glslify(__dirname + './../shaders/9.frag'))
+  // fragShaders.push(glslify(__dirname + './../shaders/10.frag'))
+  // fragShaders.push(glslify(__dirname + './../shaders/11.frag'))
+  // fragShaders.push(glslify(__dirname + './../shaders/12.frag'))
+  // fragShaders.push(glslify(__dirname + './../shaders/13.frag'))
+  // fragShaders.push(glslify(__dirname + './../shaders/14.frag'))
+  // fragShaders.push(glslify(__dirname + './../shaders/15.frag'))
   // fragShaders.push(glslify(__dirname + '/shaders/16.frag'))
   // fragShaders.push(glslify(__dirname + '/shaders/17.frag'))
   // fragShaders.push(glslify(__dirname + '/shaders/18.frag'))
@@ -238,7 +259,8 @@ function loadShaderMaterials() {
       defines: {
         USE_MAP: ''
       },
-      vertexShader : glslify(__dirname + './../shaders/passthrough.vert'),
+      // vertexShader : glslify(__dirname + './../shaders/passthrough.vert'),
+      vertexShader: passThruShader,
       fragmentShader : fragShaders[i],
       side: THREE.DoubleSide,
       // transparent: false,
@@ -307,6 +329,7 @@ domReady(function(){
   // dat.GUI.toggleHide()
 
   initThree()
+  // initReact()
   generateNewRandomGarden()
   animate()
 })
@@ -466,15 +489,11 @@ function update(t) {
   controls.update(state, presets)
 }
 
-function render(dt) {
-  //renderer.render(scene, camera);
-  composer.render();
-}
-
 function animate(t) {
   requestAnimationFrame(animate);
   update(t);
-  render(clock.getDelta());
+  composer.render();
+  // clock.getDelta();
 }
 
 function fullscreen() {
@@ -597,7 +616,7 @@ function handleControlsEvent(e) {
       dat.GUI.toggleHide()
       break
     case events.EXPORT_STL:
-      saveSTL(scene, 'test')
+      // saveSTL(scene, 'test')
       break
     default:
       // console.log('Received unknown control type! *******')
@@ -605,25 +624,25 @@ function handleControlsEvent(e) {
   }
 }
 
-function saveSTL(scene, name) {
-  var exporter = new stlExporter()
-  var stlString = exporter.parse(scene)
-
-  console.log(stlString)
-  // console.log(exporter)
-  debugger
-
-  var blob = new Blob([stlString], {type: 'text/plain'})
-  // saveAs(blob, name + '.stl')
-
-  // create a link and make us click on it!
-  var a = document.createElement("a");
-  document.body.appendChild(a);
-  a.style = "display: none";
-
-  url = window.URL.createObjectURL(blob);
-  a.href = url;
-  a.download = name;
-  a.click();
-  window.URL.revokeObjectURL(url);
-}
+// function saveSTL(scene, name) {
+//   var exporter = new stlExporter()
+//   var stlString = exporter.parse(scene)
+//
+//   console.log(stlString)
+//   // console.log(exporter)
+//   debugger
+//
+//   var blob = new Blob([stlString], {type: 'text/plain'})
+//   // saveAs(blob, name + '.stl')
+//
+//   // create a link and make us click on it!
+//   var a = document.createElement("a");
+//   document.body.appendChild(a);
+//   a.style = "display: none";
+//
+//   url = window.URL.createObjectURL(blob);
+//   a.href = url;
+//   a.download = name;
+//   a.click();
+//   window.URL.revokeObjectURL(url);
+// }
