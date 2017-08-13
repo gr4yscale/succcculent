@@ -1,3 +1,5 @@
+import {getRandomArbitrary} from "./util"
+
 let fileReader = new FileReader()
 
 var Presets = function() {
@@ -8,25 +10,6 @@ var Presets = function() {
   this.lastGeneratedPresetData = {}
   this.generateNewPlantsWithTextures = false
 }
-
-function getRandomArbitrary(min, max) {
-  return Math.random() * (max - min) + min;
-}
-
-function saveData(data, fileName) {
-    var a = document.createElement("a");
-    document.body.appendChild(a);
-    a.style = "display: none";
-
-    var json = JSON.stringify(data),
-        blob = new Blob([json], {type: "octet/stream"}),
-        url = window.URL.createObjectURL(blob);
-    a.href = url;
-    a.download = fileName;
-    a.click();
-    window.URL.revokeObjectURL(url);
-}
-
 // TOFIX: load up the proper shader materials when we switch between presets
 Presets.prototype.load = function(callback) {
   // hacky, assumes there's a dom element with id of filepicker. good thing that there is! ;p

@@ -2,215 +2,125 @@ import {routerReducer as routing} from 'react-router-redux'
 import {combineReducers} from 'redux'
 import * as actionTypes from '../actions/actionTypes'
 
-// entities
+const initialState = {
+  // garden generation
+  numPlantsForNextGeneration : 100,
+  adHocGardenGenerationEnabled: false,
+  adHocPlantParamsPetalCount: 36,
+  adHocPlantParamsCurveAmountB: 0.13275223848488998,
+  adHocPlantParamsCurveAmountC: 0.20827196143002302,
+  adHocPlantParamsCurveAmountD: 0.36005163068644075,
+  adHocPlantParamsLayers: 6,
+  adHocPlantParamsPetalLength: 0.43796780893085985,
+  adHocPlantParamsPetalWidth: 0.5438646263177942,
 
-const lamps = (state, action) => {
-  if (action.type === actionTypes.UPDATE_LIVE_PREVIEW) {
-    return state.map(lamp => {
-      const preview = action.payload.Data.find(obj => obj.shortName === lamp.shortName)
-      return {...lamp, ...preview}
-    })
-  }
-}
+  // modes:
+  gardenPresetModeEnabled: false,
+  gardenPresetSaveNext: false,
 
-const generators = (state, action) => {
-  if (action.type === actionTypes.UPDATE_GENERATOR_PARAMS) {
-    let generator = state.find(gen => gen.shortName === action.payload.generatorUUID)
+  // camera presets learn
+  cameraPresetsLearn: false,
 
-    if (!generator) {
-      return state
-    } else {
-      generator.Params = action.payload.Params
-      const index = state.indexOf(generator)
-      // replace the generator, update state without mutatation (copy a new generator in)
-      return [
-        ...state.slice(0, index),
-        generator,
-        ...state.slice(index + 1)
-      ]
-    }
-  }
-}
+  // same shaders
+  sameShaderForAllPlants: false,
+  sameShaderForAllPlantsIndex: 0,
 
-const entitiesInitialState = {Lamps: [], Groups: [], Generators: [], FeaturesTypse: [], GeneratorTypes: [], LampTypes: [], Scenes: []}
-
-const entities = (state = entitiesInitialState, action) => {
-  // TODO being lazy here instead of using actionTypes as a filter, i check to see if we have an entityKeys key implying we are working with entity data
-  if (action.payload && action.payload.entityKeys) {
-    let entitiesUpdated = {}
-    for (let i = 0; i < action.payload.entityKeys.length; i++) {
-      const entityKey = action.payload.entityKeys[i]
-      let entity = {}
-      entity[entityKey] = action.payload.data[entityKey]
-
-      entitiesUpdated = {
-        ...entitiesUpdated,
-        ...entity
-      }
-    }
-    return {
-      ...state,
-      ...entitiesUpdated
-    }
-  }
-  // handle it the right way from here on
-  else {
-    switch (action.type) {
-      case actionTypes.UPDATE_LIVE_PREVIEW:
-        return {
-          ...state,
-          Lamps: lamps(state.Lamps, action)
-        }
-      case actionTypes.UPDATE_GENERATOR_PARAMS:
-        return {
-          ...state,
-          Generators: generators(state.Generators, action)
-        }
-      default:
-        return state
-    }
-  }
+  // texture mode
+  generateNewPlantsWithTextures: false,
+  textureRepeatRange: 1,
+  textureUpdateSpeed: 0.5,
 }
 
 
-const patchingInitialState = {
-  mode: actionTypes.PATCHING_MODE_CONNECT,
-  isPatching: false,
-  lampsConnected: [],
-  lastMouseX: 0,
-  lastMouseY: 0,
-  lastLampX: 0,
-  lastLampY: 0,
-  lastSelectedLampId: null,
-  groupPopupVisible: false
+
+// const app = (state = {}, action) => {
+//   // console.log('Handling control event of type: ' + e.type)
+//   switch (action.type) {
+//     case actionTypes.SAVE_GARDEN_TO_PRESET_FILE:
+//       presets.save('plants.json')
+//       break
+//     case actionTypes.LOAD_GARDEN_FROM_PRESET_FILE:
+//       loadFirstGardenFromPresetFile()
+//       break
+//     case actionTypes.GENERATE_NEW_RANDOM_GARDEN:
+//       generateNewRandomGarden()
+//       break
+//     case actionTypes.GARDEN_PRESET_MODE_TOGGLED:
+//       state.gardenPresetModeEnabled = !state.gardenPresetModeEnabled
+//       break
+//     case actionTypes.GARDEN_PRESET_MODE_SAVE_NEXT_PRESET_TOGGLED:
+//       state.gardenPresetSaveNext = !state.gardenPresetSaveNext
+//       console.log('preset save next : ' + state.gardenPresetSaveNext)
+//       break
+//     case actionTypes.ADD_NEW_GARDEN_PRESET:
+//       presets.addNew()
+//       break
+//     case actionTypes.LOAD_GARDEN_FROM_SELECTED_PRESET:
+//       presets.select(e.data.index)
+//       loadGardenFromSelectedPreset()
+//       break
+//     case actionTypes.SAVE_GARDEN_TO_SELECTED_PRESET:
+//       presets.select(e.data.index)
+//       presets.saveLastGeneratedPresetForSelectedIndex()
+//       break
+//     case actionTypes.DEBUGGER_PAUSE:
+//       debugger
+//       break
+//     case actionTypes.CAMERA_PRESETS_LEARN_TOGGLED: {
+//       updateIndicators(e.data)
+//       break
+//     }
+//     case actionTypes.CAMERA_PRESET_LEARN: {
+//       let presetIdentifier = e.data.presetIdentifier
+//       presets.updateCameraMap(presetIdentifier, camera, e.data)
+//       // console.log('Updated camera presets for identifier: ' + presetIdentifier)
+//       updateIndicators(e.data)
+//       break
+//     }
+//     case actionTypes.CAMERA_PRESET_TRIGGER: {
+//       // get the serialized matrix out of presets (which stores the matrix the matrix as an array for convenient persistence)
+//       // use the callback that controls gives to let it update camera / orbitcontrols state
+//       let presetIdentifier = e.data.presetIdentifier
+//       let data = presets.selectedPresetCameraMap()
+//       if (data) {
+//         controls.updateFromPresetData(data[presetIdentifier])
+//         // console.log('Triggered orbit controls and camera update using preset with identifier: ' + presetIdentifier)
+//       } else {
+//         console.log('There is no preset for identifier: ' + presetIdentifier + '!')
+//       }
+//       break
+//     }
+//     case actionTypes.CAMERA_CONTROLS_RESET:
+//       break
+//     case actionTypes.SET_SAME_SHADER_FOR_ALL_PLANTS: {
+//       setSameShaderForAllPlants(e.data.shaderIndex)
+//       break
+//     }
+//     case actionTypes.RESET_SHADERS_TO_INITIAL_SHADER_FOR_ALL_PLANTS:
+//       resetShadersForAllPlants()
+//       break
+//     case actionTypes.GENERATE_NEW_PLANTS_TEXTURE_STYLES_TOGGLE: {
+//       presets.generateNewPlantsWithTextures = e.data.generateNewPlantsWithTextures
+//       console.log(e.data)
+//       break
+//     }
+//     default:
+//       // console.log('Received unknown control type! *******')
+//       break
+//   }
+//   return state
+// }
+
+//
+// const rootReducer = combineReducers({
+//   routing, // updates this store with latest browser history state synced from react-router on route changes
+//   app
+// })
+
+const dummy = (state = initialState, action) => {
+  return state
 }
 
-// patching
-const patching = (state = patchingInitialState, action) => {
-
-  switch (action.type) {
-    case actionTypes.PATCHING_MODE_UPDATE: {
-
-      let groupPopupVisible = state.groupPopupVisible
-      if (action.payload.mode === actionTypes.PATCHING_MODE_MOVE) {
-        groupPopupVisible = false
-      }
-
-      return {
-        ...state,
-        mode: action.payload.mode,
-        groupPopupVisible
-      }
-    }
-
-    case actionTypes.PATCHING_CONNECT_SELECT: {
-      if (!state.isPatching) return state
-
-      const lampId = action.payload
-      const lampAlreadyConnected = state.lampsConnected.includes(lampId)
-
-      if (state.mode === actionTypes.PATCHING_MODE_CONNECT && !lampAlreadyConnected) {
-        return {
-          ...state,
-          lampsConnected: [...state.lampsConnected, lampId],
-          lastSelectedLampId: lampId
-        }
-      }
-      else {
-        return {...state, lastSelectedLampId: lampId}
-      }
-    }
-
-    case actionTypes.SELECT_LAMP: {
-      const lampId = action.payload.lampId
-      return {...state, lastSelectedLampId: lampId}
-    }
-
-    case actionTypes.PATCHING_CONNECT_START: {
-      const lampId = action.payload
-      return {
-        ...state,
-        isPatching: true,
-        lampsConnected: [lampId],
-        lastSelectedLampId: lampId,
-        groupPopupVisible: false
-      }
-    }
-
-    case actionTypes.PATCHING_CONNECT_END: {
-      return {
-        ...state,
-        isPatching: false,
-        groupPopupVisible: state.lampsConnected.length > 1 ? true : false
-      }
-    }
-
-    case actionTypes.PATCHING_CONNECT_END_AND_CLEAR: {
-      return {
-        ...state,
-        isPatching: false,
-        lampsConnected: [],
-        groupPopupVisible: false
-      }
-    }
-
-    case actionTypes.PATCHING_MOUSE_UPDATE: {
-      return {...state,
-        lastMouseX: action.payload.x,
-        lastMouseY: action.payload.y
-      }
-    }
-
-    // todo evaluate server interactions
-    case actionTypes.ADD_LAMP_TO_GROUP_REQUEST: {
-      return {
-        ...state,
-        groupPopupVisible: false,
-        lampsConnected: []
-      }
-    }
-    default:
-      return state
-  }
-}
-
-
-const contentInitialState = {selectedGroup: null, selectedGenerator: null, paneVisibilityLeftOverlay: false, paneVisibilityGeneratorParams: false, presetPlayerPaused: true}
-
-const content = (state = contentInitialState, action) => {
-  switch (action.type) {
-    case actionTypes.CONTENT_LIST_ITEM_GROUP_SELECTED: {
-      return {...state, selectedGroup: action.payload}
-    }
-    case actionTypes.CONTENT_LIST_ITEM_GENERATOR_SELECTED: {
-      return {...state, selectedGenerator: action.payload}
-    }
-    case actionTypes.CONTENT_PANE_SET_VISIBILITY_LEFT_OVERLAY: {
-      return {...state, paneVisibilityLeftOverlay: action.payload}
-    }
-    case actionTypes.CONTENT_PANE_SET_VISIBILITY_GENERATOR_PARAMS: {
-      return {...state, paneVisibilityGeneratorParams: action.payload}
-    }
-    case actionTypes.UPDATE_PRESET_PLAYER_STATE_CHANGED: {
-      return {...state, presetPlayerPaused: action.payload.isPlayerPaused}
-    }
-    case actionTypes.UPDATE_INITIAL_DATA: {
-      return {...state, presetPlayerPaused: action.payload.data.PresetPlayer.isPaused}
-    }
-    case actionTypes.CONTENT_FEATURE_SELECTED: {
-      return {...state, selectedFeature: action.payload}
-    }
-    default:
-      return state
-  }
-}
-
-
-const rootReducer = combineReducers({
-  entities, // updates an entity cache in response to any action with response.entities.
-  routing,   // updates this store with latest browser history state synced from react-router on route changes
-  patching,
-  content
-})
+const rootReducer = combineReducers({dummy})
 
 export default rootReducer

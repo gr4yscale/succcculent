@@ -10,7 +10,7 @@
       margin: 0px;
       overflow: hidden;
     }
-    #webglrender {
+    #WebGLRender {
       position: absolute;
       top: 0;
       left: 0;
@@ -27,35 +27,12 @@
       outline: none;
       /*display: none;*/
     }
-    #cameraPresetsLearn {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      width: 32px;
-      height: 32px;
-      background-color: #FF0000;
-      border-radius: 16px;
-      z-index: 999;
-      display: none;
-    }
-    #firstPersonEnabled {
-      position: absolute;
-      top: 54px;
-      right: 16px;
-      width: 32px;
-      height: 32px;
-      background-color: #FF00FF;
-      border-radius: 16px;
-      z-index: 999;
-      display: none;
-    }
   </style>
 </head>
 
 <body>
   <script src="%PUBLIC_URL%/js/dat.gui.min.js"></script>
   <script src="%PUBLIC_URL%/js/three.js"></script>
-  <script src="%PUBLIC_URL%/js/DeviceOrientationControls.js"></script>
   <script src="%PUBLIC_URL%/js/OrbitControls.js"></script>
 
   <script src="%PUBLIC_URL%/js/postprocessing/EffectComposer.js"></script>
@@ -71,10 +48,9 @@
   <script src="%PUBLIC_URL%/js/shaders/ColorCorrectionShader.js"></script>
   <script src="%PUBLIC_URL%/js/shaders/HueSaturationShader.js"></script>
 
-  <div id="webglrender"></div>
-  <div id="cameraPresetsLearn"></div>
-  <div id="firstPersonEnabled"></div>
-  <div id="root"></div>
+  <div id="WebGLRender"></div>
+  <div id="ReactRoot"></div>
+
   <input id="filepicker" type="file">
 </body>
 

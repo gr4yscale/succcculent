@@ -63,7 +63,6 @@ module.exports = function(THREE) {
     //
     //   }
     //
-    //
     //   var geo = new THREE.InstancedBufferGeometry();
     //   geo.maxInstancedCount = 250;
     //
