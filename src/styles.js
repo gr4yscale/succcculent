@@ -18,42 +18,6 @@ export default [
     layersMax: 10
   },
   {
-    name: 'textureTest-1',
-    textureNames: ['angelaeye.jpg'],
-    petalCountMin: 20,
-    petalCountMax: 40,
-    petalLengthMin: 0.1,
-    petalLengthMax: 0.7,
-    petalWidthMin: 0.4,
-    petalWidthMax: 0.5,
-    curveAmountBMin: 0.08,
-    curveAmountBMax: 0.2,
-    curveAmountCMin: 0.2,
-    curveAmountCMax: 0.6,
-    curveAmountDMin: 0.2,
-    curveAmountDMax: 0.5,
-    layersMin: 6,
-    layersMax: 10
-  },
-  {
-    name: 'textureTest-2',
-    textureNames: ['yes2.jpg'],
-    petalCountMin: 20,
-    petalCountMax: 40,
-    petalLengthMin: 0.1,
-    petalLengthMax: 0.7,
-    petalWidthMin: 0.4,
-    petalWidthMax: 0.5,
-    curveAmountBMin: 0.08,
-    curveAmountBMax: 0.2,
-    curveAmountCMin: 0.2,
-    curveAmountCMax: 0.6,
-    curveAmountDMin: 0.2,
-    curveAmountDMax: 0.5,
-    layersMin: 6,
-    layersMax: 10
-  },
-  {
     name: 'fast, for debugging',
     shaderIndexes: [0],
     petalCountMin: 1,
@@ -432,3 +396,42 @@ export default [
     layersMax: 8
   }
 ]
+
+
+
+// {
+//   name: 'textureTest-1',
+//     textureNames: ['angelaeye.jpg'],
+//   petalCountMin: 20,
+//   petalCountMax: 40,
+//   petalLengthMin: 0.1,
+//   petalLengthMax: 0.7,
+//   petalWidthMin: 0.4,
+//   petalWidthMax: 0.5,
+//   curveAmountBMin: 0.08,
+//   curveAmountBMax: 0.2,
+//   curveAmountCMin: 0.2,
+//   curveAmountCMax: 0.6,
+//   curveAmountDMin: 0.2,
+//   curveAmountDMax: 0.5,
+//   layersMin: 6,
+//   layersMax: 10
+// },
+// {
+//   name: 'textureTest-2',
+//     textureNames: ['yes2.jpg'],
+//   petalCountMin: 20,
+//   petalCountMax: 40,
+//   petalLengthMin: 0.1,
+//   petalLengthMax: 0.7,
+//   petalWidthMin: 0.4,
+//   petalWidthMax: 0.5,
+//   curveAmountBMin: 0.08,
+//   curveAmountBMax: 0.2,
+//   curveAmountCMin: 0.2,
+//   curveAmountCMax: 0.6,
+//   curveAmountDMin: 0.2,
+//   curveAmountDMax: 0.5,
+//   layersMin: 6,
+//   layersMax: 10
+// },
