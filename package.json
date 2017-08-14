@@ -48,5 +48,5 @@
     "uglify-js": "^2.4.23",
     "watchify": "^3.2.1",
     "webmidi": "^2.0.0-alpha.6"
-  },
+  }
 }
