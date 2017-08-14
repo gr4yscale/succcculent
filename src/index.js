@@ -4,11 +4,11 @@ import React from 'react'
 import {render} from 'react-dom'
 import Root from './components/Root'
 import configureStore from './redux/store/configureStore'
+import Succulent from './succulent'
 import Garden from './garden'
 
 const store = configureStore()
-const Succulent = require('./succulent')(THREE); //todo fix import
-const garden = new Garden(THREE, Succulent, store)
+const garden = new Garden(THREE, Succulent(THREE), store)
 
 setTimeout(() => garden.setup(), 0.25)
 setTimeout(() => garden.resize(), 1)
