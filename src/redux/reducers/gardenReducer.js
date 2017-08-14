@@ -5,8 +5,8 @@ import styles from '../../styles'
 const initialState = {
   selectedStyleIndex: 0, //todo unnecessary?
   selectedPresetIndex: 0,
-  numPlantsForNextGeneration: 20,
-  selectedStyle: styles[11],
+  numPlantsForNextGeneration: 30,
+  selectedStyle: styles[9],
 
   adHocGardenGenerationEnabled: false,
   adHocPlantParamsPetalCount: 36,
@@ -30,42 +30,6 @@ const initialState = {
   sceneNeedsToReset: false,
 }
 
-export default (state = initialState, action) => {
-  switch (action.type) {
-    case actionTypes.GARDEN_GENERATE_PLANT_PARAMS:
-      return {
-        ...state,
-        plantParams: generatePlantParams(state),
-        sceneNeedsToReset: true
-      }
-      break
-    case actionTypes.GARDEN_SCENE_IS_RESETTING:
-      return {
-        ...state,
-        sceneNeedsToReset: false
-      }
-      break
-    case actionTypes.GARDEN_UPDATE_PLANT_POSITION: {
-      const plantParams = state.plantParams.map((item, index) => {
-        if (index !== action.payload.plantIndex) {
-          return item
-        }
-        return {
-          ...item,
-          positionX: action.payload.position.x,
-          positionY: action.payload.position.y,
-          positionZ: action.payload.position.z
-        }
-      })
-      return {plantParams,...state}
-    }
-      break
-
-    default:
-      break
-  }
-  return state
-}
 
 const generatePlantParams = (state) => {
   let plantParams = []
@@ -132,4 +96,39 @@ const generatePlantParams = (state) => {
   }
 
   return plantParams
+}
+
+
+
+export default (state = initialState, action) => {
+  switch (action.type) {
+    case actionTypes.GARDEN_GENERATE_PLANT_PARAMS:
+      return {
+        ...state,
+        plantParams: generatePlantParams(state),
+        sceneNeedsToReset: true
+      }
+    case actionTypes.GARDEN_SCENE_IS_RESETTING:
+      return {
+        ...state,
+        sceneNeedsToReset: false
+      }
+    case actionTypes.GARDEN_UPDATE_PLANT_POSITION: {
+      const plantParams = state.plantParams.map((item, index) => {
+        if (index !== action.payload.plantIndex) {
+          return item
+        }
+        return {
+          ...item,
+          positionX: action.payload.position.x,
+          positionY: action.payload.position.y,
+          positionZ: action.payload.position.z
+        }
+      })
+      return {plantParams,...state}
+    }
+    default:
+      break
+  }
+  return state
 }
