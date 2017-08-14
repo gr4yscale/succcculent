@@ -2,7 +2,29 @@ import {getRandomArbitrary} from './util'
 import {randomPositionTestOffset} from './config'
 import setupLights from './lights'
 import * as actionTypes from "./redux/actions/actionTypes"
-import {standard} from "./redux/actions/index"
+import {standard} from './redux/actions/index'
+import parseDataUrl from 'parse-data-url'
+
+import shader1 from './shaders/compiled/1.frag'
+import shader2 from './shaders/compiled/2.frag'
+import shader3 from './shaders/compiled/3.frag'
+import shader4 from './shaders/compiled/4.frag'
+import shader5 from './shaders/compiled/5.frag'
+import shader6 from './shaders/compiled/6.frag'
+import shader7 from './shaders/compiled/7.frag'
+import shader8 from './shaders/compiled/8.frag'
+import shader9 from './shaders/compiled/9.frag'
+import shader10 from './shaders/compiled/10.frag'
+import shader11 from './shaders/compiled/11.frag'
+import shader12 from './shaders/compiled/12.frag'
+import shader13 from './shaders/compiled/13.frag'
+import shader14 from './shaders/compiled/14.frag'
+import shader15 from './shaders/compiled/15.frag'
+import shader16 from './shaders/compiled/16.frag'
+import shader17 from './shaders/compiled/17.frag'
+import shader18 from './shaders/compiled/18.frag'
+import shader19 from './shaders/compiled/19.frag'
+
 
 //todo dependency injection?
 let THREE, Succulent
@@ -91,6 +113,7 @@ class Garden {
     // }
 
     // update orbit camera controls
+
     // this.orbitControls.handleJoystickRotate(cameraRotationDeltaX * joystickSensitivity, cameraRotationDeltaY * joystickSensitivity)
     // this.orbitControls.handleJoystickDolly(cameraDollyDelta * cameraDollySensitivity)
     // this.orbitControls.handleJoystickPan(cameraPositionDeltaX * joystickSensitivity, cameraPositionDeltaY * joystickSensitivity)
@@ -237,7 +260,7 @@ class Garden {
     const passThruShader = `
       precision highp float;
 
-      letying vec2 vUv;
+      varying vec2 vUv;
 
       void main() {
         // pass letyings to frag shader
@@ -247,15 +270,14 @@ class Garden {
       }
     `
 
-    const frag = `
-      precision mediump float;
-      uniform float iGlobalTime;
-      varying vec2 vUv;
+    const shaderDataUrls = [shader1, shader2, shader3, shader4, shader5, shader6, shader7, shader8, shader9,
+                            shader10, shader11, shader12, shader13, shader14, shader15, shader16, shader17, shader18, shader19]
 
-      void main() {
-        gl_FragColor = vec4( 0.5, 1.0, 0.5, 1.0);
-      }
-    `
+    for (let i = 0; i < shaderDataUrls.length; i++) {
+      const shader = shaderDataUrls[i]
+      const shaderDecoded = atob(parseDataUrl(shader).data)
+      fragShaders.push(shaderDecoded)
+    }
 
     for (let i = 0; i < fragShaders.length; i++) {
       let shaderMaterial = new THREE.ShaderMaterial({
@@ -265,9 +287,8 @@ class Garden {
         defines: {
           USE_MAP: ''
         },
-        // vertexShader : glslify(__dirname + './../shaders/passthrough.vert'),
         vertexShader: passThruShader,
-        fragmentShader : frag,        //todo use fragShaders array when glslify is fixed
+        fragmentShader : fragShaders[i],
         side: THREE.DoubleSide,
         // transparent: false,
         blending: THREE.AdditiveBlending,
