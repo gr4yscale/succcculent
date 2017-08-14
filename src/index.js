@@ -8,7 +8,7 @@ import Garden from './garden'
 
 const store = configureStore()
 const Succulent = require('./succulent')(THREE); //todo fix import
-const garden = new Garden(THREE, Succulent)
+const garden = new Garden(THREE, Succulent, store)
 
 setTimeout(() => garden.setup(), 0.25)
 setTimeout(() => garden.resize(), 1)

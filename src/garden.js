@@ -1,6 +1,8 @@
 import {getRandomArbitrary} from './util'
 import {randomPositionTestOffset} from './config'
 import setupLights from './lights'
+import * as actionTypes from "./redux/actions/actionTypes"
+import {standard} from "./redux/actions/index"
 
 //todo dependency injection?
 let THREE, Succulent
@@ -8,52 +10,11 @@ let THREE, Succulent
 let camera, scene, renderer, container
 let boxes, succulents, shaders, fragShaders
 
-// todo hack/test before store does this
-const genPlantParams = () => {
-  let plantParams = []
-  for (let i = 0; i < 10; i++) {
-
-    let adHocPlantParamsPetalCount = 36
-    let adHocPlantParamsCurveAmountB = 0.13275223848488998
-    let adHocPlantParamsCurveAmountC = 0.20827196143002302
-    let adHocPlantParamsCurveAmountD = 0.36005163068644075
-    let adHocPlantParamsLayers = 6
-    let adHocPlantParamsPetalLength = 0.43796780893085985
-    let adHocPlantParamsPetalWidth = 0.5438646263177942
-
-    let petalCount = Math.floor(adHocPlantParamsPetalCount)
-    let petalLength = adHocPlantParamsPetalLength
-    let petalWidth = adHocPlantParamsPetalWidth
-    let curveAmountB = adHocPlantParamsCurveAmountB
-    let curveAmountC = adHocPlantParamsCurveAmountC
-    let curveAmountD = adHocPlantParamsCurveAmountD
-    let layers = Math.floor(adHocPlantParamsLayers)
-
-    let shaderIndex = 0
-
-    let params = {
-      petalCount: petalCount,
-      curveAmountB: curveAmountB,
-      curveAmountC: curveAmountC,
-      curveAmountD: curveAmountD,
-      layers: layers,
-      petalLength: petalLength,
-      petalWidth: petalWidth,
-      positionX: 'not_placed',
-      positionY: 'not_placed',
-      positionZ: 'not_placed',
-      shaderIndex
-    }
-    plantParams.push(params)
-  }
-
-  return plantParams
-}
-
 class Garden {
-  constructor(THREE_, Succulent_) {
+  constructor(THREE_, Succulent_, store) {
     THREE = THREE_
     Succulent = Succulent_
+    this.store = store
 
     //todo determine if i want these to be members or not
     boxes = []
@@ -61,8 +22,16 @@ class Garden {
     shaders = []
     fragShaders = [] //todo fix glslify browserify transform - either eject create-react-app and use a custom webpack loader, or figure out another way to preprocess shaders
 
-    //todo hack/test
-    this.plantParams = genPlantParams()
+    this.store.subscribe(() => {
+      const state = this.store.getState()
+
+      if (state.garden.sceneNeedsToReset) {
+        this.store.dispatch(
+          standard(actionTypes.GARDEN_SCENE_IS_RESETTING)
+        )
+        this.resetPlants() //todo this is necessary to call after generating a random garden because we must update plant positions to complete garden generation. fix this.
+      }
+    })
   }
 
   setup() {
@@ -86,7 +55,7 @@ class Garden {
     this.orbitControls = new THREE.OrbitControls(camera, renderer.domElement)
 
     this.loadShaderMaterials()
-    this.generateNewRandomGarden()
+
     this.update()
   }
 
@@ -132,20 +101,18 @@ class Garden {
     requestAnimationFrame(this.update.bind(this))
   }
 
-  generateNewRandomGarden() {
-    this.clearSucculents()
-    //todo dispatch action here to update store
-    for (let i=0; i < 10; i++) {
-      this.addSucculent(i, this.plantParams[i])
-    }
-  }
-
-  clearSucculents() {
-    for (let i=0; i < succulents.length; i++) {
+  resetPlants() {
+    for (let i = 0; i < succulents.length; i++) {
       scene.remove(succulents[i])
     }
     succulents = []
     boxes = []
+
+    const garden = this.store.getState().garden
+
+    for (let i=0; i < garden.numPlantsForNextGeneration; i++) {
+      this.addSucculent(i, garden.plantParams[i])
+    }
   }
 
   findRandomUnusedSucculentPosition(offsetMin, offsetMax, box) {
@@ -184,12 +151,12 @@ class Garden {
     // helper.visible = true;
     // scene.add(helper);
 
-    plantParams['positionX'] = succulent.position.x
-    plantParams['positionY'] = succulent.position.y
-    plantParams['positionZ'] = succulent.position.z
-
-    //todo: update this in the store?
-    this.plantParams[index] = plantParams
+    this.store.dispatch(
+      standard(actionTypes.GARDEN_UPDATE_PLANT_POSITION,{
+        plantIndex: index,
+        position: succulent.position
+      })
+    )
   }
 
   addSucculent(index, plantParams) {

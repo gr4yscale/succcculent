@@ -1,12 +1,10 @@
 import React, {PropTypes} from 'react'
 import {Provider} from 'react-redux'
-import ContainerTst from "./ContainerTst"
+import GUI from "./GUI"
 
 const Root = ({ store }) => (
   <Provider store={store}>
-    <div>
-      <ContainerTst/>
-    </div>
+      <GUI/>
   </Provider>
 )
 
