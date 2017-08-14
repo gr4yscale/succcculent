@@ -49,16 +49,4 @@
     "watchify": "^3.2.1",
     "webmidi": "^2.0.0-alpha.6"
   },
-  "dependencies": {
-    "three-stlexporter": "^1.0.0"
-  },
-  "browserify": {
-    "transform": [
-      "glslify",
-      "browserify-shim"
-    ]
-  },
-  "browserify-shim": {
-    "three": "global:THREE"
-  }
 }
