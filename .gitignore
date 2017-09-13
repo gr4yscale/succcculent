@@ -5,3 +5,4 @@ npm-debug.log
 *.idea/**
 js/build/**
 js/build
+src/scratch.txt
