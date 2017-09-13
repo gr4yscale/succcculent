@@ -30,7 +30,21 @@ import shader19 from './shaders/compiled/19.frag'
 let THREE, Succulent
 
 let camera, scene, renderer, container
-let boxes, succulents, shaders, fragShaders
+let boxes, succulents, groundMesh, shaders, fragShaders, groundShaderMaterial
+
+
+const passThruShader = `
+  precision highp float;
+
+  varying vec2 vUv;
+
+  void main() {
+    // pass letyings to frag shader
+    vUv = uv;
+
+    gl_Position = projectionMatrix * modelViewMatrix * vec4( position.x, position.y, position.z, 1.0 );
+  }
+`
 
 class Garden {
   constructor(THREE_, Succulent_, store) {
@@ -52,6 +66,14 @@ class Garden {
           standard(actionTypes.GARDEN_SCENE_IS_RESETTING)
         )
         this.resetPlants() //todo this is necessary to call after generating a random garden because we must update plant positions to complete garden generation. fix this.
+
+        // add a ground plane
+        const groundGeom = new THREE.PlaneGeometry(20, 20, 4, 4)
+        groundMesh = new THREE.Mesh(groundGeom, groundShaderMaterial)
+        groundMesh.position.set(0,-0.001, 0)
+        groundMesh.rotation.x = THREE.Math.degToRad(90)
+        scene.add(groundMesh)
+
       }
     })
   }
@@ -76,7 +98,7 @@ class Garden {
     //add orbit controls for mouse interactions
     this.orbitControls = new THREE.OrbitControls(camera, renderer.domElement)
 
-    this.loadShaderMaterials()
+    this.loadShaderMaterials() // need to make sure this happens before the garden resets
 
     this.update()
   }
@@ -106,10 +128,11 @@ class Garden {
     // }
 
     // update shader uniforms
-    let shaderTime = (tick / state.app.shaderTickerSpeed)
     for (let j = 0; j < shaders.length; j++) {
-      shaders[j].uniforms.iGlobalTime.value = shaderTime;
+      shaders[j].uniforms.iGlobalTime.value = (tick / state.app.shaderTickerSpeed)
     }
+
+    groundShaderMaterial.uniforms.iGlobalTime.value = (tick / state.app.groundShaderTickerSpeed)
 
     // update orbit camera controls
     this.orbitControls.handleJoystickRotate(state.app.cameraRotationDeltaX * state.app.joystickSensitivity,
@@ -259,19 +282,6 @@ class Garden {
 
 
   loadShaderMaterials() {
-    const passThruShader = `
-      precision highp float;
-
-      varying vec2 vUv;
-
-      void main() {
-        // pass letyings to frag shader
-        vUv = uv;
-
-        gl_Position = projectionMatrix * modelViewMatrix * vec4( position.x, position.y, position.z, 1.0 );
-      }
-    `
-
     const shaderDataUrls = [shader1, shader2, shader3, shader4, shader5, shader6, shader7, shader8, shader9,
                             shader10, shader11, shader12, shader13, shader14, shader15, shader16, shader17, shader18, shader19]
 
@@ -298,6 +308,23 @@ class Garden {
       });
       shaders.push(shaderMaterial);
     }
+
+    //fixme: DRY this
+    groundShaderMaterial = new THREE.ShaderMaterial({
+      uniforms : {
+        iGlobalTime: { type: 'f', value: 0 }
+      },
+      defines: {
+        USE_MAP: ''
+      },
+      vertexShader: passThruShader,
+      fragmentShader : fragShaders[10],
+      side: THREE.DoubleSide,
+      // transparent: false,
+      blending: THREE.AdditiveBlending,
+      wireframe:false
+    });
+
   }
 
   //todo method can be static

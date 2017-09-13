@@ -5,7 +5,7 @@ import styles from '../../styles'
 const initialState = {
   selectedStyleIndex: 0, //todo unnecessary?
   selectedPresetIndex: 0,
-  numPlantsForNextGeneration: 40,
+  numPlantsForNextGeneration: 90,
   selectedStyle: styles[0],
 
   adHocGardenGenerationEnabled: false,

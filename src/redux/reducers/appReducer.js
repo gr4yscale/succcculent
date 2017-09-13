@@ -17,6 +17,7 @@ const initialState = {
   joystickSensitivity: 1.0,
 
   shaderTickerSpeed: 1000,
+  groundShaderTickerSpeed: 2500,
 }
 
 export default (state = initialState, action) => {
