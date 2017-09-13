@@ -113,11 +113,14 @@ class Garden {
     // }
 
     // update orbit camera controls
+    const state = this.store.getState()
+    this.orbitControls.handleJoystickRotate(state.app.cameraRotationDeltaX * state.app.joystickSensitivity,
+                                            state.app.cameraRotationDeltaY * state.app.joystickSensitivity)
 
-    // this.orbitControls.handleJoystickRotate(cameraRotationDeltaX * joystickSensitivity, cameraRotationDeltaY * joystickSensitivity)
-    // this.orbitControls.handleJoystickDolly(cameraDollyDelta * cameraDollySensitivity)
-    // this.orbitControls.handleJoystickPan(cameraPositionDeltaX * joystickSensitivity, cameraPositionDeltaY * joystickSensitivity)
+    this.orbitControls.handleJoystickDolly(state.app.cameraDollyDelta * state.app.cameraDollySensitivity)
 
+    this.orbitControls.handleJoystickPan(state.app.cameraPositionDeltaX * state.app.joystickSensitivity,
+                                         state.app.cameraPositionDeltaY * state.app.joystickSensitivity)
     this.orbitControls.update()
 
     renderer.render(scene, camera)
@@ -255,6 +258,7 @@ class Garden {
       positionSucculent(succulent)
     // }
   }
+
 
   loadShaderMaterials() {
     const passThruShader = `
