@@ -81,7 +81,9 @@ class Garden {
     this.update()
   }
 
-  update() {
+  update(tick) {
+    const state = this.store.getState()
+
     // for (let i = 0; i < succulents.length; i++) {
     //   sceneUpdateTickerSpeed++
     //   if (sceneUpdateTickerSpeed > fps) {
@@ -104,16 +106,12 @@ class Garden {
     // }
 
     // update shader uniforms
-    // let shaderTime = (t / shaderTickerSpeed)
-    // for (let j = 0; j < shaders.length; j++) {
-    //   shaders[j].uniforms.iGlobalTime.value = shaderTime;
-    //   shaders[j].uniforms.audio1.value = state.audioAnalysisFilter1;
-    //   shaders[j].uniforms.audio2.value = state.audioAnalysisFilter2;
-    //   shaders[j].uniforms.audio3.value = state.audioAnalysisFilter3;
-    // }
+    let shaderTime = (tick / state.app.shaderTickerSpeed)
+    for (let j = 0; j < shaders.length; j++) {
+      shaders[j].uniforms.iGlobalTime.value = shaderTime;
+    }
 
     // update orbit camera controls
-    const state = this.store.getState()
     this.orbitControls.handleJoystickRotate(state.app.cameraRotationDeltaX * state.app.joystickSensitivity,
                                             state.app.cameraRotationDeltaY * state.app.joystickSensitivity)
 

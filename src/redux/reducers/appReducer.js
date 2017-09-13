@@ -15,6 +15,8 @@ const initialState = {
   cameraPositionDeltaX: 0.0,
   cameraPositionDeltaY: 0.0,
   joystickSensitivity: 1.0,
+
+  shaderTickerSpeed: 1000,
 }
 
 export default (state = initialState, action) => {
