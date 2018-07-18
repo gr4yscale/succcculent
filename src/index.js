@@ -7,11 +7,21 @@ import configureStore from './redux/store/configureStore'
 import Succulent from './succulent'
 import Garden from './garden'
 
+import {standard} from './redux/actions/index'
+import * as actionTypes from './redux/actions/actionTypes'
+
 const store = configureStore()
 const garden = new Garden(THREE, Succulent(THREE), store)
 
 setTimeout(() => garden.setup(), 0.25)
 setTimeout(() => garden.resize(), 1)
+setTimeout(() => garden.resize(), 1)
+
+setTimeout(() => {
+    store.dispatch(
+        standard(actionTypes.GARDEN_GENERATE_PLANT_PARAMS)
+    )
+}, 1)
 
 render(
   <Root store={store} />,
