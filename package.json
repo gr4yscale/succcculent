@@ -27,6 +27,7 @@
     "glsl-noise": "0.0.0",
     "glslify": "^2.2.1",
     "lodash": "^4.17.4",
+    "parse-data-url": "0.2.0",
     "react-addons-css-transition-group": "^15.4.2",
     "react-dom": "^15.4.2",
     "react-drag": "^0.3.0",
@@ -52,6 +53,7 @@
     "webmidi": "^2.0.0-alpha.6"
   },
   "dependencies": {
+    "parse-data-url": "^0.2.0",
     "rc-slider": "^8.3.1"
   }
 }
