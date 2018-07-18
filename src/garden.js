@@ -25,7 +25,6 @@ import shader17 from './shaders/compiled/17.frag'
 import shader18 from './shaders/compiled/18.frag'
 import shader19 from './shaders/compiled/19.frag'
 
-
 //todo dependency injection?
 let THREE, Succulent
 
@@ -79,7 +78,7 @@ class Garden {
   }
 
   setup() {
-    renderer = new THREE.WebGLRenderer({'antialias': false, alpha: false, precision: 'highp'})
+    renderer = new THREE.WebGLRenderer({'antialias': true, alpha: false, precision: 'highp'})
     renderer.setPixelRatio(window.devicePixelRatio)
     renderer.setSize(window.innerWidth, window.innerHeight)
     renderer.setClearColor(new THREE.Color(0x333333, 1.0))
@@ -282,8 +281,7 @@ class Garden {
 
 
   loadShaderMaterials() {
-    const shaderDataUrls = [shader1, shader2, shader3, shader4, shader5, shader6, shader7, shader8, shader9,
-                            shader10, shader11, shader12, shader13, shader14, shader15, shader16, shader17, shader18, shader19]
+    const shaderDataUrls = [shader1, shader8, shader9] // see styles.js to change the indexes in the garden style prese
 
     for (let i = 0; i < shaderDataUrls.length; i++) {
       const shader = shaderDataUrls[i]
@@ -302,8 +300,8 @@ class Garden {
         vertexShader: passThruShader,
         fragmentShader : fragShaders[i],
         side: THREE.DoubleSide,
-        // transparent: false,
-        blending: THREE.AdditiveBlending,
+        transparent: true,
+        blending: THREE.SubtractiveBlending,
         wireframe:false
       });
       shaders.push(shaderMaterial);
@@ -318,13 +316,19 @@ class Garden {
         USE_MAP: ''
       },
       vertexShader: passThruShader,
-      fragmentShader : fragShaders[10],
+      fragmentShader : fragShaders[1],
       side: THREE.DoubleSide,
       // transparent: false,
-      blending: THREE.AdditiveBlending,
+      blending: THREE.AdditiveBlending, // see blending modes below
       wireframe:false
     });
 
+      // THREE.NoBlending = 0;
+      // THREE.NormalBlending = 1;
+      // THREE.AdditiveBlending = 2;
+      // THREE.SubtractiveBlending = 3;
+      // THREE.MultiplyBlending = 4;
+      // THREE.CustomBlending = 5;
   }
 
   //todo method can be static

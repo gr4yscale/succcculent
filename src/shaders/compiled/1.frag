@@ -169,7 +169,7 @@ void main() {
 //  vec3 spots;
 //  spots.x = sin(vUv.x * 100.) + sin(vUv.y * 100.);
 
-  gl_FragColor = vec4( base.x, base.y, base.z, 1.0);
+  gl_FragColor = vec4( base.x, base.y, base.z, 0.5);
  
   //gl_FragColor = vec4( base.x, (base.y * 0.3) + (smoothColors.y * 0.05), (base.z * 0.2) + (smoothColors.z * 0.5), 1. );
   //gl_FragColor = vec4( base.x + (spots.x * 2.0) + 1.0, (base.y * 0.2) + (smoothColors.y * 0.9) * spots.x, base.z - (smoothColors.z * 1.4) * spots.x, 1.);

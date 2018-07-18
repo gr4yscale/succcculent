@@ -176,6 +176,6 @@ base.z = smoothColors.x + (sin(vUv.y * 10.0 + iGlobalTime * 3.0) * sin(vUv.x * 1
 
 float pattern = 0.5 -smoothColors.y * smoothColors.z * spots.x;
 
-gl_FragColor = vec4( 1.0 - base.x - sin(iGlobalTime * pattern) - pattern, base.x, pattern, 1.0);
+gl_FragColor = vec4( 1.0 - base.x - sin(iGlobalTime * pattern) - pattern, base.x, pattern, 0.5);
 
 }
