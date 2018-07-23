@@ -67,11 +67,11 @@ class Garden {
         this.resetPlants() //todo this is necessary to call after generating a random garden because we must update plant positions to complete garden generation. fix this.
 
         // add a ground plane
-        const groundGeom = new THREE.PlaneGeometry(20, 20, 4, 4)
-        groundMesh = new THREE.Mesh(groundGeom, groundShaderMaterial)
-        groundMesh.position.set(0,-0.001, 0)
-        groundMesh.rotation.x = THREE.Math.degToRad(90)
-        scene.add(groundMesh)
+        // const groundGeom = new THREE.PlaneGeometry(20, 20, 4, 4)
+        // groundMesh = new THREE.Mesh(groundGeom, groundShaderMaterial)
+        // groundMesh.position.set(0,-0.001, 0)
+        // groundMesh.rotation.x = THREE.Math.degToRad(90)
+        // scene.add(groundMesh)
 
       }
     })
@@ -131,7 +131,7 @@ class Garden {
       shaders[j].uniforms.iGlobalTime.value = (tick / state.app.shaderTickerSpeed)
     }
 
-    groundShaderMaterial.uniforms.iGlobalTime.value = (tick / state.app.groundShaderTickerSpeed)
+    // groundShaderMaterial.uniforms.iGlobalTime.value = (tick / state.app.groundShaderTickerSpeed)
 
     // update orbit camera controls
     this.orbitControls.handleJoystickRotate(state.app.cameraRotationDeltaX * state.app.joystickSensitivity,
@@ -307,21 +307,7 @@ class Garden {
       shaders.push(shaderMaterial);
     }
 
-    //fixme: DRY this
-    groundShaderMaterial = new THREE.ShaderMaterial({
-      uniforms : {
-        iGlobalTime: { type: 'f', value: 0 }
-      },
-      defines: {
-        USE_MAP: ''
-      },
-      vertexShader: passThruShader,
-      fragmentShader : fragShaders[1],
-      side: THREE.DoubleSide,
-      // transparent: false,
-      blending: THREE.AdditiveBlending, // see blending modes below
-      wireframe:false
-    });
+    // }
 
       // THREE.NoBlending = 0;
       // THREE.NormalBlending = 1;
@@ -329,6 +315,21 @@ class Garden {
       // THREE.SubtractiveBlending = 3;
       // THREE.MultiplyBlending = 4;
       // THREE.CustomBlending = 5;
+    // //fixme: DRY this
+    // groundShaderMaterial = new THREE.ShaderMaterial({
+    //   uniforms : {
+    //     iGlobalTime: { type: 'f', value: 0 }
+    //   },
+    //   defines: {
+    //     USE_MAP: ''
+    //   },
+    //   vertexShader: passThruShader,
+    //   fragmentShader : devFragShader,
+    //   side: THREE.DoubleSide,
+    //   // transparent: false,
+    //   blending: THREE.AdditiveBlending, // see blending modes below
+    //   wireframe:false
+    // });
   }
 
   //todo method can be static
