@@ -4,7 +4,7 @@
 export default [
   {
     name: 'default',
-    shaderIndexes: [0, 1, 2],
+    shaderIndexes: [0],
     petalCountMin: 20,
     petalCountMax: 40,
     petalLengthMin: 0.1,

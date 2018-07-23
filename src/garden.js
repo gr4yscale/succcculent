@@ -25,6 +25,9 @@ import shader17 from './shaders/compiled/17.frag'
 import shader18 from './shaders/compiled/18.frag'
 import shader19 from './shaders/compiled/19.frag'
 
+import devVertShader from './shaders/dev.vert'
+import devFragShader from './shaders/dev.frag'
+
 //todo dependency injection?
 let THREE, Succulent
 
@@ -44,6 +47,7 @@ const passThruShader = `
     gl_Position = projectionMatrix * modelViewMatrix * vec4( position.x, position.y, position.z, 1.0 );
   }
 `
+
 
 class Garden {
   constructor(THREE_, Succulent_, store) {
@@ -281,32 +285,33 @@ class Garden {
 
 
   loadShaderMaterials() {
-    const shaderDataUrls = [shader1, shader8, shader9] // see styles.js to change the indexes in the garden style prese
+    // const shaderDataUrls = [shader1, shader8, shader9] // see styles.js to change the indexes in the garden style prese
+    // const shaderDataUrls = [shaderdev]
+    // for (let i = 0; i < shaderDataUrls.length; i++) {
+    //   const shader = shaderDataUrls[i]
+    //   const shaderDecoded = atob(parseDataUrl(shader).data)
+    //   fragShaders.push(shaderDecoded)
+    // }
 
-    for (let i = 0; i < shaderDataUrls.length; i++) {
-      const shader = shaderDataUrls[i]
-      const shaderDecoded = atob(parseDataUrl(shader).data)
-      fragShaders.push(shaderDecoded)
-    }
+      const devVertShaderDecoded = atob(parseDataUrl(devVertShader).data)
+      const devFragShaderDecoded = atob(parseDataUrl(devFragShader).data)
 
-    for (let i = 0; i < fragShaders.length; i++) {
-      let shaderMaterial = new THREE.ShaderMaterial({
+    // for (let i = 0; i < fragShaders.length; i++) {
+      let shaderMaterial = new THREE.RawShaderMaterial({
         uniforms : {
           iGlobalTime: { type: 'f', value: 0 }
         },
         defines: {
           USE_MAP: ''
         },
-        vertexShader: passThruShader,
-        fragmentShader : fragShaders[i],
+        vertexShader: devVertShaderDecoded,
+        fragmentShader : devFragShaderDecoded,
         side: THREE.DoubleSide,
         transparent: true,
-        blending: THREE.SubtractiveBlending,
+        blending: THREE.NormalBlending,
         wireframe:false
       });
       shaders.push(shaderMaterial);
-    }
-
     // }
 
       // THREE.NoBlending = 0;
@@ -315,6 +320,7 @@ class Garden {
       // THREE.SubtractiveBlending = 3;
       // THREE.MultiplyBlending = 4;
       // THREE.CustomBlending = 5;
+
     // //fixme: DRY this
     // groundShaderMaterial = new THREE.ShaderMaterial({
     //   uniforms : {
