@@ -278,6 +278,9 @@ class Garden {
     // if (plantParams.textureFileName) {
     //   Succulent(shaderMaterial, plantParams, positionSucculent)
     // } else {
+
+      plantParams['mergePetalGeometry'] = false
+
       let succulent = Succulent(shaderMaterial, plantParams)
       positionSucculent(succulent)
     // }
