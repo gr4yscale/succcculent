@@ -25,8 +25,8 @@ import shader17 from './shaders/compiled/17.frag'
 import shader18 from './shaders/compiled/18.frag'
 import shader19 from './shaders/compiled/19.frag'
 
-import devVertShader from './shaders/dev.vert'
 import devFragShader from './shaders/dev.frag'
+import devVertShader from './shaders/dev.vert'
 
 //todo dependency injection?
 let THREE, Succulent
