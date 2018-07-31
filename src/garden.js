@@ -310,8 +310,10 @@ class Garden {
         vertexShader: devVertShaderDecoded,
         fragmentShader : devFragShaderDecoded,
         side: THREE.DoubleSide,
-        transparent: true,
+        transparent: false,
+          // TODO add garden preset for transparent
         blending: THREE.NormalBlending,
+          // TODO add garden preset for blending modes
         wireframe:false
       });
       shaders.push(shaderMaterial);
