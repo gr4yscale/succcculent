@@ -31,6 +31,56 @@ let THREE, Succulent
 let camera, scene, renderer, container
 let boxes, succulents, groundMesh, shaders, fragShaders, groundShaderMaterial
 
+let composer, renderPass, effectCopy
+let bleachFilter, edgeShader, FXAAShader, focusShader, colorCorrectionShader, hueSaturationShader
+
+var dat = require('dat-gui')
+
+
+
+
+
+
+let controlsGUI = new function() {
+    this.bleachOpacity = 1;
+    this.bleach = false;
+    this.edgeDetect = false;
+    this.edgeAspect = 512;
+    this.FXAA = false;
+    this.focus = false;
+    this.sampleDistance = 0.94;
+    this.waveFactor = 0.00125;
+    this.screenWidth = window.innerWidth;
+    this.screenHeight = window.innerHeight;
+
+    this.colorR = 1;
+    this.colorG = 1;
+    this.colorB = 1;
+
+    this.hue = 0;
+    this.saturation = 0;
+
+
+    this.onChange = function () {
+        bleachFilter.enabled = controlsGUI.bleach;
+        bleachFilter.uniforms.opacity.value = controlsGUI.bleachOpacity;
+        edgeShader.enabled = controlsGUI.edgeDetect;
+        edgeShader.uniforms.aspect.value = new THREE.Vector2(controlsGUI.edgeAspect, controlsGUI.edgeAspect);
+        FXAAShader.enabled = controlsGUI.FXAA;
+        FXAAShader.uniforms.resolution.value = new THREE.Vector2(1 / window.innerWidth, 1 / window.innerHeight);
+        focusShader.enabled = controlsGUI.focus;
+        focusShader.uniforms.screenWidth.value = controlsGUI.screenWidth;
+        focusShader.uniforms.screenHeight.value = controlsGUI.screenHeight;
+        focusShader.uniforms.waveFactor.value = controlsGUI.waveFactor;
+        focusShader.uniforms.sampleDistance.value = controlsGUI.sampleDistance;
+
+        // colorCorrectionShader.uniforms.mulRGB.value.set(controlsGUI.colorR, controlsGUI.colorG, controlsGUI.colorB)
+        hueSaturationShader.uniforms.hue.value = controlsGUI.hue
+        hueSaturationShader.uniforms.saturation.value = controlsGUI.saturation
+    }
+}
+
+
 
 const passThruShader = `
   precision highp float;
@@ -78,7 +128,26 @@ class Garden {
   }
 
   setup() {
-    renderer = new THREE.WebGLRenderer({'antialias': true, alpha: false, precision: 'highp'})
+
+      let gui = new dat.GUI()
+
+      gui.add(controlsGUI, 'bleach').onChange(controlsGUI.onChange);
+      gui.add(controlsGUI, 'bleachOpacity', 0, 2).onChange(controlsGUI.onChange);
+      gui.add(controlsGUI, 'edgeDetect').onChange(controlsGUI.onChange);
+      gui.add(controlsGUI, 'edgeAspect', 128, 2048).step(128).onChange(controlsGUI.onChange);
+      gui.add(controlsGUI, 'FXAA').onChange(controlsGUI.onChange);
+      gui.add(controlsGUI, 'focus').onChange(controlsGUI.onChange);
+      gui.add(controlsGUI, 'sampleDistance', 0, 2).step(0.01).onChange(controlsGUI.onChange);
+      gui.add(controlsGUI, 'waveFactor', 0, 0.005).step(0.0001).onChange(controlsGUI.onChange);
+
+      gui.add(controlsGUI, 'colorR', 0, 1).onChange(controlsGUI.onChange);
+      gui.add(controlsGUI, 'colorG', 0, 1).onChange(controlsGUI.onChange);
+      gui.add(controlsGUI, 'colorB', 0, 1).onChange(controlsGUI.onChange);
+
+      gui.add(controlsGUI, 'hue', -1, 1).onChange(controlsGUI.onChange);
+      gui.add(controlsGUI, 'saturation', -1, 1).onChange(controlsGUI.onChange);
+
+      renderer = new THREE.WebGLRenderer({'antialias': true, alpha: false, precision: 'highp'})
     renderer.setPixelRatio(window.devicePixelRatio)
     renderer.setSize(window.innerWidth, window.innerHeight)
     renderer.setClearColor(new THREE.Color(0x333333, 1.0))
@@ -98,6 +167,34 @@ class Garden {
     this.orbitControls = new THREE.OrbitControls(camera, renderer.domElement)
 
     this.loadShaderMaterials() // need to make sure this happens before the garden resets
+
+      // create the shaders
+      // overlay of black and white
+      bleachFilter = new THREE.ShaderPass(THREE.BleachBypassShader);
+      bleachFilter.enabled = false;
+      edgeShader = new THREE.ShaderPass(THREE.EdgeShader);
+      edgeShader.enabled = false;
+      FXAAShader = new THREE.ShaderPass(THREE.FXAAShader);
+      FXAAShader.enabled = false;
+      focusShader = new THREE.ShaderPass(THREE.FocusShader);
+      focusShader.enabled = false;
+      colorCorrectionShader = new THREE.ShaderPass(THREE.ColorCorrectionShader);
+      hueSaturationShader = new THREE.ShaderPass(THREE.HueSaturationShader);
+
+      renderPass = new THREE.RenderPass(scene, camera);
+      effectCopy = new THREE.ShaderPass(THREE.CopyShader);
+      effectCopy.renderToScreen = true;
+
+      composer = new THREE.EffectComposer(renderer);
+
+      composer.addPass(renderPass);
+      composer.addPass(bleachFilter);
+      composer.addPass(edgeShader);
+      composer.addPass(FXAAShader);
+      composer.addPass(focusShader);
+      composer.addPass(hueSaturationShader);
+
+      composer.addPass(effectCopy);
 
     this.update()
   }
@@ -143,7 +240,11 @@ class Garden {
                                          state.app.cameraPositionDeltaY * state.app.joystickSensitivity)
     this.orbitControls.update()
 
-    renderer.render(scene, camera)
+    //renderer.render(scene, camera)
+
+      composer.render();
+
+
     requestAnimationFrame(this.update.bind(this))
   }
 
@@ -281,7 +382,8 @@ class Garden {
 
 
   loadShaderMaterials() {
-    const shaderDataUrls = [shader1, shader8, shader9] // see styles.js to change the indexes in the garden style prese
+   // const shaderDataUrls = [shader1, shader8, shader9] // see styles.js to change the indexes in the garden style prese
+      const shaderDataUrls = [shader1, shader2, shader3, shader4, shader5, shader6, shader7, shader8, shader9, shader10, shader11, shader12]
 
     for (let i = 0; i < shaderDataUrls.length; i++) {
       const shader = shaderDataUrls[i]
@@ -316,10 +418,10 @@ class Garden {
         USE_MAP: ''
       },
       vertexShader: passThruShader,
-      fragmentShader : fragShaders[1],
+      fragmentShader : fragShaders[4],
       side: THREE.DoubleSide,
       // transparent: false,
-      blending: THREE.AdditiveBlending, // see blending modes below
+      blending: THREE.SubtractiveBlending, // see blending modes below
       wireframe:false
     });
 
