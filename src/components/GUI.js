@@ -13,12 +13,13 @@ const Container = styled.div`
   right:0px;
   bottom:0px;
   width: 500px;
-  background-color: #00ff00;
+  background-color: transparent;
+  color: #ffffff;
 `
 const ButtonGenGarden = styled.div`
   flex: 0.2;
-  background-color: #ff0022;
-  display: flex;
+  // display: flex;
+  display: none;
 `
 
 const SliderContainer = styled.div`
