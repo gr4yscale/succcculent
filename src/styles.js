@@ -4,7 +4,7 @@
 export default [
   {
     name: 'default',
-    shaderIndexes: [0, 1, 2, 3, 4, 5, 6,7 ,8, 9, 10, 11],
+    shaderIndexes: [0],
     petalCountMin: 20,
     petalCountMax: 40,
     petalLengthMin: 0.1,
@@ -40,7 +40,8 @@ export default [
   },
   {
     name: 'default, more tightly constrained with more extreme medians',
-    shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+    // shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+      shaderIndexes: [0],
     petalCountMin: 80,
     petalCountMax: 100,
     petalLengthMin: 0.6,
@@ -58,7 +59,8 @@ export default [
   },
   {
     name: 'tree-like spirals',
-    shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+    // shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+      shaderIndexes: [0],
     petalCountMin: 40,
     petalCountMax: 100,
     petalLengthMin: 4.0,
@@ -76,7 +78,8 @@ export default [
   },
   {
     name: 'tree-like spirals with more variation',
-    shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+    // shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+      shaderIndexes: [0],
     petalCountMin: 10,
     petalCountMax: 60,
     petalLengthMin: 0.1,
@@ -94,7 +97,8 @@ export default [
   },
   {
     name: 'tree-like spirals, hairy/spikey',
-    shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+    // shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+      shaderIndexes: [0],
     petalCountMin: 100,
     petalCountMax: 200,
     petalLengthMin: 0.5,
@@ -112,7 +116,8 @@ export default [
   },
   {
     name: 'tree-like spirals, hairy/spikey',
-    shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+    // shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+      shaderIndexes: [0],
     petalCountMin: 100,
     petalCountMax: 200,
     petalLengthMin: 0.5,
@@ -130,7 +135,8 @@ export default [
   },
   {
     name: 'spikey af #2',
-    shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+    // shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+      shaderIndexes: [0],
     petalCountMin: 36,
     petalCountMax: 36,
     petalLengthMin: 1.86,
@@ -148,7 +154,8 @@ export default [
   },
   {
     name: 'seashell',
-    shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+    // shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+      shaderIndexes: [0],
     petalCountMin: 72,
     petalCountMax: 78,
     petalLengthMin: 0.6,
@@ -166,7 +173,8 @@ export default [
   },
   {
     name: 'thin hair',
-    shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+    // shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+      shaderIndexes: [0],
     petalCountMin: 20,
     petalCountMax: 60,
     petalLengthMin: 3.40,
@@ -184,7 +192,8 @@ export default [
   },
   {
     name: 'mature, hairy (oooo that sounds naughty...no, im not into that)',
-    shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+    // shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+      shaderIndexes: [0],
     petalCountMin: 120,
     petalCountMax: 130,
     petalLengthMin: 3.40,
@@ -202,7 +211,8 @@ export default [
   },
   {
     name: 'pointy, but star-shaped',
-    shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+    // shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+      shaderIndexes: [0],
     petalCountMin: 24,
     petalCountMax: 48,
     petalLengthMin: 0.40,
@@ -220,7 +230,8 @@ export default [
   },
   {
     name: 'pointy',
-    shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+    // shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+      shaderIndexes: [0],
     petalCountMin: 32,
     petalCountMax: 38,
     petalLengthMin: 0.40,
@@ -238,7 +249,8 @@ export default [
   },
   {
     name: 'lots of variety',
-    shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+    // shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+      shaderIndexes: [0],
     petalCountMin: 12,
     petalCountMax: 24,
     petalLengthMin: 1.0,
@@ -256,7 +268,8 @@ export default [
   },
   {
     name: 'super tall, spikey/hairy, spiral-y',
-    shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+    // shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+      shaderIndexes: [0],
     petalCountMin: 12,
     petalCountMax: 300,
     petalLengthMin: 1.0,
@@ -274,7 +287,8 @@ export default [
   },
   {
     name: 'super tall, spikey/hairy, spiral-y #2',
-    shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+    // shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+      shaderIndexes: [0],
     petalCountMin: 12,
     petalCountMax: 300,
     petalLengthMin: 1.0,
@@ -292,7 +306,8 @@ export default [
   },
   {
     name: 'super tall, spikey, alien #2',
-    shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+    // shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+      shaderIndexes: [0],
     petalCountMin: 8,
     petalCountMax: 20,
     petalLengthMin: 1.0,
@@ -310,7 +325,8 @@ export default [
   },
   {
     name: 'coney, spikey',
-    shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+    // shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+      shaderIndexes: [0],
     petalCountMin: 100,
     petalCountMax: 140,
     petalLengthMin: 4.5,
@@ -328,7 +344,8 @@ export default [
   },
   {
     name: 'a bit hairy',
-    shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+    // shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+      shaderIndexes: [0],
     petalCountMin: 40,
     petalCountMax: 60,
     petalLengthMin: 0.6,
@@ -346,7 +363,8 @@ export default [
   },
   {
     name: 'more extreeeeme',
-    shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+    // shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+      shaderIndexes: [0],
     petalCountMin: 4,
     petalCountMax: 200,
     petalLengthMin: 0.1,
@@ -364,7 +382,8 @@ export default [
   },
   {
     name: 'extreeeeme but not so lengthy',
-    shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+    // shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+      shaderIndexes: [0],
     petalCountMin: 4,
     petalCountMax: 50,
     petalLengthMin: 0.1,
@@ -382,7 +401,8 @@ export default [
   },
   {
     name: 'tallness',
-    shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+    // shaderIndexes: [0,1,2,3,4,5,6,7,8,9,10,11,12,13],
+      shaderIndexes: [0],
     petalCountMin: 50,
     petalCountMax: 75,
     petalLengthMin: 1.20,

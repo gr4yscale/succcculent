@@ -3,8 +3,7 @@ import {getRandomArbitrary} from "../../util"
 import styles from '../../styles'
 
 const initialState = {
-  selectedStyleIndex: 0, //todo unnecessary?
-  selectedPresetIndex: 0,
+  selectedStyleIndex: 5, //todo unnecessary?
   numPlantsForNextGeneration: 50,
   selectedStyle: styles[0],
 

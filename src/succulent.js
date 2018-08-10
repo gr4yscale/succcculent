@@ -9,7 +9,7 @@ export default (THREE) => {
     var layers = plantParams['layers']
     var petalLength = plantParams['petalLength']
     var petalWidth = plantParams['petalWidth']
-
+    var mergePetalGeometry = plantParams['mergePetalGeometry']
 
     var petalFunc = function (u, v) {
       var curve = Math.pow(u * 4.0, curveAmountD) * curveAmountA; // * (Math.pow(u, 0.9));
@@ -29,12 +29,17 @@ export default (THREE) => {
       if (texture) {
         shaderMaterial = new THREE.MeshBasicMaterial({map: texture, side: THREE.DoubleSide});
       }
-      var parametricGeometry = new THREE.ParametricGeometry(petalFunc, 6, 6);
 
-      var bufferGeom = new THREE.BufferGeometry()
-      bufferGeom.fromGeometry(parametricGeometry)
-      return new THREE.Mesh(bufferGeom, shaderMaterial);
-      // return new THREE.Mesh(parametricGeometry, shaderMaterial);
+      var parametricGeometry = new THREE.ParametricGeometry(petalFunc, 11, 11);
+      parametricGeometry.computeVertexNormals()
+
+        if (mergePetalGeometry === true) {
+            return new THREE.Mesh(parametricGeometry, shaderMaterial);
+        } else {
+            var bufferGeom = new THREE.BufferGeometry()
+            bufferGeom.fromGeometry(parametricGeometry)
+            return new THREE.Mesh(bufferGeom, shaderMaterial);
+        }
     }
 
     // var updatePlantWithTextureMaterial = function(texture) {
@@ -66,8 +71,13 @@ export default (THREE) => {
         petalMesh.scale.z = scale;
 
         petalMesh.updateMatrix();
-        // singleGeometry.merge(petalMesh.geometry, petalMesh.matrix);
-        singleMesh.add(petalMesh)
+
+        if (mergePetalGeometry === true) {
+            singleGeometry.merge(petalMesh.geometry, petalMesh.matrix);
+            singleGeometry.computeVertexNormals()
+        } else {
+            singleMesh.add(petalMesh)
+        }
       }
 
       // var instanceGeom = createInstancedGeometry(singleGeometry, shaderMaterial)

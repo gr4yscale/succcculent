@@ -25,6 +25,9 @@ import shader17 from './shaders/compiled/17.frag'
 import shader18 from './shaders/compiled/18.frag'
 import shader19 from './shaders/compiled/19.frag'
 
+import devFragShader from './shaders/dev.frag'
+import devVertShader from './shaders/dev.vert'
+
 //todo dependency injection?
 let THREE, Succulent
 
@@ -95,6 +98,7 @@ const passThruShader = `
   }
 `
 
+
 class Garden {
   constructor(THREE_, Succulent_, store) {
     THREE = THREE_
@@ -117,11 +121,11 @@ class Garden {
         this.resetPlants() //todo this is necessary to call after generating a random garden because we must update plant positions to complete garden generation. fix this.
 
         // add a ground plane
-        const groundGeom = new THREE.PlaneGeometry(20, 20, 4, 4)
-        groundMesh = new THREE.Mesh(groundGeom, groundShaderMaterial)
-        groundMesh.position.set(0,-0.001, 0)
-        groundMesh.rotation.x = THREE.Math.degToRad(90)
-        scene.add(groundMesh)
+        // const groundGeom = new THREE.PlaneGeometry(20, 20, 4, 4)
+        // groundMesh = new THREE.Mesh(groundGeom, groundShaderMaterial)
+        // groundMesh.position.set(0,-0.001, 0)
+        // groundMesh.rotation.x = THREE.Math.degToRad(90)
+        // scene.add(groundMesh)
 
       }
     })
@@ -228,7 +232,7 @@ class Garden {
       shaders[j].uniforms.iGlobalTime.value = (tick / state.app.shaderTickerSpeed)
     }
 
-    groundShaderMaterial.uniforms.iGlobalTime.value = (tick / state.app.groundShaderTickerSpeed)
+    // groundShaderMaterial.uniforms.iGlobalTime.value = (tick / state.app.groundShaderTickerSpeed)
 
     // update orbit camera controls
     this.orbitControls.handleJoystickRotate(state.app.cameraRotationDeltaX * state.app.joystickSensitivity,
@@ -375,6 +379,9 @@ class Garden {
     // if (plantParams.textureFileName) {
     //   Succulent(shaderMaterial, plantParams, positionSucculent)
     // } else {
+
+      plantParams['mergePetalGeometry'] = false
+
       let succulent = Succulent(shaderMaterial, plantParams)
       positionSucculent(succulent)
     // }
@@ -384,46 +391,40 @@ class Garden {
   loadShaderMaterials() {
    // const shaderDataUrls = [shader1, shader8, shader9] // see styles.js to change the indexes in the garden style prese
       const shaderDataUrls = [shader1, shader2, shader3, shader4, shader5, shader6, shader7, shader8, shader9, shader10, shader11, shader12]
+    // const shaderDataUrls = [shader1, shader8, shader9] // see styles.js to change the indexes in the garden style prese
+    // const shaderDataUrls = [shaderdev]
+    // for (let i = 0; i < shaderDataUrls.length; i++) {
+    //   const shader = shaderDataUrls[i]
+    //   const shaderDecoded = atob(parseDataUrl(shader).data)
+    //   fragShaders.push(shaderDecoded)
+    // }
 
-    for (let i = 0; i < shaderDataUrls.length; i++) {
-      const shader = shaderDataUrls[i]
-      const shaderDecoded = atob(parseDataUrl(shader).data)
-      fragShaders.push(shaderDecoded)
-    }
+      const devVertShaderDecoded = atob(parseDataUrl(devVertShader).data)
+      const devFragShaderDecoded = atob(parseDataUrl(devFragShader).data)
 
-    for (let i = 0; i < fragShaders.length; i++) {
-      let shaderMaterial = new THREE.ShaderMaterial({
+    // for (let i = 0; i < fragShaders.length; i++) {
+      let shaderMaterial = new THREE.RawShaderMaterial({
         uniforms : {
           iGlobalTime: { type: 'f', value: 0 }
         },
         defines: {
           USE_MAP: ''
         },
-        vertexShader: passThruShader,
-        fragmentShader : fragShaders[i],
+        vertexShader: devVertShaderDecoded,
+        fragmentShader : devFragShaderDecoded,
         side: THREE.DoubleSide,
-        transparent: true,
-        blending: THREE.SubtractiveBlending,
+        transparent: false,
+          // TODO add garden preset for transparent
+        blending: THREE.NormalBlending,
+          // TODO add garden preset for blending modes
         wireframe:false
       });
       shaders.push(shaderMaterial);
     }
 
     //fixme: DRY this
-    groundShaderMaterial = new THREE.ShaderMaterial({
-      uniforms : {
-        iGlobalTime: { type: 'f', value: 0 }
-      },
-      defines: {
-        USE_MAP: ''
-      },
-      vertexShader: passThruShader,
-      fragmentShader : fragShaders[4],
-      side: THREE.DoubleSide,
-      // transparent: false,
-      blending: THREE.SubtractiveBlending, // see blending modes below
-      wireframe:false
-    });
+
+    // }
 
       // THREE.NoBlending = 0;
       // THREE.NormalBlending = 1;
@@ -431,7 +432,23 @@ class Garden {
       // THREE.SubtractiveBlending = 3;
       // THREE.MultiplyBlending = 4;
       // THREE.CustomBlending = 5;
-  }
+
+    // //fixme: DRY this
+    // groundShaderMaterial = new THREE.ShaderMaterial({
+    //   uniforms : {
+    //     iGlobalTime: { type: 'f', value: 0 }
+    //   },
+    //   defines: {
+    //     USE_MAP: ''
+    //   },
+    //   vertexShader: passThruShader,
+    //   fragmentShader : devFragShader,
+    //   side: THREE.DoubleSide,
+    //   // transparent: false,
+    //   blending: THREE.AdditiveBlending, // see blending modes below
+    //   wireframe:false
+    // });
+  //}
 
   //todo method can be static
   resize() {

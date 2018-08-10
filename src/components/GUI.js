@@ -13,11 +13,12 @@ const Container = styled.div`
   right:0px;
   bottom:0px;
   width: 500px;
-  background-color: #00ff00;
+  background-color: transparent;
 `
 const ButtonGenGarden = styled.div`
   flex: 0.2;
   background-color: #ff0022;
+  opacity: 0.2;
   display: flex;
 `
 
