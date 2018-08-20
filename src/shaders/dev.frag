@@ -7,8 +7,8 @@ const 	vec3	ofreq	=	vec3(8.0, 8.0, 8.0),		// Frequency of iridescent orientantio
 				ooset	=	vec3(0.0, 0.0, 0.0),		// Offset of iridescent orientantion part.
 				noset	=	vec3(0.0, 0.0, 0.0);		// Offset of iridescent noise part.
 const 	float	nmult	=	1.0,						// Controls the intensity of noise.
-				gamma	=	0.75,						// Gamma correction applied to incidence value (fr).
-				minvl	=	0.0;						// Incident distribution curve control, applied after gamma correction.
+				gamma	=	0.85,						// Gamma correction applied to incidence value (fr).
+				minvl	=	0.1;						// Incident distribution curve control, applied after gamma correction.
 
 uniform float iGlobalTime;
 
@@ -51,17 +51,17 @@ void main() {
     _space = pow(1.0 - fr, 1.0/gamma);
     _incidence = setRange(_space, 0.0, 1.0, minvl, 1.0);
     _iridColor = iridescence(fr, nmult, ofreq, ooset, nfreq, noset);
-// _iridColor = iridescence(fr + (iGlobalTime * 0.1), nmult, ofreq, ooset, nfreq, noset);
+// _iridColor = iridescence(fr + (iGlobalTime * 0.01), nmult, ofreq, ooset, nfreq, noset);
 
 //  vec3 lpos = vec3(0.0, -100.0, 10.0);
-    vec3 ldiffuse = vec3(0.0, 0.0, 1.0); // keeping these low will decrease contrast
 //  vec3 ldir = lpos - P.xyz;
-    vec3 ldir = vec3(0.0, -0.5, -0.5);
+    vec3 ldiffuse = vec3(1.0, 1.0, 1.0); // keeping these low will decrease contrast
+    vec3 ldir = vec3(0.5, -1.0, 0.5);
     vec3 l = ldiffuse * lambert(vNormal, ldir);
 
- gl_FragColor = vec4(l, 1.0);
- // gl_FragColor = vec4(_iridColor.r * l.r, _iridColor.g * l.g, _iridColor.b * l.b, 1.0) * _incidence;
-// gl_FragColor = vec4(_iridColor.r, _iridColor.g, _iridColor.b, 1.0) * _incidence;
-// gl_FragColor = vec4(l, 0.4);
+ gl_FragColor = vec4(_iridColor.r * l.r, _iridColor.g * l.g, _iridColor.b * l.b, 1.0) * _incidence;
+// gl_FragColor = vec4(l, 1.0);
 // gl_FragColor = vec4( 1.0, 1.0, 1.0, 1.0);
+
+// gl_FragColor = vec4(_iridColor.r, _iridColor.g, _iridColor.b, 1.0) * _incidence;
 }

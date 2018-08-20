@@ -124,12 +124,12 @@ class Garden {
         )
         this.resetPlants() //todo this is necessary to call after generating a random garden because we must update plant positions to complete garden generation. fix this.
 
-        // add a ground plane
-        const groundGeom = new THREE.PlaneGeometry(20, 20, 4, 4)
-        groundMesh = new THREE.Mesh(groundGeom, groundShaderMaterial)
-        groundMesh.position.set(0,-0.001, 0)
-        groundMesh.rotation.x = THREE.Math.degToRad(90)
-        scene.add(groundMesh)
+        // // add a ground plane
+        // const groundGeom = new THREE.PlaneGeometry(20, 20, 4, 4)
+        // groundMesh = new THREE.Mesh(groundGeom, groundShaderMaterial)
+        // groundMesh.position.set(0,-0.001, 0)
+        // groundMesh.rotation.x = THREE.Math.degToRad(90)
+        // scene.add(groundMesh)
 
       }
     })
@@ -160,6 +160,7 @@ class Garden {
     renderer.setPixelRatio(window.devicePixelRatio)
     renderer.setSize(window.innerWidth, window.innerHeight)
     renderer.setClearColor(new THREE.Color(0x333333, 1.0))
+    //   renderer.setClearColor(new THREE.Color(0xFF0000, 1.0))
 
     container = document.getElementById('WebGLRender')
     container.appendChild(renderer.domElement)
@@ -170,7 +171,7 @@ class Garden {
     camera.position.set(0, 0.35, 0.75)
     scene.add(camera)
 
-    setupLights(THREE, scene)
+    // setupLights(THREE, scene)
 
     //add orbit controls for mouse interactions
     this.orbitControls = new THREE.OrbitControls(camera, renderer.domElement)
@@ -249,7 +250,7 @@ class Garden {
                                          state.app.cameraPositionDeltaY * state.app.joystickSensitivity)
     this.orbitControls.update()
 
-    //renderer.render(scene, camera)
+    // renderer.render(scene, camera)
 
       composer.render();
 
@@ -385,7 +386,8 @@ class Garden {
     //   Succulent(shaderMaterial, plantParams, positionSucculent)
     // } else {
 
-      plantParams['mergePetalGeometry'] = false
+      // plantParams['mergePetalGeometry'] = false
+      plantParams['mergePetalGeometry'] = true
 
       let succulent = Succulent(shaderMaterial, plantParams)
       positionSucculent(succulent)
@@ -405,7 +407,6 @@ class Garden {
       const devVertShaderDecoded = atob(parseDataUrl(devVertShader).data)
       const devFragShaderDecoded = atob(parseDataUrl(devFragShader).data)
 
-    // for (let i = 0; i < fragShaders.length; i++) {
       let shaderMaterial = new THREE.RawShaderMaterial({
         uniforms : {
           iGlobalTime: { type: 'f', value: 0 }
@@ -416,11 +417,11 @@ class Garden {
         vertexShader: devVertShaderDecoded,
         fragmentShader : devFragShaderDecoded,
         side: THREE.DoubleSide,
-        transparent: false,
+        transparent:false,
           // TODO add garden preset for transparent
         blending: THREE.NormalBlending,
           // TODO add garden preset for blending modes
-        wireframe:false
+        wireframe: false
       });
       shaders.push(shaderMaterial);
     // }
