@@ -63,6 +63,8 @@ let controlsGUI = new function() {
     this.hue = 0;
     this.saturation = 0;
 
+    this.fov = 65;
+
 
     this.onChange = function () {
         bleachFilter.enabled = controlsGUI.bleach;
@@ -80,6 +82,8 @@ let controlsGUI = new function() {
         // colorCorrectionShader.uniforms.mulRGB.value.set(controlsGUI.colorR, controlsGUI.colorG, controlsGUI.colorB)
         hueSaturationShader.uniforms.hue.value = controlsGUI.hue
         hueSaturationShader.uniforms.saturation.value = controlsGUI.saturation
+        camera.setFocalLength(controlsGUI.fov)
+        camera.updateProjectionMatrix()
     }
 }
 
@@ -150,6 +154,7 @@ class Garden {
 
       gui.add(controlsGUI, 'hue', -1, 1).onChange(controlsGUI.onChange);
       gui.add(controlsGUI, 'saturation', -1, 1).onChange(controlsGUI.onChange);
+      gui.add(controlsGUI, 'fov', 0, 100).onChange(controlsGUI.onChange);
 
       renderer = new THREE.WebGLRenderer({'antialias': true, alpha: false, precision: 'highp'})
     renderer.setPixelRatio(window.devicePixelRatio)
