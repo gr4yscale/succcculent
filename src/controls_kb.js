@@ -1,4 +1,3 @@
-let events = require('./events.js')
 var kb = exports
 
 kb.buttonIdentifierToEventIdentifier = {
@@ -9,4 +8,9 @@ kb.buttonIdentifierToEventIdentifier = {
   'n': events.CAMERA_CONTROLS_RESET,
   's': events.SAVE_GARDEN_TO_PRESET_FILE,
   'q': events.LOAD_GARDEN_FROM_PRESET_FILE
+}
+
+// Keyboard
+function handleKeyPress(e) {
+    buttonPressed(e.key) // TOFIX: Fucking ES5! Gotta move this over to ES6 soon...
 }

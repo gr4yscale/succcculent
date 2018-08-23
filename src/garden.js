@@ -450,7 +450,7 @@ class Garden {
     // });
   }
 
-  //todo method can be static
+  // TOFIX: method can be static
   resize() {
     let width = container.offsetWidth
     let height = container.offsetHeight
@@ -458,6 +458,49 @@ class Garden {
     camera.updateProjectionMatrix()
     renderer.setSize(width, height)
   }
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+// TOFIX: CAMERA CONTROLS
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+    function updateCameraWithOrbitControls() {
+        orbitControls.handleJoystickRotate(cameraRotationDeltaX * joystickSensitivity, cameraRotationDeltaY * joystickSensitivity)
+        orbitControls.handleJoystickDolly(cameraDollyDelta * cameraDollySensitivity)
+        orbitControls.handleJoystickPan(cameraPositionDeltaX * joystickSensitivity, cameraPositionDeltaY * joystickSensitivity)
+        orbitControls.update()
+    }
+
+    function cameraReset() {
+        this.camera.position.set(0, 0.35, 0.75)
+        this.orbitControls.target.set(0,0,0)
+    }
+
+    function resetCameraDeltas() {
+        cameraRotationDeltaX = 0
+        cameraRotationDeltaY = 0
+        cameraPositionDeltaY = 0
+        cameraPositionDeltaX = 0
+        cameraDollyDelta = 1.0
+    }
+
+    function updateFromPresetData(data) {
+    // sloppy, this tries to handle the conditions of setting camera preset for either first person or orbit controls
+        if (!data) {
+            console.log('Expected there to be some camera preset data, but there wasnt! ******')
+            return
+        }
+        var matrix = new THREE.Matrix4();
+        matrix.fromArray(data.controlsOrbitMatrix)
+        // apply position, quaternion, and scale from the matrix coming from presets to the camera using decompose()
+        matrix.decompose(this.camera.position, this.camera.quaternion, this.camera.scale)
+        // orbit controls needed the center property to be updated to properly position the camera after a pan, argh
+        let updatedTarget = data.controlsOrbitTarget
+        this.orbitControls.target.set(updatedTarget.x, updatedTarget.y, updatedTarget.z)
+    }
+
+
 }
 
 export default Garden

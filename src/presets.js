@@ -1,17 +1,21 @@
-import {getRandomArbitrary} from "./util"
+// import {getRandomArbitrary} from "./util"
 
-let fileReader = new FileReader()
+// This is all REDUCER behaviors
+// let fileReader = new FileReader()
+// var Presets = function() {
+//   this.selectedStyleIndex = 0
+//   this.styles = require('./styles')
+//   this.data = []
+//   this.selectedPresetIndex = 0
+//   this.lastGeneratedPresetData = {}
+//   this.generateNewPlantsWithTextures = false
+// }
 
-var Presets = function() {
-  this.selectedStyleIndex = 0
-  this.styles = require('./styles')
-  this.data = []
-  this.selectedPresetIndex = 0
-  this.lastGeneratedPresetData = {}
-  this.generateNewPlantsWithTextures = false
-}
-// TOFIX: load up the proper shader materials when we switch between presets
+/////////////////////////////////////////////////////////
+// FILE behaviors
+/////////////////////////////////////////////////////////
 Presets.prototype.load = function(callback) {
+  // TOFIX: load up the proper shader materials when we switch between presets
   // hacky, assumes there's a dom element with id of filepicker. good thing that there is! ;p
   let selectedFile = document.getElementById('filepicker').files[0]
   console.log('Loading presets file: ' + selectedFile)
@@ -26,6 +30,31 @@ Presets.prototype.load = function(callback) {
   }
   fileReader.readAsText(selectedFile)
 }
+
+Presets.prototype.save = function(fileName) {
+    saveData(this.data, fileName)
+}
+
+/////////////////////////////////////////////////////////
+// Garden generation
+/////////////////////////////////////////////////////////
+
+Presets.prototype.saveLastGeneratedPresetForSelectedIndex = function() {
+    this.data[this.selectedPresetIndex] = this.lastGeneratedPresetData
+}
+
+Presets.prototype.select = function(index) {
+    this.selectedPresetIndex = index
+}
+
+Presets.prototype.addNew = function() {
+    this.data.push({'foo':'bar'})
+    this.data[this.data.length - 1] = this.generatePlantParams()
+}
+
+/////////////////////////////////////////////////////////
+// Garden
+/////////////////////////////////////////////////////////
 
 // TOFIX: load up a specfic preset from a selectedPresetIndex
 Presets.prototype.generatePlantParams = function(numberOfPlants, numberOfShaders, state) {
@@ -99,11 +128,6 @@ Presets.prototype.generatePlantParams = function(numberOfPlants, numberOfShaders
   return preset
 }
 
-Presets.prototype.selectedPresetCameraMap = function() {
-  let presetData = this.data[this.selectedPresetIndex]
-  if (presetData) return presetData.cameraMap
-}
-
 Presets.prototype.plantParams = function(index) {
   if (!this.data[this.selectedPresetIndex]) {
     console.log('Error! Tried to get plant params, but they didnt exist for the selected preset index! ****')
@@ -113,8 +137,16 @@ Presets.prototype.plantParams = function(index) {
   }
 }
 
-Presets.prototype.save = function(fileName) {
-  saveData(this.data, fileName)
+Presets.prototype.selectedStyle = function() {
+    return this.styles[this.selectedStyleIndex]
+}
+
+/////////////////////////////////////////////////////////
+// Camera map
+
+Presets.prototype.selectedPresetCameraMap = function() {
+    let presetData = this.data[this.selectedPresetIndex]
+    if (presetData) return presetData.cameraMap
 }
 
 Presets.prototype.updateCameraMap = function(key, camera, data) {
@@ -127,25 +159,8 @@ Presets.prototype.updateCameraMap = function(key, camera, data) {
   }
 }
 
-Presets.prototype.addNew = function() {
-  this.data.push({'foo':'bar'})
-  this.data[this.data.length - 1] = this.generatePlantParams()
-}
-
-Presets.prototype.saveLastGeneratedPresetForSelectedIndex = function() {
-  this.data[this.selectedPresetIndex] = this.lastGeneratedPresetData
-}
-
-Presets.prototype.select = function(index) {
-  this.selectedPresetIndex = index
-}
-
-Presets.prototype.selectedPresetData = function() {
-  return this.data[this.selectedPresetIndex]
-}
-
-Presets.prototype.selectedStyle = function() {
-  return this.styles[this.selectedStyleIndex]
-}
-
 module.exports = Presets
+
+// Presets.prototype.selectedPresetData = function() {
+//     return this.data[this.selectedPresetIndex]
+// }
