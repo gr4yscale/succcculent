@@ -6,7 +6,7 @@ const initialState = {
   selectedStyleIndex: 5, //todo unnecessary?
   selectedPresetIndex: 5,
   numPlantsForNextGeneration: 10,
-  selectedStyle: styles[14],
+  selectedStyle: styles[0],
 
   adHocGardenGenerationEnabled: false,
   adHocPlantParamsPetalCount: 36,

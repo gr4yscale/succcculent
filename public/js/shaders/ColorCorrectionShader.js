@@ -9,7 +9,7 @@ THREE.ColorCorrectionShader = {
 	uniforms: {
 
 		"tDiffuse": { type: "t", value: null },
-		"powRGB":   { type: "v3", value: new THREE.Vector3( 2, 2, 2 ) },
+		"powRGB":   { type: "v3", value: new THREE.Vector3( 0.6, 0.6, 0.6 ) },
 		"mulRGB":   { type: "v3", value: new THREE.Vector3( 1, 1, 1 ) }
 
 	},

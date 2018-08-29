@@ -2,6 +2,9 @@
 // make all LED update calls private and expose an update() func
 // TOFIX: devise a scheme to maintain visual state of APC40 grid based on underlying state (presets, controls, etc)
 
+import lerp from utils.lerp
+import WebMidi from  'webmidi'
+
 export default store => {
 
     const MAIN_GRID_LED_STATES = {
@@ -107,9 +110,71 @@ export default store => {
     ]
 
 
+    const webmidi = WebMidi()
+
 ///////////////////////////////////////////////////////////////
 // public
 ///////////////////////////////////////////////////////////////
+
+    const logControlSurfaceEvents = true
+    let interval = 0.001
+    let outputAPC40
+
+
+    function setup() {
+        midi.enable((err) => {
+            if (err) {
+                console.log('WebMidi could not be enabled.', err)
+                console.log(err)
+                return
+            } else {
+                console.log('WebMidi enabled! Inputs found: \n' + midi.inputs)
+            }
+
+            let inputAPC40 = midi.getInputByName("Akai APC40")
+            outputAPC40 = midi.getOutputByName("Akai APC40")
+
+            // let inputTouchOSC = midi.getInputByName("TouchOSC Bridge")
+            // let inputAudioAnalysis = midi.getInputByName("From VDMX")
+
+            if (inputAPC40) {
+                inputAPC40.addListener('noteoff', "all", handleUnhandledMidiEvent)
+                inputAPC40.addListener('pitchbend', "all", handleUnhandledMidiEvent)
+                inputAPC40.addListener('channelaftertouch', "all", handleUnhandledMidiEvent)
+                inputAPC40.addListener('programchange', "all", handleUnhandledMidiEvent)
+                inputAPC40.addListener('channelmode', "all", handleUnhandledMidiEvent)
+                inputAPC40.addListener('noteon', "all", handleMidiNoteOn)
+                inputAPC40.addListener('noteoff', "all", handleMidiNoteOff)
+                // inputAPC40.addListener('controlchange', "all", handleMidiControlChangeAPC)
+            }
+
+            if (outputAPC40) {
+                apc.resetMainGridButtonLEDsToOffState(self.outputAPC40)
+                apc.updateButtonLEDsForToggles(state, self, self.outputAPC40) // update LED state on init to make sure they properly represent current state
+            }
+        }
+
+    }
+
+    function update(state, presets) {
+        this.updateOrbitControlsWithDeltas()
+
+        // TOFIX: hack to not kill perf sending MIDI out too often
+        interval++
+        if (interval > 8.0) {
+            if (outputAPC40) {
+                if (state.gardenPresetModeEnabled) {
+                    this.apc.updateMainGridButtonLEDsForGardenPresetMode(presets, outputAPC40)
+                } else {
+                    this.apc.updateMainGridButtonLEDsForCameraPresetMode(presets.selectedPresetCameraMap(), outputAPC40)
+                }
+
+                this.apc.updateButtonLEDsForToggles(state, this, outputAPC40)
+            }
+            interval = 0
+        }
+    }
+
 
     function buttonIdentifierToEventIdentifier() {
         'E1': events.CAMERA_PRESETS_LEARN_TOGGLED,
@@ -227,3 +292,68 @@ export default store => {
 }
 
 
+// function buttonPressed(buttonIdentifier) {
+//     // TOFIX: making immutable copies like this on input events may cause perf issues...
+//     let allInputSourcesEventIds = Object.assign({}, self.apc.buttonIdentifierToEventIdentifier)
+//     allInputSourcesEventIds = Object.assign({}, allInputSourcesEventIds, kb.buttonIdentifierToEventIdentifier)
+//     allInputSourcesEventIds = Object.assign({}, allInputSourcesEventIds, touchOSC.buttonIdentifierToEventIdentifier)
+//
+//     console.log('Handling button press: ' + buttonIdentifier + ' for event id: ' + allInputSourcesEventIds[buttonIdentifier])
+//     switch (allInputSourcesEventIds[buttonIdentifier]) {
+//         case events.SAVE_GARDEN_TO_PRESET_FILE:
+//             callbackForControlEvent(events.SAVE_GARDEN_TO_PRESET_FILE)
+//             break
+//         case events.LOAD_GARDEN_FROM_PRESET_FILE:
+//             callbackForControlEvent(events.LOAD_GARDEN_FROM_PRESET_FILE)
+//             break
+//         case events.GENERATE_NEW_RANDOM_GARDEN:
+//             callbackForControlEvent(events.GENERATE_NEW_RANDOM_GARDEN)
+//             break
+//         case events.GENERATE_NEW_PLANTS_TEXTURE_STYLES_TOGGLE:
+//             state.generateNewPlantsWithTextures = !state.generateNewPlantsWithTextures
+//             callbackForControlEvent(events.GENERATE_NEW_PLANTS_TEXTURE_STYLES_TOGGLE, {generateNewPlantsWithTextures: state.generateNewPlantsWithTextures})
+//             break
+//         case 'p':
+//             debugger
+//             break
+//         default: {
+//             // handle garden presets save / load mode
+//             if (state.gardenPresetModeEnabled) {
+//                 if (state.gardenPresetSaveNext) {
+//                     state.gardenPresetSaveNext = false
+//
+//                     let index = self.apc.indexOfButtonForIdentifier(buttonIdentifier)
+//                     console.log('about to save preset index: ' + index)
+//                     // TOFIX: this should be "next selected" preset and the index of the apc40 should correspond to the index of presets data
+//                     // i should just initialize presets data with an array of empty objects so that the indexes are aligned?
+//                     callbackForControlEvent(events.SAVE_GARDEN_TO_SELECTED_PRESET, {index: index})
+//                 } else {
+//                     let index = self.apc.indexOfButtonForIdentifier(buttonIdentifier)
+//                     console.log('about to load preset index: ' + index)
+//                     callbackForControlEvent(events.LOAD_GARDEN_FROM_SELECTED_PRESET, {index: index})
+//                 }
+//             } else {
+//                 // handle camera hotkey learn / trigger mode
+//                 if (state.cameraPresetsLearn) {
+//                     state.cameraPresetsLearn = false
+//                     let data = {
+//                         presetIdentifier: buttonIdentifier,
+//                         controlsType: 'orbit',
+//                         controlsOrbitMatrix: this.orbitControls.object.matrix.toArray(),
+//                         controlsOrbitTarget: this.orbitControls.target.clone(),
+//                         key: 'cameraPresetsLearn',  // TOFIX: sloppy hack to fix indicator updates
+//                         value: state.cameraPresetsLearn
+//                     }
+//                     callbackForControlEvent(events.CAMERA_PRESET_LEARN, data)
+//                 } else {
+//                     let data = {
+//                         presetIdentifier: buttonIdentifier
+//                     }
+//                     callbackForControlEvent(events.CAMERA_PRESET_TRIGGER, data)
+//                     self.apc.lastCameraPresetIdentifier = buttonIdentifier
+//                 }
+//             }
+//             break
+//         }
+//     }
+// }

@@ -14,3 +14,5 @@ kb.buttonIdentifierToEventIdentifier = {
 function handleKeyPress(e) {
     buttonPressed(e.key) // TOFIX: Fucking ES5! Gotta move this over to ES6 soon...
 }
+
+document.body.addEventListener('keypress', handleKeyPress)
