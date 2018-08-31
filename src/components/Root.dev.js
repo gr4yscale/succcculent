@@ -1,10 +1,10 @@
 import React, {PropTypes} from 'react'
 import {Provider} from 'react-redux'
-import GUI from "./GUI"
+import AppGUI from "./GUI"
 
 const Root = ({ store }) => (
   <Provider store={store}>
-      <GUI/>
+      <AppGUI/>
   </Provider>
 )
 

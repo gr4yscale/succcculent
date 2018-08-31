@@ -14,16 +14,17 @@ import PostFX from './postfx'
 let postFX
 
 // Dependencies
-let THREE, SucculentBuilder, store
+let THREE, SucculentBuilder, store, debugGUI
 // Three
 let camera, controls, scene, renderer, container
 // Scene
 let boxes, succulents, shaders, fragShaders
 
 class Garden {
-    constructor(THREE_, SucculentBuilder_) {
+    constructor(THREE_, SucculentBuilder_, _debugGUI) {
         THREE = THREE_
         SucculentBuilder = SucculentBuilder_
+        debugGUI = _debugGUI
 
         //TODO determine if i want these to be members or not
         boxes = []
@@ -60,7 +61,7 @@ class Garden {
         scene.add(camera)
 
         // TODO try to initialize postFX in index - needs THREE-y stuff, though...
-        postFX = new PostFX(THREE, renderer, camera, scene)
+        postFX = new PostFX(THREE, renderer, camera, scene, debugGUI)
         controls = new THREE.OrbitControls(camera, renderer.domElement)
 
         camera.position.set(0, 0.35, 0.75)

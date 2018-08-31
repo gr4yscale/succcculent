@@ -36,7 +36,7 @@ const SliderText = styled.p`
   margin-top: 6px;
 `
 
-class GUI extends Component {
+class AppGUI extends Component {
   render() {
     return (
       <Container>
@@ -93,5 +93,5 @@ class GUI extends Component {
   }
 }
 
-export default connect()(GUI)
+export default connect()(AppGUI)
 

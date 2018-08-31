@@ -12,16 +12,18 @@ import configureStore from './redux/store/configureStore'
 import {standard} from './redux/actions/index'
 import * as actionTypes from './redux/actions/actionTypes'
 
+import DebugGUI from './gui'
+
 const THREE = window.THREE //todo assumes THREE script already loaded, yucky
+const debugGUI = new DebugGUI()
 
 let succulentBuilder = Succulent(THREE)                 //TODO rename SucculentBuilder
-const garden = new Garden(THREE, succulentBuilder)
+const garden = new Garden(THREE, succulentBuilder, debugGUI)
 const store = configureStore(garden)
 
 // let FirstPersonControls = require('./controls_first_person_deprecated.js')
 
 setTimeout(() => garden.setup(store), 0.25)
-setTimeout(() => garden.resize(), 1)
 setTimeout(() => garden.resize(), 1)
 
 setTimeout(() => {
