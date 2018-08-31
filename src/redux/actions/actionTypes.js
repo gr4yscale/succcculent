@@ -1,3 +1,11 @@
+////////////////////////////////////
+// DEBUG
+///////////////////////////////////
+
+export const DEBUG_VALUE_UPDATED = 'DEBUG_VALUE_UPDATED'
+
+
+
 export const GARDEN_GENERATE_PLANT_PARAMS = 'GARDEN_GENERATE_PLANT_PARAMS'
 export const GARDEN_SCENE_IS_RESETTING = 'GARDEN_SCENE_IS_RESETTING'
 export const GARDEN_UPDATE_PLANT_POSITION = 'GARDEN_UPDATE_PLANT_POSITION'

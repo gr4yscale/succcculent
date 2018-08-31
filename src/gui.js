@@ -1,11 +1,16 @@
 import * as dat from 'dat.gui'
 import Observable from './common/observable'
 
-// Parameters
+// The only benefit of this is that we don't have to write GUI code and can just toss values in here
+// A subscriber still dispatches an action to get the redux store in sync with this
+// Ideally we don't need to declare these params in two places (app reducer, and here), but it's stlil better than having to add more react code
+
 let params = {
     // scene
+    shaderTickerSpeed: 1000,
     fov: 65,
-    // shaders
+    // shaders (materials)
+    // shaders (postFX)
     bleachOpacity: 1,
     bleach: false,
     edgeDetect: false,
@@ -40,6 +45,7 @@ export default class DebugGUI extends Observable {
         /////////////////////////////
         // Scene
         gui.addFolder('Scene')
+        gui.add(params, 'shaderTickerSpeed', 0, 10000).onChange(notify)
         gui.add(params, 'fov', 0, 100).onChange(notify)
 
         /////////////////////////////

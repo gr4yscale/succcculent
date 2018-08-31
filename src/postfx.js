@@ -6,9 +6,6 @@ export default class PostFX {
         constructor(THREE, renderer, camera, scene, debugGUI) {
 
         debugGUI.subscribe(params => {
-
-            console.log('something changed')
-
             bleach.uniforms.opacity.value = params.bleachOpacity;
             bleach.enabled = params.bleach;
             bleach.uniforms.opacity.value = params.bleachOpacity;
@@ -26,8 +23,6 @@ export default class PostFX {
             colorCorrection.uniforms.powRGB.value.set(params.powR, params.powG, params.powB)
             hueSaturation.uniforms.hue.value = params.hue
             hueSaturation.uniforms.saturation.value = params.saturation
-            // camera.setFocalLength(params.fov)
-            // camera.updateProjectionMatrix()
         })
 
         bleach = new THREE.ShaderPass(THREE.BleachBypassShader);

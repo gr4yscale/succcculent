@@ -3,8 +3,12 @@ import * as actionTypes from "../actions/actionTypes"
 const initialState = {
     // modes / control surfaces
     cameraLearnEnabled: false, //cameraPresetsLearn: false,
+    // sameShaderForAllPlants: false,
+    // sameShaderForAllPlantsIndex: 0
 
-    // camera
+    // camera / scene
+    fov: 65,
+
     cameraRotationDeltaX: 0.1,
     cameraRotationDeltaY: 0.0,
     cameraDollyDelta: 1.0,
@@ -15,9 +19,6 @@ const initialState = {
 
     // shaders
     shaderTickerSpeed: 1000,
-
-  // sameShaderForAllPlants: false,
-  // sameShaderForAllPlantsIndex: 0
 }
 
 export default (state = initialState, action) => {
@@ -34,6 +35,13 @@ export default (state = initialState, action) => {
         ...state,
         cameraDollyDelta: action.payload.val
       }
+      case actionTypes.DEBUG_VALUE_UPDATED:
+          // TODO keep in sync with gui.js
+          return {
+              ...state,
+              shaderTickerSpeed: action.payload.shaderTickerSpeed,
+              fov: action.payload.fov
+          }
     default:
       break
   }

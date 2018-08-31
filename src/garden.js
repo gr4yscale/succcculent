@@ -10,6 +10,7 @@ import {randomPositionTestOffset} from './config'
 import devFragShader from './shaders/dev.frag'
 import devVertShader from './shaders/dev.vert'
 
+
 import PostFX from './postfx'
 let postFX
 
@@ -35,7 +36,9 @@ class Garden {
 
     setup(_store) {
         store = _store
+        const state = store.getState()
 
+        // "real" state
         store.subscribe(() => {
             const state = store.getState()
             if (state.garden.sceneNeedsToReset) {
@@ -48,6 +51,15 @@ class Garden {
             }
         })
 
+        // quick / hacky state that we synchronize in appReducer
+        debugGUI.subscribe(params => {
+            store.dispatch(
+                standard(actionTypes.DEBUG_VALUE_UPDATED, params)
+            )
+            camera.setFocalLength(params.fov) //TODO evaluate moving this into update()
+            camera.updateProjectionMatrix()
+        })
+
         renderer = new THREE.WebGLRenderer({'antialias': true, alpha: false, precision: 'highp'})
         renderer.setPixelRatio(window.devicePixelRatio)
         renderer.setSize(window.innerWidth, window.innerHeight)
@@ -56,7 +68,7 @@ class Garden {
         container = document.getElementById('WebGLRender')
         container.appendChild(renderer.domElement)
 
-        camera = new THREE.PerspectiveCamera(65, 1, 0.0001, 1000000)
+        camera = new THREE.PerspectiveCamera(state.app.fov, 1, 0.0001, 1000000)
         scene = new THREE.Scene()
         scene.add(camera)
 
