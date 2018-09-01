@@ -1,28 +1,27 @@
 // the good ole "util" module, a trashcan for everything!
 
 export const lerp = (v0, v1, t) => {
-    return v0*(1-t)+v1*t
+    return v0 * (1 - t) + v1 * t
 }
 
 export const getRandomArbitrary = (min, max) => {
-  return Math.random() * (max - min) + min;
+    return Math.random() * (max - min) + min;
 }
 
 
 export const saveData = (data, fileName) => {
-  var a = document.createElement("a");
-  document.body.appendChild(a);
-  a.style = "display: none";
+    var a = document.createElement("a");
+    document.body.appendChild(a);
+    a.style = "display: none";
 
-  var json = JSON.stringify(data),
-    blob = new Blob([json], {type: "octet/stream"}),
-    url = window.URL.createObjectURL(blob);
-  a.href = url;
-  a.download = fileName;
-  a.click();
-  window.URL.revokeObjectURL(url);
+    var json = JSON.stringify(data),
+        blob = new Blob([json], {type: "octet/stream"}),
+        url = window.URL.createObjectURL(blob);
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    window.URL.revokeObjectURL(url);
 }
-
 
 
 // function saveSTL(scene, name) {

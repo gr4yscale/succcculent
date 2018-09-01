@@ -36,7 +36,9 @@ export default class DebugGUI extends Observable {
         super()
 
         const gui = new dat.GUI()
-        const notify = () => { this.notify(params) }
+        const notify = () => {
+            this.notify(params)
+        }
 
         ///////////////////////////
         // Garden Generation

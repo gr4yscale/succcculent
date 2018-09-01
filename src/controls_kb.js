@@ -5,11 +5,14 @@ export default (domElement, store) => {
     console.log('initializing keyboard controls')
     domElement.addEventListener('keypress', (e) => {
         switch (e.key) {
-            case '/': store.dispatch({type: actionTypes.CAMERA_PRESETS_LEARN_TOGGLED}); break
+            case '/':
+                store.dispatch({type: actionTypes.CAMERA_PRESETS_LEARN_TOGGLED});
+                break
             default:
                 store.dispatch({
                     type: actionTypes.HOTKEY_PRESSED,
-                    payload: e.key})
+                    payload: e.key
+                })
                 break
         }
     })

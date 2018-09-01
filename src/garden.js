@@ -14,6 +14,7 @@ import devVertShader from './shaders/dev.vert'
 import animateVert from './shaders/animate.vert'
 
 import PostFX from './postfx'
+
 let postFX
 
 // Dependencies
@@ -67,7 +68,7 @@ class Garden {
         controls = new THREE.OrbitControls(camera, renderer.domElement)
 
         camera.position.set(0, 0.35, 0.75)
-        controls.target.set(0,0,0)
+        controls.target.set(0, 0, 0)
 
         this.update()
     }
@@ -102,7 +103,7 @@ class Garden {
 
         const gardenGeneration = store.getState().gardenGeneration
 
-        for (let i=0; i < gardenGeneration.numPlantsForNextGeneration; i++) {
+        for (let i = 0; i < gardenGeneration.numPlantsForNextGeneration; i++) {
             this.addSucculent(i, gardenGeneration.plantParams[i])
         }
     }
@@ -144,7 +145,7 @@ class Garden {
         // scene.add(helper);
 
         store.dispatch(
-            standard(actionTypes.GARDEN_UPDATE_PLANT_POSITION,{
+            standard(actionTypes.GARDEN_UPDATE_PLANT_POSITION, {
                 plantIndex: index,
                 position: succulent.position
             })
@@ -240,18 +241,18 @@ class Garden {
         const devFragShaderDecoded = atob(parseDataUrl(devFragShader).data)
 
         let shaderMaterial = new THREE.RawShaderMaterial({
-            uniforms : {
-                iGlobalTime: { type: 'f', value: 0 }
+            uniforms: {
+                iGlobalTime: {type: 'f', value: 0}
             },
             defines: {
                 USE_MAP: ''
             },
             vertexShader: devVertShaderDecoded,
-            fragmentShader : devFragShaderDecoded,
+            fragmentShader: devFragShaderDecoded,
             side: THREE.DoubleSide,
-            transparent:true,
+            transparent: true,
             // TODO add garden preset for transparent
-            blending:THREE.MultiplyBlending,
+            blending: THREE.MultiplyBlending,
             // THREE.NoBlending = 0;
             // THREE.NormalBlending = 1;
             // THREE.AdditiveBlending = 2;

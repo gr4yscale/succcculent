@@ -3,7 +3,7 @@ let composer, renderPass, copyShader
 let bleach, edge, FXAA, focus, hueSaturation, colorCorrection
 
 export default class PostFX {
-        constructor(THREE, renderer, camera, scene, debugGUI) {
+    constructor(THREE, renderer, camera, scene, debugGUI) {
 
         debugGUI.subscribe(params => {
             bleach.uniforms.opacity.value = params.bleachOpacity;

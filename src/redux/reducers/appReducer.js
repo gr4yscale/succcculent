@@ -9,7 +9,7 @@ const initialState = {
 export default (state = initialState, action) => {
     switch (action.type) {
         case actionTypes.CAMERA_PRESETS_LEARN_TOGGLED:
-            return { ...state, cameraLearnEnabled: !state.cameraLearnEnabled }
+            return {...state, cameraLearnEnabled: !state.cameraLearnEnabled}
         default:
             break
     }

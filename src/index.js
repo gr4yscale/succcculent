@@ -35,12 +35,10 @@ setTimeout(() => {
 }, 1)
 
 render(
-  <Root store={store} />,
-  document.getElementById('ReactRoot')
+    <Root store={store} />, document.getElementById('ReactRoot')
 )
 
 window.addEventListener('resize', garden.resize, false)
-
 
 
 //

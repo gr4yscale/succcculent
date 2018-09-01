@@ -8,7 +8,7 @@ const middleware = garden => store => dispatch => action => {
         case actionTypes.GARDEN_GENERATE_PLANT_PARAMS: {
             garden.reset()
         }
-        break
+            break
         // TODO we could dispatch this from a middleware that is intercepting control surface actions, perhaps
         // TODO this is where we will want to map control surface-specific identifiers to something generic
         case actionTypes.HOTKEY_PRESSED: {

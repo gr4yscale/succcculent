@@ -6,12 +6,12 @@ var touchOSC = exports
 // constants
 
 touchOSC.buttonIdentifierToEventIdentifier = {
-  'touchOSC-E1': events.CAMERA_PRESETS_LEARN_TOGGLED,
-  'touchOSC-F1': events.XBOX_CONTROLLER_SELECTION_TOGGLED,
-  'touchOSC-D#1': events.CAMERA_CONTROLS_RESET,
-  'touchOSC-C3': events.GENERATE_NEW_PLANTS_TEXTURE_STYLES_TOGGLE
-  // 'B1': events.GENERATE_NEW_RANDOM_GARDEN,
-  // 'C1': events.GENERATE_NEW_PLANTS_TEXTURE_STYLES_TOGGLE,
+    'touchOSC-E1': events.CAMERA_PRESETS_LEARN_TOGGLED,
+    'touchOSC-F1': events.XBOX_CONTROLLER_SELECTION_TOGGLED,
+    'touchOSC-D#1': events.CAMERA_CONTROLS_RESET,
+    'touchOSC-C3': events.GENERATE_NEW_PLANTS_TEXTURE_STYLES_TOGGLE
+    // 'B1': events.GENERATE_NEW_RANDOM_GARDEN,
+    // 'C1': events.GENERATE_NEW_PLANTS_TEXTURE_STYLES_TOGGLE,
 }
 
 
