@@ -2,12 +2,12 @@ precision highp float;
 
 #define PI		3.1415926535897931
 
-const 	vec3	ofreq	=	vec3(8.0, 8.0, 8.0),		// Frequency of iridescent orientantion part.
-				nfreq	=	vec3(4.0, 4.0, 4.0),		// Frequency of iridescent noise part.
-				ooset	=	vec3(0.0, 0.0, 0.0),		// Offset of iridescent orientantion part.
+const 	vec3	ofreq	=	vec3(4.0, 4.0, 4.0),		// Frequency of iridescent orientantion part.
+				nfreq	=	vec3(2.0, 2.0, 2.0),		// Frequency of iridescent noise part.
+				ooset	=	vec3(8.0, 8.0, 8.0),		// Offset of iridescent orientantion part.
 				noset	=	vec3(0.0, 0.0, 0.0);		// Offset of iridescent noise part.
 const 	float	nmult	=	1.0,						// Controls the intensity of noise.
-				gamma	=	0.85,						// Gamma correction applied to incidence value (fr).
+				gamma	=	0.65,						// Gamma correction applied to incidence value (fr).
 				minvl	=	0.1;						// Incident distribution curve control, applied after gamma correction.
 
 uniform float iGlobalTime;

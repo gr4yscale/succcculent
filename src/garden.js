@@ -10,6 +10,8 @@ import {randomPositionTestOffset} from './config'
 import devFragShader from './shaders/dev.frag'
 import devVertShader from './shaders/dev.vert'
 
+// import displacementVert from './shaders/displacement.vert'
+import animateVert from './shaders/animate.vert'
 
 import PostFX from './postfx'
 let postFX
@@ -235,7 +237,8 @@ class Garden {
     }
 
     loadShaderMaterials() {
-        const devVertShaderDecoded = atob(parseDataUrl(devVertShader).data)
+        // const devVertShaderDecoded = atob(parseDataUrl(devVertShader).data)
+        const devVertShaderDecoded = atob(parseDataUrl(animateVert).data)
         const devFragShaderDecoded = atob(parseDataUrl(devFragShader).data)
 
         let shaderMaterial = new THREE.RawShaderMaterial({
@@ -248,9 +251,9 @@ class Garden {
             vertexShader: devVertShaderDecoded,
             fragmentShader : devFragShaderDecoded,
             side: THREE.DoubleSide,
-            transparent:false,
+            transparent:true,
             // TODO add garden preset for transparent
-            blending: THREE.NormalBlending,
+            blending:THREE.SubtractiveBlending,
             // THREE.NoBlending = 0;
             // THREE.NormalBlending = 1;
             // THREE.AdditiveBlending = 2;
