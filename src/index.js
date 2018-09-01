@@ -1,6 +1,8 @@
 // App
 import Succulent from './succulent'
 import Garden from './garden'
+import DebugGUI from './gui'
+import ControlsKB from './controls_kb'
 
 // React
 import React from 'react'
@@ -12,14 +14,14 @@ import configureStore from './redux/store/configureStore'
 import {standard} from './redux/actions/index'
 import * as actionTypes from './redux/actions/actionTypes'
 
-import DebugGUI from './gui'
 
 const THREE = window.THREE //todo assumes THREE script already loaded, yucky
-const debugGUI = new DebugGUI()
 
-let succulentBuilder = Succulent(THREE)                 //TODO rename SucculentBuilder
+const debugGUI = new DebugGUI()
+const succulentBuilder = Succulent(THREE)                 //TODO rename SucculentBuilder
 const garden = new Garden(THREE, succulentBuilder, debugGUI)
 const store = configureStore(garden)
+const controlsKB = new ControlsKB(document.body, store)
 
 // let FirstPersonControls = require('./controls_first_person_deprecated.js')
 

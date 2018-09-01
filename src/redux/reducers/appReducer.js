@@ -22,30 +22,37 @@ const initialState = {
 }
 
 export default (state = initialState, action) => {
-  switch (action.type) {
-    case actionTypes.CAMERA_UPDATE_ROTATION_DELTA:
-      return {
-        ...state,
-        cameraRotationDeltaX: action.payload.x ? action.payload.x : state.cameraRotationDeltaX,
-        cameraRotationDeltaY: action.payload.y ? action.payload.y : state.cameraRotationDeltaY,
+    switch (action.type) {
+        case actionTypes.CAMERA_PRESETS_LEARN_TOGGLED:
+            return {
+                ...state,
+                cameraLearnEnabled: !state.cameraLearnEnabled
+            }
 
-      }
-    case actionTypes.CAMERA_UPDATE_DOLLY_DELTA:
-      return {
-        ...state,
-        cameraDollyDelta: action.payload.val
-      }
-      case actionTypes.DEBUG_VALUE_UPDATED:
-          // TODO keep in sync with gui.js
-          return {
-              ...state,
-              shaderTickerSpeed: action.payload.shaderTickerSpeed,
-              fov: action.payload.fov
-          }
-    default:
-      break
-  }
-  return state
+        case actionTypes.CAMERA_UPDATE_ROTATION_DELTA:
+            return {
+                ...state,
+                cameraRotationDeltaX: action.payload.x ? action.payload.x : state.cameraRotationDeltaX,
+                cameraRotationDeltaY: action.payload.y ? action.payload.y : state.cameraRotationDeltaY,
+
+            }
+
+        case actionTypes.CAMERA_UPDATE_DOLLY_DELTA:
+            return {
+                ...state,
+                cameraDollyDelta: action.payload.val
+            }
+        case actionTypes.DEBUG_VALUE_UPDATED:
+            // TODO keep in sync with gui.js
+            return {
+                ...state,
+                shaderTickerSpeed: action.payload.shaderTickerSpeed,
+                fov: action.payload.fov
+            }
+        default:
+            break
+    }
+    return state
 }
 
 // reducer behaviors to bring in here

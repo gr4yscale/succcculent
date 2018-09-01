@@ -90,16 +90,8 @@ class Garden {
             shaders[j].uniforms.iGlobalTime.value = (tick / state.app.shaderTickerSpeed)
         }
 
-        // // update orbit camera controls
-        controls.handleJoystickRotate(state.app.cameraRotationDeltaX * state.app.joystickSensitivity,
-            state.app.cameraRotationDeltaY * state.app.joystickSensitivity)
+        this.updateOrbitControlsWithDeltas()
 
-        controls.handleJoystickDolly(state.app.cameraDollyDelta * state.app.cameraDollySensitivity)
-
-        controls.handleJoystickPan(state.app.cameraPositionDeltaX * state.app.joystickSensitivity,
-            state.app.cameraPositionDeltaY * state.app.joystickSensitivity)
-
-        controls.update()
         postFX.render()
 
         requestAnimationFrame(this.update.bind(this))
@@ -280,18 +272,51 @@ class Garden {
         // TODO check on renderer.setSize
         renderer.setSize(width, height)
     }
+
+    // Camera
+    updateOrbitControlsWithDeltas() {
+        const state = store.getState()
+
+        controls.handleJoystickRotate(state.app.cameraRotationDeltaX * state.app.joystickSensitivity,
+            state.app.cameraRotationDeltaY * state.app.joystickSensitivity)
+
+        controls.handleJoystickDolly(state.app.cameraDollyDelta * state.app.cameraDollySensitivity)
+
+        controls.handleJoystickPan(state.app.cameraPositionDeltaX * state.app.joystickSensitivity,
+            state.app.cameraPositionDeltaY * state.app.joystickSensitivity)
+        controls.update()
+    }
+
+    updateCameraMatrix() {
+        console.log('load camera matrix')
+        // sloppy, this tries to handle the conditions of setting camera preset for either first person or orbit controls
+        //     if (!data) {
+        //         console.log('Expected there to be some camera preset data, but there wasnt! ******')
+        //         return
+        //     }
+        //     let matrix = new THREE.Matrix4();
+        //     matrix.fromArray(data.controlsOrbitMatrix)
+        //     // apply position, quaternion, and scale from the matrix coming from presets to the camera using decompose()
+        //     matrix.decompose(this.camera.position, this.camera.quaternion, this.camera.scale)
+        //     // orbit controls needed the center property to be updated to properly position the camera after a pan, argh
+        //     let updatedTarget = data.controlsOrbitTarget
+        //     this.controls.target.set(updatedTarget.x, updatedTarget.y, updatedTarget.z)
+    }
+
+    getCameraMatrix() {
+        console.log('save camera matrix')
+        return {
+            controlsType: 'orbit',
+            cameraMatrix: controls.object.matrix.toArray(),
+            target: controls.target.clone(),
+        }
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 // TODO: CAMERA CONTROLS - turn into a middleware?
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-// function updateOrbitControlsWithDeltas() {
-//     controls.handleJoystickRotate(cameraRotationDeltaX * joystickSensitivity, cameraRotationDeltaY * joystickSensitivity)
-//     controls.handleJoystickDolly(cameraDollyDelta * cameraDollySensitivity)
-//     controls.handleJoystickPan(cameraPositionDeltaX * joystickSensitivity, cameraPositionDeltaY * joystickSensitivity)
-//     controls.update()
-// }
 //
 // function cameraReset() {
 //     this.camera.position.set(0, 0.35, 0.75)
@@ -306,33 +331,6 @@ class Garden {
 //     cameraDollyDelta = 1.0
 // }
 
-function loadCameraMatrix() {
-    console.log('load camera matrix')
-    // sloppy, this tries to handle the conditions of setting camera preset for either first person or orbit controls
-    //     if (!data) {
-    //         console.log('Expected there to be some camera preset data, but there wasnt! ******')
-    //         return
-    //     }
-    //     let matrix = new THREE.Matrix4();
-    //     matrix.fromArray(data.controlsOrbitMatrix)
-    //     // apply position, quaternion, and scale from the matrix coming from presets to the camera using decompose()
-    //     matrix.decompose(this.camera.position, this.camera.quaternion, this.camera.scale)
-    //     // orbit controls needed the center property to be updated to properly position the camera after a pan, argh
-    //     let updatedTarget = data.controlsOrbitTarget
-    //     this.controls.target.set(updatedTarget.x, updatedTarget.y, updatedTarget.z)
-}
-
-function saveCameraMatrix() {
-    console.log('save camera matrix')
-    // let data = {
-    //     presetIdentifier: buttonIdentifier
-    //     controlsType: 'orbit',
-    //     controlsOrbitMatrix: this.controls.object.matrix.toArray(),
-    //     controlsOrbitTarget: this.controls.target.clone(),
-    //     key: 'cameraPresetsLearn',  // TOFIX: sloppy hack to fix indicator updates
-    //     value: state.cameraPresetsLearn
-    // }
-}
 
 export default Garden
 
