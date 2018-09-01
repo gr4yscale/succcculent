@@ -8,9 +8,10 @@ import middleware from '../middlewares/middleware.js'
 export default garden => {
   // get the redux devtools chrome extension
   // compose just lets us write deeply nested function transformations without the rightward drift of the code, helps write nicer code as the application increases in complexity
-  const composeEnhancers = composeWithDevTools({
-    maxAge: 1000
-  })
+    const composeEnhancers = composeWithDevTools({
+        maxAge: 1000,
+        actionsBlacklist: ['GARDEN_UPDATE_PLANT_POSITION']
+    })
 
   const store = createStore(
     rootReducer,
