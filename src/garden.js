@@ -40,20 +40,8 @@ class Garden {
         store = _store
         const state = store.getState()
 
-        // "real" state
-        store.subscribe(() => {
-            const state = store.getState()
-            if (state.garden.sceneNeedsToReset) {
-                console.log('garden is resetting')
-                store.dispatch(
-                    standard(actionTypes.GARDEN_SCENE_IS_RESETTING)
-                )
-                this.loadShaderMaterials() // need to make sure this happens before the garden resets
-                this.resetPlants() //todo this is necessary to call after generating a random garden because we must update plant positions to complete garden generation. fix this.
-            }
-        })
-
         // quick / hacky state that we synchronize in appReducer
+        // TODO could also be middleware behavior
         debugGUI.subscribe(params => {
             store.dispatch(
                 standard(actionTypes.DEBUG_VALUE_UPDATED, params)
@@ -70,7 +58,7 @@ class Garden {
         container = document.getElementById('WebGLRender')
         container.appendChild(renderer.domElement)
 
-        camera = new THREE.PerspectiveCamera(state.app.fov, 1, 0.0001, 1000000)
+        camera = new THREE.PerspectiveCamera(state.scene.cameraFov, 1, 0.0001, 1000000)
         scene = new THREE.Scene()
         scene.add(camera)
 
@@ -89,7 +77,7 @@ class Garden {
 
         // update shader uniforms
         for (let j = 0; j < shaders.length; j++) {
-            shaders[j].uniforms.iGlobalTime.value = (tick / state.app.shaderTickerSpeed)
+            shaders[j].uniforms.iGlobalTime.value = (tick / state.scene.shaderTickerSpeed)
         }
 
         this.updateOrbitControlsWithDeltas()
@@ -97,6 +85,11 @@ class Garden {
         postFX.render()
 
         requestAnimationFrame(this.update.bind(this))
+    }
+
+    reset() {
+        this.loadShaderMaterials()
+        this.resetPlants() //todo this is necessary to call after generating a random garden because we must update plant positions to complete garden generation. fix this.
     }
 
     resetPlants() {
@@ -107,10 +100,10 @@ class Garden {
         succulents = []
         boxes = []
 
-        const garden = store.getState().garden
+        const gardenGeneration = store.getState().gardenGeneration
 
-        for (let i=0; i < garden.numPlantsForNextGeneration; i++) {
-            this.addSucculent(i, garden.plantParams[i])
+        for (let i=0; i < gardenGeneration.numPlantsForNextGeneration; i++) {
+            this.addSucculent(i, gardenGeneration.plantParams[i])
         }
     }
 
@@ -158,6 +151,8 @@ class Garden {
         )
     }
 
+    // TODO refactor for generic geometry? create an interface to provide shaders information that's universally useful?
+    // position of geometry, orientation, instance id, etc
     addSucculent(index, plantParams) {
         console.log('will add succulent if there are plant params')
         if (!plantParams) return
@@ -237,8 +232,11 @@ class Garden {
     }
 
     loadShaderMaterials() {
-        // const devVertShaderDecoded = atob(parseDataUrl(devVertShader).data)
-        const devVertShaderDecoded = atob(parseDataUrl(animateVert).data)
+        // vert shaders
+        const devVertShaderDecoded = atob(parseDataUrl(devVertShader).data)
+        // const devVertShaderDecoded = atob(parseDataUrl(animateVert).data)
+
+        // frag shaders
         const devFragShaderDecoded = atob(parseDataUrl(devFragShader).data)
 
         let shaderMaterial = new THREE.RawShaderMaterial({
@@ -253,7 +251,7 @@ class Garden {
             side: THREE.DoubleSide,
             transparent:true,
             // TODO add garden preset for transparent
-            blending:THREE.SubtractiveBlending,
+            blending:THREE.MultiplyBlending,
             // THREE.NoBlending = 0;
             // THREE.NormalBlending = 1;
             // THREE.AdditiveBlending = 2;
@@ -278,15 +276,11 @@ class Garden {
 
     // Camera
     updateOrbitControlsWithDeltas() {
-        const state = store.getState()
-
-        controls.handleJoystickRotate(state.app.cameraRotationDeltaX * state.app.joystickSensitivity,
-            state.app.cameraRotationDeltaY * state.app.joystickSensitivity)
-
-        controls.handleJoystickDolly(state.app.cameraDollyDelta * state.app.cameraDollySensitivity)
-
-        controls.handleJoystickPan(state.app.cameraPositionDeltaX * state.app.joystickSensitivity,
-            state.app.cameraPositionDeltaY * state.app.joystickSensitivity)
+        // TODO: should be using selectors for getting state slices
+        const s = store.getState().scene
+        controls.handleJoystickRotate(s.cameraRotationDeltaX * s.joystickSensitivity, s.cameraRotationDeltaY * s.joystickSensitivity)
+        controls.handleJoystickDolly(s.cameraDollyDelta * s.cameraDollySensitivity)
+        controls.handleJoystickPan(s.cameraPositionDeltaX * s.joystickSensitivity, s.cameraPositionDeltaY * s.joystickSensitivity)
         controls.update()
     }
 

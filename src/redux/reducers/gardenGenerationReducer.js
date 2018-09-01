@@ -6,7 +6,7 @@ const initialState = {
   selectedStyleIndex: 5, //todo unnecessary?
   selectedPresetIndex: 5,
   numPlantsForNextGeneration: 10,
-  selectedStyle: styles[6],
+  selectedStyle: styles[2],
 
   adHocGardenGenerationEnabled: false,
   adHocPlantParamsPetalCount: 36,
@@ -27,7 +27,6 @@ const initialState = {
   textureUpdateSpeed: 0.5,
 
   garden: null,
-  sceneNeedsToReset: false,
 }
 
 
@@ -101,34 +100,32 @@ const generatePlantParams = (state) => {
 
 
 export default (state = initialState, action) => {
-  switch (action.type) {
-    case actionTypes.GARDEN_GENERATE_PLANT_PARAMS:
-      return {
-        ...state,
-        plantParams: generatePlantParams(state),
-        sceneNeedsToReset: true
-      }
-    case actionTypes.GARDEN_SCENE_IS_RESETTING:
-      return {
-        ...state,
-        sceneNeedsToReset: false
-      }
-    case actionTypes.GARDEN_UPDATE_PLANT_POSITION: {
-      const plantParams = state.plantParams.map((item, index) => {
-        if (index !== action.payload.plantIndex) {
-          return item
+    switch (action.type) {
+        //TODO investigate if we could use middleware here
+        case actionTypes.GARDEN_GENERATE_PLANT_PARAMS:
+            return {
+                ...state,
+                plantParams: generatePlantParams(state),
+            }
+        case actionTypes.GARDEN_UPDATE_PLANT_POSITION: {
+            const plantParams = state.plantParams.map((item, index) => {
+                if (index !== action.payload.plantIndex) {
+                    return item
+                }
+                return {
+                    ...item,
+                    positionX: action.payload.position.x,
+                    positionY: action.payload.position.y,
+                    positionZ: action.payload.position.z
+                }
+            })
+            return {
+                ...state,
+                plantParams
+            }
         }
-        return {
-          ...item,
-          positionX: action.payload.position.x,
-          positionY: action.payload.position.y,
-          positionZ: action.payload.position.z
-        }
-      })
-      return {plantParams,...state}
+        default:
+            break
     }
-    default:
-      break
-  }
-  return state
+    return state
 }
