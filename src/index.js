@@ -14,12 +14,11 @@ import configureStore from './redux/store/configureStore'
 import {standard} from './redux/actions/index'
 import * as actionTypes from './redux/actions/actionTypes'
 
-
-const THREE = window.THREE //todo assumes THREE script already loaded, yucky
+import * as THREE from 'three'
 
 const debugGUI = new DebugGUI()
-const succulentBuilder = Succulent(THREE)                 //TODO rename SucculentBuilder
-const garden = new Garden(THREE, succulentBuilder, debugGUI)
+const succulentBuilder = Succulent()                 //TODO rename SucculentBuilder
+const garden = new Garden(succulentBuilder, debugGUI)
 const store = configureStore(garden)
 const controlsKB = new ControlsKB(document.body, store)
 

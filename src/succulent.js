@@ -1,4 +1,6 @@
-export default (THREE) => {
+import * as THREE from 'three'
+
+export default () => {
     return (shaderMaterial, plantParams, textureLoadedCallback) => {
 
         let petalCount = plantParams['petalCount']
@@ -11,7 +13,7 @@ export default (THREE) => {
         let petalWidth = plantParams['petalWidth']
         let mergePetalGeometry = plantParams['mergePetalGeometry']
 
-        let petalFunc = function (u, v) {
+        let petalFunc = function (u, v, target) {
             let curve = Math.pow(u * 4.0, curveAmountD) * curveAmountA; // * (Math.pow(u, 0.9));
             // let curve = Math.pow(u * 4.0, curveAmountD) * curveAmountA; // * (Math.pow(u, 0.9));
             // let petalOutline = (Math.sin((u - 1.5) * 2.0) * Math.sin((v - 0.5) * Math.sin((u + 2.14))) * 2.0);
@@ -21,7 +23,9 @@ export default (THREE) => {
             // u += (Math.sin((6 - v) * -2.0) * -2.0)
             // u += (Math.sin((u) * 4.0) * 1.0) // spidery
 
-            return new THREE.Vector3(petalOutline * petalWidth, u * petalLength, curve);
+            target.set(petalOutline * petalWidth, u * petalWidth, curve)
+
+            // return new THREE.Vector3(petalOutline * petalWidth, u * petalLength, curve);
             // return new THREE.Vector3(petalOutline * petalWidth, u * petalLength, curve * 4.0);
         }
 

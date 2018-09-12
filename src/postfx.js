@@ -1,6 +1,16 @@
+import EffectComposer, { RenderPass, ShaderPass, CopyShader } from 'three-effectcomposer-es6'
+import EdgeShader from './shaders/postfx/EdgeShader'
+import BleachBypassShader from './shaders/postfx/BleachBypassShader'
+import FXAAShader from './shaders/postfx/FXAAShader'
+import FocusShader from './shaders/postfx/FocusShader'
+import HueSaturationShader from './shaders/postfx/HueSaturationShader'
+import ColorCorrectionShader from './shaders/postfx/ColorCorrectionShader'
+
+
 // THREE / Shaders
 let composer, renderPass, copyShader
 let bleach, edge, FXAA, focus, hueSaturation, colorCorrection
+
 
 export default class PostFX {
     constructor(THREE, renderer, camera, scene, debugGUI) {
@@ -25,22 +35,22 @@ export default class PostFX {
             hueSaturation.uniforms.saturation.value = params.saturation
         })
 
-        bleach = new THREE.ShaderPass(THREE.BleachBypassShader);
+        bleach = new ShaderPass(BleachBypassShader);
         bleach.enabled = false;
-        edge = new THREE.ShaderPass(THREE.EdgeShader);
+        edge = new ShaderPass(EdgeShader);
         edge.enabled = false;
-        FXAA = new THREE.ShaderPass(THREE.FXAAShader);
+        FXAA = new ShaderPass(FXAAShader);
         FXAA.enabled = false;
-        focus = new THREE.ShaderPass(THREE.FocusShader);
+        focus = new ShaderPass(FocusShader);
         focus.enabled = false;
-        colorCorrection = new THREE.ShaderPass(THREE.ColorCorrectionShader);
-        hueSaturation = new THREE.ShaderPass(THREE.HueSaturationShader);
+        colorCorrection = new ShaderPass(ColorCorrectionShader);
+        hueSaturation = new ShaderPass(HueSaturationShader);
 
-        renderPass = new THREE.RenderPass(scene, camera);
-        copyShader = new THREE.ShaderPass(THREE.CopyShader);
+        renderPass = new RenderPass(scene, camera);
+        copyShader = new ShaderPass(CopyShader);
         copyShader.renderToScreen = true;
 
-        composer = new THREE.EffectComposer(renderer);
+        composer = new EffectComposer(renderer);
 
         composer.addPass(renderPass);
 

@@ -2,31 +2,37 @@
 import * as actionTypes from "./redux/actions/actionTypes"
 import {standard} from './redux/actions/index'
 
+// Three
+import * as THREE from 'three'                      //TODO import everything three-related like import { Vector3, ... } from 'three'
+import OrbitControls from 'orbit-controls-es6'
+import {BoxHelper} from 'three'
+
+// App
+import PostFX from './postfx'
+
+// Material Shaders
+import devFragShader from './shaders/dev.frag'
+import devVertShader from './shaders/dev.vert'
+import displacementVert from './shaders/displacement.vert'
+import animateVert from './shaders/animate.vert'
+
 // Misc / Util
 import {getRandomArbitrary} from './util'
 import parseDataUrl from 'parse-data-url'
 import {randomPositionTestOffset} from './config'
 
-import devFragShader from './shaders/dev.frag'
-import devVertShader from './shaders/dev.vert'
-
-// import displacementVert from './shaders/displacement.vert'
-import animateVert from './shaders/animate.vert'
-
-import PostFX from './postfx'
 
 let postFX
 
 // Dependencies
-let THREE, SucculentBuilder, store, debugGUI
+let SucculentBuilder, store, debugGUI
 // Three
 let camera, controls, scene, renderer, container
 // Scene
 let boxes, succulents, shaders, fragShaders
 
 class Garden {
-    constructor(THREE_, SucculentBuilder_, _debugGUI) {
-        THREE = THREE_
+    constructor(SucculentBuilder_, _debugGUI) {
         SucculentBuilder = SucculentBuilder_
         debugGUI = _debugGUI
 
@@ -42,13 +48,26 @@ class Garden {
         const state = store.getState()
 
         // quick / hacky state that we synchronize in appReducer
-        // TODO could also be middleware behavior
+        // TODO could also be middleware behavior - note, not really, because we're not subscribing to state changes,
+        // this is a listener on the debugGUI. nontheless we could set this subscription up at app level (index), not scene
+        // call garden.updatefromDebugGuiChanges or something like that
         debugGUI.subscribe(params => {
             store.dispatch(
                 standard(actionTypes.DEBUG_VALUE_UPDATED, params)
             )
-            camera.setFocalLength(params.fov) //TODO evaluate moving this into update()
-            camera.updateProjectionMatrix()
+
+            console.log(succulents[0].material)
+            //                material.setNeedsUpdate()
+
+            // if (params.plantSelection) {
+            //     let pos = succulents[params.plantSelectionIndex].position
+            //     console.log(pos)
+            //     // controls.target.set(pos)
+            //     camera.setPosition(pos)
+            //     console.log(camera)
+            // }
+            // camera.setFocalLength(params.fov) //TODO evaluate moving this into update()
+            // camera.updateProjectionMatrix()
         })
 
         renderer = new THREE.WebGLRenderer({'antialias': true, alpha: false, precision: 'highp'})
@@ -65,7 +84,7 @@ class Garden {
 
         // TODO try to initialize postFX in index - needs THREE-y stuff, though...
         postFX = new PostFX(THREE, renderer, camera, scene, debugGUI)
-        controls = new THREE.OrbitControls(camera, renderer.domElement)
+        controls = new OrbitControls(camera, renderer.domElement)
 
         camera.position.set(0, 0.35, 0.75)
         controls.target.set(0, 0, 0)
@@ -86,6 +105,14 @@ class Garden {
         postFX.render()
 
         requestAnimationFrame(this.update.bind(this))
+    }
+
+    // TODO this could be a per-geometry material
+    updateAllMaterialsBlendingModes() {
+        for (let i = 0; i < succulents.length; i++) {
+            let material = succulents[i].material
+            material.blending = store.getState().scene.blendingMode
+        }
     }
 
     reset() {
@@ -129,20 +156,15 @@ class Garden {
     }
 
     positionSucculentRandomly(index, plantParams, succulent) {
-        let bboxHelperA = new THREE.BoundingBoxHelper(succulent);
-        bboxHelperA.update();
-        // let bbox = new THREE.Box3().setFromObject(succulent);
-        let newBox = this.findRandomUnusedSucculentPosition(-randomPositionTestOffset, randomPositionTestOffset, bboxHelperA.box);
+        let boundingBox = new THREE.Box3().setFromObject(succulent);
+        let newBox = this.findRandomUnusedSucculentPosition(-randomPositionTestOffset, randomPositionTestOffset, boundingBox);
 
         succulent.position.x = newBox.center().x;
         succulent.position.y = 0;
         succulent.position.z = newBox.center().z;
 
-        let helper = new THREE.BoundingBoxHelper(succulent);
-        helper.update();
-        boxes.push(helper.box);
-        // helper.visible = true;
-        // scene.add(helper);
+        let foundBox = new THREE.Box3().setFromObject(succulent);
+        boxes.push(foundBox);
 
         store.dispatch(
             standard(actionTypes.GARDEN_UPDATE_PLANT_POSITION, {
@@ -151,6 +173,7 @@ class Garden {
             })
         )
     }
+
 
     // TODO refactor for generic geometry? create an interface to provide shaders information that's universally useful?
     // position of geometry, orientation, instance id, etc
@@ -234,8 +257,9 @@ class Garden {
 
     loadShaderMaterials() {
         // vert shaders
-        const devVertShaderDecoded = atob(parseDataUrl(devVertShader).data)
+        // const devVertShaderDecoded = atob(parseDataUrl(devVertShader).data)
         // const devVertShaderDecoded = atob(parseDataUrl(animateVert).data)
+        const devVertShaderDecoded = atob(parseDataUrl(displacementVert).data)
 
         // frag shaders
         const devFragShaderDecoded = atob(parseDataUrl(devFragShader).data)
@@ -279,29 +303,24 @@ class Garden {
     updateOrbitControlsWithDeltas() {
         // TODO: should be using selectors for getting state slices
         const s = store.getState().scene
-        controls.handleJoystickRotate(s.cameraRotationDeltaX * s.joystickSensitivity, s.cameraRotationDeltaY * s.joystickSensitivity)
-        controls.handleJoystickDolly(s.cameraDollyDelta * s.cameraDollySensitivity)
-        controls.handleJoystickPan(s.cameraPositionDeltaX * s.joystickSensitivity, s.cameraPositionDeltaY * s.joystickSensitivity)
-        controls.update()
+        // controls.handleJoystickRotate(s.cameraRotationDeltaX * s.joystickSensitivity, s.cameraRotationDeltaY * s.joystickSensitivity)
+        // controls.handleJoystickDolly(s.cameraDollyDelta * s.cameraDollySensitivity)
+        // controls.handleJoystickPan(s.cameraPositionDeltaX * s.joystickSensitivity, s.cameraPositionDeltaY * s.joystickSensitivity)
+        // controls.update()
     }
 
-    updateCameraMatrix() {
+    updateOrbitControlsState(state) {
         console.log('load camera matrix')
-        // sloppy, this tries to handle the conditions of setting camera preset for either first person or orbit controls
-        //     if (!data) {
-        //         console.log('Expected there to be some camera preset data, but there wasnt! ******')
-        //         return
-        //     }
-        //     let matrix = new THREE.Matrix4();
-        //     matrix.fromArray(data.controlsOrbitMatrix)
-        //     // apply position, quaternion, and scale from the matrix coming from presets to the camera using decompose()
-        //     matrix.decompose(this.camera.position, this.camera.quaternion, this.camera.scale)
-        //     // orbit controls needed the center property to be updated to properly position the camera after a pan, argh
-        //     let updatedTarget = data.controlsOrbitTarget
-        //     this.controls.target.set(updatedTarget.x, updatedTarget.y, updatedTarget.z)
+        let matrix = new THREE.Matrix4();
+        matrix.fromArray(state.cameraMatrix)
+        // apply position, quaternion, and scale from the matrix coming from presets to the camera using decompose()
+        matrix.decompose(camera.position, camera.quaternion, camera.scale)
+        // orbit controls needed the center property to be updated to properly position the camera after a pan, argh
+        let updatedTarget = state.target
+        controls.target.set(updatedTarget.x, updatedTarget.y, updatedTarget.z)
     }
 
-    getCameraMatrix() {
+    getOrbitControlsState() {
         console.log('save camera matrix')
         return {
             controlsType: 'orbit',

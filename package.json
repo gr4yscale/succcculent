@@ -45,7 +45,6 @@
     "redux-logger": "^2.8.2",
     "reselect": "^3.0.0",
     "styled-components": "^1.4.4",
-    "three-orbit-viewer": "^69.3.0",
     "tinycolor2": "^1.4.1",
     "uglify-js": "^2.4.23",
     "watchify": "^3.2.1",
@@ -53,7 +52,12 @@
   },
   "dependencies": {
     "dat.gui": "^0.7.2",
+    "orbit-controls-es6": "^1.0.12",
     "parse-data-url": "^0.2.0",
-    "rc-slider": "^8.3.1"
+    "rc-slider": "^8.3.1",
+    "three": "^0.96.0",
+    "three-effectcomposer-es6": "0.0.4",
+    "three-gltf-loader": "^1.96.0",
+    "three.js": "^0.77.1"
   }
 }
