@@ -4,7 +4,7 @@ import {standard} from './redux/actions/index'
 
 // Three
 import * as THREE from 'three'                      //TODO import everything three-related like import { Vector3, ... } from 'three'
-import OrbitControls from 'orbit-controls-es6'
+import JoystickOrbitControls from './JoystickOrbitControls'
 import {BoxHelper} from 'three'
 
 // App
@@ -84,7 +84,7 @@ class Garden {
 
         // TODO try to initialize postFX in index - needs THREE-y stuff, though...
         postFX = new PostFX(THREE, renderer, camera, scene, debugGUI)
-        controls = new OrbitControls(camera, renderer.domElement)
+        controls = new JoystickOrbitControls(camera, renderer.domElement)
 
         camera.position.set(0, 0.35, 0.75)
         controls.target.set(0, 0, 0)
