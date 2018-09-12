@@ -52,7 +52,6 @@
   },
   "dependencies": {
     "dat.gui": "^0.7.2",
-    "orbit-controls-es6": "^1.0.12",
     "parse-data-url": "^0.2.0",
     "rc-slider": "^8.3.1",
     "three": "^0.96.0",

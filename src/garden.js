@@ -303,10 +303,10 @@ class Garden {
     updateOrbitControlsWithDeltas() {
         // TODO: should be using selectors for getting state slices
         const s = store.getState().scene
-        // controls.handleJoystickRotate(s.cameraRotationDeltaX * s.joystickSensitivity, s.cameraRotationDeltaY * s.joystickSensitivity)
-        // controls.handleJoystickDolly(s.cameraDollyDelta * s.cameraDollySensitivity)
-        // controls.handleJoystickPan(s.cameraPositionDeltaX * s.joystickSensitivity, s.cameraPositionDeltaY * s.joystickSensitivity)
-        // controls.update()
+        controls.handleJoystickRotate(s.cameraRotationDeltaX * s.joystickSensitivity, s.cameraRotationDeltaY * s.joystickSensitivity)
+        controls.handleJoystickDolly(s.cameraDollyDelta * s.cameraDollySensitivity)
+        controls.handleJoystickPan(s.cameraPositionDeltaX * s.joystickSensitivity, s.cameraPositionDeltaY * s.joystickSensitivity)
+        controls.update()
     }
 
     updateOrbitControlsState(state) {
